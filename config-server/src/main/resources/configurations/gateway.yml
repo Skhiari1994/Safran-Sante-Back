@@ -1,0 +1,73 @@
+eureka:
+  client:
+    register-with-eureka: false
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      globalcors: # Fixed key name
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: # Use patterns for flexibility
+              - "http://localhost" # Frontend origin
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600 # Added for pre-flight caching
+      discovery:
+        locator:
+          enabled: true # Consider disabling if not using Eureka discovery
+      routes:
+        - id: administration
+          uri: http://localhost:8001
+          predicates:
+            - Path=/admin/**
+        - id: adherent
+          uri: http://localhost:8004
+          predicates:
+            - Path=/adherent/**
+        - id: auth
+          uri: http://localhost:8002
+          predicates:
+            - Path=/api/auth/**
+        - id: remb
+          uri: http://localhost:8008
+          predicates:
+            - Path=/Remb/**
+        - id: referentiel
+          uri: http://localhost:8007
+          predicates:
+            - Path=/referentiel/**
+        - id: Credits
+          uri: http://localhost:8003
+          predicates:
+            - Path=/Credits/**
+        - id: Cotis
+          uri: http://localhost:8005
+          predicates:
+            - Path=/Cotis/**
+        - id: Indemnite # Fixed typo in id
+          uri: http://localhost:8006
+          predicates:
+            - Path=/Indemnite/**
+        - id: Convention
+          uri: http://localhost:8010
+          predicates:
+            - Path=/Convention/**
+        - id: Reports
+          uri: http://localhost:8011
+          predicates:
+            - Path=/Print/**
+        - id: CaisseRet # Fixed typo in id
+          uri: http://localhost:8012
+          predicates:
+            - Path=/CaisseRetr/**
+server:
+  port: 8222

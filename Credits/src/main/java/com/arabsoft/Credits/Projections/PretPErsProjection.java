@@ -1,0 +1,75 @@
+package com.arabsoft.Credits.Projections;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public interface PretPErsProjection {
+         String getCod_soc();
+        String getMat_pers();
+        Long getCod_pret();
+        Long getNum_dem_pret();
+        LocalDate getPrt_dat_dem();
+        Long getPrt_mnt_dem();
+        String getCod_grp_pret();
+        String getTyp_pret();
+        String getCod_etat_pret();
+        String getTyp_etat();
+        String getOrg_pret();
+        String getMod_remb();
+        String getMethode_calc();
+        String getCod_dept_pers();
+        String getCod_serv_pers();
+        String getCod_motif_pers();
+        String getCod_categ_pers();
+        String getCod_cat_pers();
+        String getCod_grad_pers();
+        String getAdm_tech();
+        String getCod_affect();
+        String getCod_lieu_geog();
+        String getCorps();
+        String getCod_typ_depart();
+        Long getNbr_enf();
+        LocalDate getPrt_dat_acc();
+        LocalDate getPrt_dat_deb();
+        LocalDate getPrt_dat_fin();
+        Long getPrt_ech();
+        Long getPrt_taux();
+        BigDecimal getPrt_mnt_glb();
+        BigDecimal getPrt_mnt_prm();
+        Long getDelai_grace();
+        Long getPrt_int_grace();
+        BigDecimal getPrt_mnt_rem();
+        BigDecimal getRem_men();
+        BigDecimal getDern_rem_men();
+        BigDecimal getPrt_rendu();
+        Long getPrt_rendu_int();
+        Long getNbr_retenue();
+        LocalDate getDat_deblocage();
+        LocalDate getDat_comptable();
+        String getMode_reglement();
+        String getPiece_reglement();
+        BigDecimal getMnt_report();
+        Long getCod_pret_ant();
+        String getAss_pret();
+        String getObjet_pret();
+        LocalDate getDat_saisie();
+        String getCod_user();
+        String getCod_motif_susp();
+        Long getCod_pret_ref();
+        Long getNum_etat_pret();
+        String getAmort_pret();
+        Long getNbr_tranche();
+        LocalDate getDat_effet();
+        Long getPrt_mnt_debloque();
+        Long getPrt_int_tranch();
+        Long getNum_lig_dem_pret();
+        BigDecimal getPrt_interet();
+        Long getNum_comm();
+        Long getSeq_ecrt();
+        Long getNum_vir();
+        String getNomPers();
+        String getPrenPers();
+        String getNum_retr();
+
+
+}

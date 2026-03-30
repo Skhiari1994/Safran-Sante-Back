@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/Administrations/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Administrations/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/CaisseRetraite/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/CaisseRetraite/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Credits/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Credits/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GestionConvention/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GestionConvention/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GestionCotisation/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GestionCotisation/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GestionIndemnites/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GestionIndemnites/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Gestion_adherent/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Gestion_adherent/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Referentiel/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Referentiel/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/RemboursementFraisMedicaux/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/RemboursementFraisMedicaux/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/discovery/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/discovery/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/reports/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/reports/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

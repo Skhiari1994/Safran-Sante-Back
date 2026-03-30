@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: GestionIndemnites
+  config:
+    import: optional:configserver:http://localhost:8888
+logging:
+  level:
+    root: INFO
+    org.springframework.jdbc: DEBUG
+    com.arabsoft.gestionindemnites: DEBUG

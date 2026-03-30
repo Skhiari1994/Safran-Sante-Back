@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: GestionConvention
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@//127.0.0.1:1521/DB11G
+    username: assur
+    password: arab
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform:  org.hibernate.dialect.OracleDialect
+    show-sql: true
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+server:
+  port: 8010
+  servlet:
+    context-path: /Convention
+

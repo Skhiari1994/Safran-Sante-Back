@@ -1,0 +1,5 @@
+spring:
+  application:
+   name: Gestion_adherent
+  config:
+    import: optional:configserver:http://localhost:8888

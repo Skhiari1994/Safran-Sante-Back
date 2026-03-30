@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Administrations/Administrations.iml" filepath="$PROJECT_DIR$/Administrations/Administrations.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CaisseRetraite/CaisseRetraite.iml" filepath="$PROJECT_DIR$/CaisseRetraite/CaisseRetraite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Credits/Credits.iml" filepath="$PROJECT_DIR$/Credits/Credits.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GestionConvention/GestionConvention.iml" filepath="$PROJECT_DIR$/GestionConvention/GestionConvention.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GestionCotisation/GestionCotisation.iml" filepath="$PROJECT_DIR$/GestionCotisation/GestionCotisation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GestionIndemnites/GestionIndemnites.iml" filepath="$PROJECT_DIR$/GestionIndemnites/GestionIndemnites.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Gestion_adherent/Gestion_adherent.iml" filepath="$PROJECT_DIR$/Gestion_adherent/Gestion_adherent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Referentiel/Referentiel.iml" filepath="$PROJECT_DIR$/Referentiel/Referentiel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RemboursementFraisMedicaux/RemboursementFraisMedicaux.iml" filepath="$PROJECT_DIR$/RemboursementFraisMedicaux/RemboursementFraisMedicaux.iml" />
+      <module fileurl="file://$PROJECT_DIR$/auth-service/auth-service.iml" filepath="$PROJECT_DIR$/auth-service/auth-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/config-server/config-server.iml" filepath="$PROJECT_DIR$/config-server/config-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/discovery/discovery.iml" filepath="$PROJECT_DIR$/discovery/discovery.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gateway/gateway.iml" filepath="$PROJECT_DIR$/gateway/gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/mutuelle.iml" filepath="$PROJECT_DIR$/.idea/mutuelle.iml" />
+      <module fileurl="file://$PROJECT_DIR$/reports/reports.iml" filepath="$PROJECT_DIR$/reports/reports.iml" />
+    </modules>
+  </component>
+</project>
