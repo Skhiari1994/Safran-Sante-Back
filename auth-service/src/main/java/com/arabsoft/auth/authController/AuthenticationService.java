@@ -1,6 +1,5 @@
 package com.arabsoft.auth.authController;
 
-
 import com.arabsoft.auth.email.EmailService;
 import com.arabsoft.auth.email.EmailTemplateName;
 import com.arabsoft.auth.exceptions.BadRequestException;
@@ -34,7 +33,7 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationService {
 
-    private final UserService userService ;
+    private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -43,11 +42,9 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
     @Value("${application.mailing.frontend.activation-url}")
-    private  String activationUrl;
+    private String activationUrl;
     @Value("${application.mailing.frontend.resetPassword-url}")
-    private  String resetPasswordUrl;
-
-
+    private String resetPasswordUrl;
 
     public void register(RegistrationRequest request) throws MessagingException {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -77,59 +74,59 @@ public class AuthenticationService {
     }
 
     private void sendValidationEmail(User user) throws MessagingException {
-      var newToken = generateAndSaveActivationToken(user);
-      // send email
+        var newToken = generateAndSaveActivationToken(user);
+        // send email
         emailService.sendEmail(
-          user.getEmail() ,
-          user.fullName(),
-          EmailTemplateName.ACTIVATE_ACCOUNT ,
-          activationUrl ,
-          newToken ,
-          "Account activation"
+                user.getEmail(),
+                user.fullName(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                activationUrl,
+                newToken,
+                "Account activation"
 
         );
     }
+
     private String generateAndSaveActivationToken(User user) {
-     // generate a token
-     String    generatedToken = generateActivationCode(6);
-     var token = Token.builder()
-             .token(generatedToken)
-             .createdAt(LocalDateTime.now())
-             .expiresAt(LocalDateTime.now().plusMinutes(15))
-             .user(user)
-             .build();
-        System.out.println("token :"+token);
-       tokenRepository.save(token);
-        return generatedToken ;
+        // generate a token
+        String generatedToken = generateActivationCode(6);
+        var token = Token.builder()
+                .token(generatedToken)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .user(user)
+                .build();
+        tokenRepository.save(token);
+        return generatedToken;
     }
+
     private String generateActivationCode(int length) {
-    String  characters = "0123456789";
-    StringBuilder codeBuilder = new StringBuilder();
-    SecureRandom secureRandom = new SecureRandom();
-     for(int i=0 ; i< length ; i++){
-         int randomIndex = secureRandom.nextInt(characters.length()); // 0...9
-         codeBuilder.append(characters.charAt(randomIndex));
-     }
-    return codeBuilder.toString() ;
+        String characters = "0123456789";
+        StringBuilder codeBuilder = new StringBuilder();
+        SecureRandom secureRandom = new SecureRandom();
+        for (int i = 0; i < length; i++) {
+            int randomIndex = secureRandom.nextInt(characters.length()); // 0...9
+            codeBuilder.append(characters.charAt(randomIndex));
+        }
+        return codeBuilder.toString();
     }
+
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var auth = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-                request.getUseLogin(),
-                request.getPassword()
-          )
-        ) ;
-        var claims = new HashMap<String , Object>();
-         var user = ((User) auth.getPrincipal());
-         claims.put("fullName" , user.fullName());
-         var jwtToken = jwtService.generateToken(claims , user ) ;
-     return AuthenticationResponse.builder()
-             .token(jwtToken)
-             .roles(user.getRoles())
-             .matPers(user.getMatpers())
-             .useLogin(user.getUselogin())
-             .codSoc(user.getCod_soc())
-             .build();
+                new UsernamePasswordAuthenticationToken(
+                        request.getUseLogin(),
+                        request.getPassword()));
+        var claims = new HashMap<String, Object>();
+        var user = ((User) auth.getPrincipal());
+        claims.put("fullName", user.fullName());
+        var jwtToken = jwtService.generateToken(claims, user);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .roles(user.getRoles())
+                .matPers(user.getMatpers())
+                .useLogin(user.getUselogin())
+                .codSoc(user.getCod_soc())
+                .build();
     }
 
     @Transactional
@@ -138,7 +135,8 @@ public class AuthenticationService {
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
             sendValidationEmail(savedToken.getUser());
-            throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
+            throw new RuntimeException(
+                    "Activation token has expired. A new token has been send to the same email address");
         }
 
         var user = userRepository.findById(savedToken.getUser().getUse_id())
@@ -150,28 +148,27 @@ public class AuthenticationService {
         tokenRepository.save(savedToken);
     }
 
-
     public void resetPasswordRequest(PasswordResetRequest passwordResetRequest) throws MessagingException {
-       User user = userRepository.findByUselogin(passwordResetRequest.getUseLogin())
-               .orElseThrow(() -> new IllegalArgumentException("User not found by email" + passwordResetRequest.getUseLogin()));
+        User user = userRepository.findByUselogin(passwordResetRequest.getUseLogin())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "User not found by email" + passwordResetRequest.getUseLogin()));
         sendResetPasswordEmail(user);
     }
 
     private void sendResetPasswordEmail(User user) throws MessagingException {
-        String passwordResetUrl = "" ;
+        String passwordResetUrl = "";
         // generer le token de reset password
         String passwordResetToken = UUID.randomUUID().toString();
-        userService.createPasswordResetTokenForUser(user , passwordResetToken);
+        userService.createPasswordResetTokenForUser(user, passwordResetToken);
         // construire l'uel qui contient le path de angular + le parametre token
-        passwordResetUrl = this.resetPasswordUrl + "?token=" + passwordResetToken;;
-
+        passwordResetUrl = this.resetPasswordUrl + "?token=" + passwordResetToken;
         emailService.sendEmailResetPassword(
-                user.getEmail() ,
+                user.getEmail(),
                 user.fullName(),
-                EmailTemplateName.RESET_PASSWORD ,
-                passwordResetUrl ,
-                "Vérification de la demande de réinitialisation de mot de passe"
-        );
+                EmailTemplateName.RESET_PASSWORD,
+                passwordResetUrl,
+                "Vérification de la demande de réinitialisation de mot de passe");
 
     }
+
 }

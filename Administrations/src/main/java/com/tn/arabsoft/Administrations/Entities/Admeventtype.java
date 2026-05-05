@@ -1,5 +1,4 @@
-package com.tn.arabsoft.Administrations.Entities;
-
+package com.tn.arabsoft.administrations.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,18 +11,19 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @Entity
-@Table(name="Admeventtype")
+@Table(name = "admeventtype")
+@ToString
+@SuppressWarnings({ "java:S101", "java:S116" })
 public class Admeventtype {
-	
+
 	@Id
 	private Long evt_id;
 	private String evt_name;
 	private Long evt_evt_id;
-	private Long 	sum_id;
+	private Long sum_id;
 	private String evt_action;
-	private Long evt_rank	;
-	private String evt_maint	;
+	private Long evt_rank;
+	private String evt_maint;
 
 }

@@ -1,86 +1,58 @@
-package com.arabsoft.Gestion_adherent.Controllers;
+package com.arabsoft.gestion_adherent.controllers;
 
-import com.arabsoft.Gestion_adherent.DTO.ResponseProcedureCharge;
-import com.arabsoft.Gestion_adherent.Entities.*;
-import com.arabsoft.Gestion_adherent.Projections.*;
-import com.arabsoft.Gestion_adherent.Repositories.*;
-import com.arabsoft.Gestion_adherent.Services.AffilPersService;
-import com.arabsoft.Gestion_adherent.Services.ChargFichierService;
-import com.arabsoft.Gestion_adherent.Services.FamilleService;
-import com.arabsoft.Gestion_adherent.Services.FamilleServiceImpl;
+import com.arabsoft.gestion_adherent.services.AffilPersService;
+import com.arabsoft.gestion_adherent.services.ChargFichierService;
+import com.arabsoft.gestion_adherent.services.FamilleServiceImpl;
+import com.arabsoft.gestion_adherent.dto.ResponseProcedureCharge;
+import com.arabsoft.gestion_adherent.entities.*;
+import com.arabsoft.gestion_adherent.projections.*;
+import com.arabsoft.gestion_adherent.repositories.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.data.domain.Sort;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Types;
-import java.time.LocalDateTime;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/Personnel")
+@SuppressWarnings({ "java:S117" })
 public class PersonnelController {
 
-    @Autowired
-    PersonnelRepository personnelRepository;
-    @Autowired
-    NationaliteRepository nationaliteRepository;
-    @Autowired
-    PrmLieuGeogRepository prmLieuGeogRepository;
-    @Autowired
-    AffectationRepository affectationRepository;
-    @Autowired
-    TypeDepartRepository typeDepartRepository;
-    @Autowired
-    BanqueRepository banqueRepository;
-    @Autowired
-    AgenceRepository agenceRepository;
-    @Autowired
-    GouvernoratRepository gouvernoratRepository;
-    @Autowired
-    PosteRepository posteRepository;
-    @Autowired
-    AdrPersRepository adrPersRepository;
-    @Autowired
-    PhotoPersRepository photoPersRepository;
-    @Autowired
-    CertifFamilleRepository familleRepository;
-    @Autowired
-    FamilleServiceImpl familleService;
-    @Autowired
-    AffilMutuelleRepository affilMutuelleRepository;
-    @Autowired
-    CorpsRepository corpsRepository;
-    @Autowired
-    AffilPersService affilPersService;
-    @Autowired
-    DepartPersRepository departPersRepository;
-    @Autowired
-    DiskPretRepository diskPretRepository;
-    @Autowired
-    ChargFichierService chargFichierService;
+    private final PersonnelRepository personnelRepository;
+    private final NationaliteRepository nationaliteRepository;
+    private final PrmLieuGeogRepository prmLieuGeogRepository;
+    private final AffectationRepository affectationRepository;
+    private final TypeDepartRepository typeDepartRepository;
+    private final BanqueRepository banqueRepository;
+    private final AgenceRepository agenceRepository;
+    private final GouvernoratRepository gouvernoratRepository;
+    private final PosteRepository posteRepository;
+    private final AdrPersRepository adrPersRepository;
+    private final PhotoPersRepository photoPersRepository;
+    private final CertifFamilleRepository familleRepository;
+    private final FamilleServiceImpl familleService;
+    private final AffilMutuelleRepository affilMutuelleRepository;
+    private final CorpsRepository corpsRepository;
+    private final AffilPersService affilPersService;
+    private final DepartPersRepository departPersRepository;
+    private final DiskPretRepository diskPretRepository;
+    private final ChargFichierService chargFichierService;
 
-    @Autowired
-    TrsPersRepository trsPersRepository;
+    private final TrsPersRepository trsPersRepository;
 
     @PostMapping("/addUser")
     Personnel savePersonnel(@RequestBody Personnel personnel) {
@@ -116,9 +88,9 @@ public class PersonnelController {
 
     }
 
-    @GetMapping("/getPersonnelles/{mat}")
-    public List<PersonnelPrejection> getPersonelles(@PathVariable("mat") String mat) {
-        return this.personnelRepository.getPersonnelByMat(mat);
+    @GetMapping("/getPersonnelles/{soc}/{mat}")
+    public List<PersonnelPrejection> getPersonelles(@PathVariable("soc") String soc, @PathVariable("mat") String mat) {
+        return this.personnelRepository.getPersonnelByMat(soc, mat);
 
     }
 
@@ -200,10 +172,8 @@ public class PersonnelController {
     }
 
     @PostMapping("/AddCertifEnf")
-    public void AddCertifEnf(@RequestBody List<CertifFamille> f) {
-
+    public void addCertifEnf(@RequestBody List<CertifFamille> f) {
         familleRepository.saveAll(f);
-
     }
 
     @DeleteMapping("/{soc}/{num}/{mat}/{annee}")
@@ -248,10 +218,8 @@ public class PersonnelController {
     }
 
     @PostMapping("/AddAffiliation")
-    public void AddCertifEnf(@RequestBody AffilMutuelle affilMutuelle) {
-
+    public void addCertifEnf(@RequestBody AffilMutuelle affilMutuelle) {
         affilMutuelleRepository.save(affilMutuelle);
-
     }
 
     @DeleteMapping("/deleteAffil")
@@ -269,9 +237,9 @@ public class PersonnelController {
     }
 
     @GetMapping("/callValiderAff")
-    public void ValiderAff(@RequestParam("soc") String soc, @RequestParam("etat_aff") String etat_aff,
+    public void validerAff(@RequestParam("soc") String soc, @RequestParam("etat_aff") String etat_aff,
             @RequestParam("typ_aff") String typ_aff, @RequestParam("mat") String mat, @RequestParam("dat") String dat) {
-        affilPersService.ValiderAff(soc, etat_aff, typ_aff, mat, dat);
+        affilPersService.validerAff(soc, etat_aff, typ_aff, mat, dat);
     }
 
     @GetMapping("/listDepart/{soc}")
@@ -300,37 +268,83 @@ public class PersonnelController {
     }
 
     @PostMapping("/AddDepartPers")
-    public void AddDepartPers(@RequestBody Depart_Pers departPers) {
-
+    public void addDepartPers(@RequestBody DepartPers departPers) {
         departPersRepository.save(departPers);
-
     }
 
     @GetMapping("/getDiskPret")
     List<DiskPret> getDiskPret(@RequestParam String mois) {
-        return diskPretRepository.getDiskPret(mois);
+        YearMonth ym = parseYearMonth(mois);
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.plusMonths(1).atDay(1);
+        return diskPretRepository.getDiskPret(start, end);
+    }
+
+    private YearMonth parseYearMonth(String input) {
+
+        input = input.trim();
+
+        List<DateTimeFormatter> ymFormatters = List.of(
+                DateTimeFormatter.ofPattern("MM/yyyy"),
+                DateTimeFormatter.ofPattern("M/yyyy"),
+                DateTimeFormatter.ofPattern("MM-yyyy"),
+                DateTimeFormatter.ofPattern("M-yyyy"),
+                DateTimeFormatter.ofPattern("yyyy/MM"),
+                DateTimeFormatter.ofPattern("yyyy-MM"),
+                DateTimeFormatter.ofPattern("yyyyMM"),
+                DateTimeFormatter.ofPattern("MMyyyy"));
+
+        for (DateTimeFormatter formatter : ymFormatters) {
+            try {
+                return YearMonth.parse(input, formatter);
+            } catch (DateTimeParseException ignored) {
+                // ignore and try next
+            }
+        }
+
+        // 2. Full date formats → convert to YearMonth
+        List<DateTimeFormatter> dateFormatters = List.of(
+                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                DateTimeFormatter.ofPattern("d/M/yyyy"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+                DateTimeFormatter.ofPattern("d-M-yyyy"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                DateTimeFormatter.ofPattern("yyyyMMdd"),
+                DateTimeFormatter.ofPattern("ddMMyyyy"));
+
+        for (DateTimeFormatter formatter : dateFormatters) {
+            try {
+                LocalDate date = LocalDate.parse(input, formatter);
+                return YearMonth.from(date);
+            } catch (DateTimeParseException ignored) {
+                // ignore and try next
+            }
+        }
+
+        throw new IllegalArgumentException(
+                "Format invalide. Formats acceptés: yyyy-MM, MM/yyyy, MMyyyy");
 
     }
 
     @GetMapping("/getDiskPretImport")
     List<DiskPretProjection> getDiskPretImport(@RequestParam String mois) {
-        return diskPretRepository.getDiskPretImport(mois);
-
+        YearMonth ym = parseYearMonth(mois);
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.plusMonths(1).atDay(1);
+        return diskPretRepository.getDiskPretImport(start, end);
     }
 
     @PostMapping("/import-fichier")
     public ResponseProcedureCharge importFichier(@RequestParam("soc") String soc, @RequestParam("mois") String mois,
-            @RequestParam("file") MultipartFile file) throws Exception {
-
-        ResponseProcedureCharge resp = chargFichierService.lireFichierEtAppelerProcedure(soc, mois, file);
-        return resp;
-
+            @RequestParam("file") MultipartFile file) throws IOException, SQLException {
+        return chargFichierService.lireFichierEtAppelerProcedure(soc, mois, file);
     }
 
     @GetMapping("/fichier_salarie")
-    public ResponseProcedure vir_bord(@RequestParam String soc, @RequestParam String nomFichier,
+    public ResponseProcedure virBord(@RequestParam String soc, @RequestParam String nomFichier,
             @RequestParam String etat_act) {
-        return chargFichierService.fichier_salarie(soc, nomFichier, etat_act);
+        return chargFichierService.fichierSalarie(soc, nomFichier, etat_act);
 
     }
 
@@ -370,7 +384,7 @@ public class PersonnelController {
 
         List<TrsPers> list = trsPersRepository.findAll();
 
-        if (list == null || list.isEmpty()) {
+        if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
@@ -383,61 +397,5 @@ public class PersonnelController {
 
         return ResponseEntity.ok().build();
     }
-
-    /*
-     * private final JdbcTemplate jdbcTemplate;
-     * 
-     * @Value("${file.upload-dir}")
-     * private String uploadDir;
-     * 
-     * public PersonnelController(JdbcTemplate jdbcTemplate) {
-     * this.jdbcTemplate = jdbcTemplate;
-     * }
-     * 
-     * 
-     * @GetMapping("/download")
-     * public ResponseEntity<Resource> downloadEmployeeFile(
-     * 
-     * @RequestParam String codSoc,
-     * 
-     * @RequestParam String etatAct) {
-     * String fileName = "employees_" + System.currentTimeMillis() + ".txt";
-     * String fullFilePath = uploadDir + File.separator + fileName;
-     * String message = "";
-     * String filePathOut = "";
-     * 
-     * try (Connection conn = jdbcTemplate.getDataSource().getConnection();
-     * CallableStatement stmt = conn.
-     * prepareCall("{call ASSUR.pk_adhesions.GENERATE_EMPLOYEE_FILE(?, ?, ?, ?, ?)}"
-     * )) {
-     * stmt.setString(1, fileName);
-     * stmt.setString(2, codSoc);
-     * stmt.setString(3, etatAct);
-     * stmt.registerOutParameter(4, Types.VARCHAR);
-     * stmt.registerOutParameter(5, Types.VARCHAR);
-     * stmt.execute();
-     * 
-     * message = stmt.getString(4);
-     * filePathOut = uploadDir + File.separator + stmt.getString(5);
-     * 
-     * File file = new File(filePathOut);
-     * if (!file.exists()) {
-     * throw new RuntimeException("Fichier non trouvé: " + filePathOut);
-     * }
-     * 
-     * Path path = Paths.get(filePathOut);
-     * Resource resource = new UrlResource(path.toUri());
-     * 
-     * return ResponseEntity.ok()
-     * .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
-     * file.getName() + "\"")
-     * .header(HttpHeaders.CONTENT_TYPE, "text/plain")
-     * .body(resource);
-     * } catch (Exception e) {
-     * throw new RuntimeException("Erreur lors de la génération du fichier: " +
-     * message + "; " + e.getMessage());
-     * }
-     * }
-     */
 
 }

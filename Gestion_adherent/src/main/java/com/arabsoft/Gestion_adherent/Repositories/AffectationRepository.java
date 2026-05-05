@@ -1,12 +1,10 @@
-package com.arabsoft.Gestion_adherent.Repositories;
+package com.arabsoft.gestion_adherent.repositories;
 
-import com.arabsoft.Gestion_adherent.Entities.Affectation;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.arabsoft.gestion_adherent.entities.Affectation;
 
-public interface AffectationRepository extends JpaRepository<Affectation,String>{
-
-
+@Repository
+public interface AffectationRepository extends JpaRepository<Affectation, String> {
 }

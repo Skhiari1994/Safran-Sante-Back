@@ -1,4 +1,4 @@
-package com.arabsoft.referentiel.Services;
+package com.arabsoft.referentiel.services;
 
 import org.springframework.stereotype.Service;
 

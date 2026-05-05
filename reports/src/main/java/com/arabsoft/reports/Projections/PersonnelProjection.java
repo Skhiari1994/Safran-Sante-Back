@@ -1,5 +1,6 @@
-package com.arabsoft.reports.Projections;
+package com.arabsoft.reports.projections;
 
+@SuppressWarnings({ "java:S100" })
 public interface PersonnelProjection {
 
     String getMat_pers();

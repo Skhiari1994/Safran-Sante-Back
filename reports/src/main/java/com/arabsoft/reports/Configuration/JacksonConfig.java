@@ -1,4 +1,4 @@
-package com.arabsoft.reports.Configuration;
+package com.arabsoft.reports.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDate;
-
 
 @Configuration
 public class JacksonConfig {

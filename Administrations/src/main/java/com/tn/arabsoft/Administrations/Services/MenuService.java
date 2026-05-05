@@ -1,26 +1,28 @@
-
-
-package com.tn.arabsoft.Administrations.Services;
+package com.tn.arabsoft.administrations.services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.tn.arabsoft.Administrations.Repositories.AdmstorageautorisationDAO;
- import com.tn.arabsoft.Administrations.Entities.Admeventtype;
-import com.tn.arabsoft.Administrations.Entities.Admstorageautorisation;
-import com.tn.arabsoft.Administrations.Entities.Admsubmodule;
-import com.tn.arabsoft.Administrations.Entities.JsonResponse;
-import com.tn.arabsoft.Administrations.Entities.Role;
- import org.springframework.beans.factory.annotation.Autowired;
+import com.tn.arabsoft.administrations.repositories.AdmstorageautorisationDAO;
+import com.tn.arabsoft.administrations.entities.Admeventtype;
+import com.tn.arabsoft.administrations.entities.Admstorageautorisation;
+import com.tn.arabsoft.administrations.entities.Admsubmodule;
+import com.tn.arabsoft.administrations.entities.JsonResponse;
+import com.tn.arabsoft.administrations.entities.Role;
 import org.springframework.stereotype.Service;
-@Service
-public class MenuService {
-	@Autowired
-	private AdmstorageautorisationDAO admstorageautorisationDAO;
 
-	public List<JsonResponse> convertAdmEntities(List<Admsubmodule> admSubmodules, List<Admeventtype> admEventTypes, Role role) {
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class MenuService {
+
+	private final AdmstorageautorisationDAO admstorageautorisationDAO;
+
+	public List<JsonResponse> convertAdmEntities(List<Admsubmodule> admSubmodules, List<Admeventtype> admEventTypes,
+			Role role) {
 		Map<Long, List<Admeventtype>> eventTypeMap = groupEventTypesBySubmodule(admEventTypes);
 		List<JsonResponse> jsonResponses = new ArrayList<>();
 
@@ -33,6 +35,7 @@ public class MenuService {
 
 		return jsonResponses;
 	}
+
 	public List<JsonResponse> convertAdmEntities(List<Admsubmodule> admSubmodules, List<Admeventtype> admEventTypes) {
 		List<JsonResponse> jsonResponses = new ArrayList<>();
 		Map<Long, List<Admeventtype>> eventTypeMap = new HashMap<>();
@@ -52,6 +55,7 @@ public class MenuService {
 
 		return jsonResponses;
 	}
+
 	private Map<Long, List<Admeventtype>> groupEventTypesBySubmodule(List<Admeventtype> admEventTypes) {
 		Map<Long, List<Admeventtype>> eventTypeMap = new HashMap<>();
 		for (Admeventtype eventType : admEventTypes) {
@@ -62,11 +66,13 @@ public class MenuService {
 	}
 
 	private boolean hasAuthorization(Role role, Admsubmodule submodule) {
-		List<Admstorageautorisation> authorisations = admstorageautorisationDAO.getMenuRole(submodule.getSum_id(), role.getId());
+		List<Admstorageautorisation> authorisations = admstorageautorisationDAO.getMenuRole(submodule.getSum_id(),
+				role.getId());
 		return !authorisations.isEmpty();
 	}
 
-	private JsonResponse createJsonResponse(Admsubmodule submodule, Map<Long, List<Admeventtype>> eventTypeMap, Role role) {
+	private JsonResponse createJsonResponse(Admsubmodule submodule, Map<Long, List<Admeventtype>> eventTypeMap,
+			Role role) {
 		JsonResponse jsonResponse = new JsonResponse();
 		jsonResponse.setId(submodule.getSum_id());
 		jsonResponse.setLabel(submodule.getSum_name());
@@ -80,7 +86,8 @@ public class MenuService {
 		jsonResponse.setParentId(99L);
 
 		// Obtenir les autorisations pour le rôle et le sous-module
-		List<Admstorageautorisation> authorisations = admstorageautorisationDAO.getMenuRole(submodule.getSum_id(), role.getId());
+		List<Admstorageautorisation> authorisations = admstorageautorisationDAO.getMenuRole(submodule.getSum_id(),
+				role.getId());
 
 		// Gestion des enfants (sub-items) et de IsCollapsed pour le nœud parent
 		if (authorisations != null && !authorisations.isEmpty()) {
@@ -105,13 +112,12 @@ public class MenuService {
 		return jsonResponse;
 	}
 
-
 	private JsonResponse createChildJsonResponse(Admeventtype eventType, Map<Long, List<Admeventtype>> eventTypeMap) {
 		JsonResponse child = new JsonResponse();
 		child.setId(eventType.getEvt_id());
 		child.setLabel(eventType.getEvt_name());
 		child.setIcon("");
-		child.setLink(eventType.getEvt_action()!= null ? eventType.getEvt_action():"");
+		child.setLink(eventType.getEvt_action() != null ? eventType.getEvt_action() : "");
 		child.setParentId(eventType.getEvt_evt_id());
 
 		// Check for nested event types and create sub-items if present
@@ -132,14 +138,14 @@ public class MenuService {
 		return child;
 	}
 
-
-
 	private JsonResponse createJsonResponse(Admsubmodule submodule, Map<Long, List<Admeventtype>> eventTypeMap) {
 		JsonResponse jsonResponse = new JsonResponse();
 		jsonResponse.setId(submodule.getSum_id());
 		jsonResponse.setLabel(submodule.getSum_name());
 		jsonResponse.setIcon(submodule.getMdl_icon1()); // Suppose que l'icône est stockée dans mdl_icon
-		jsonResponse.setLink(submodule.getSum_rout() != null ? "/" + submodule.getSum_rout() : ""); // Si sum_rout est null, le lien reste vide
+		jsonResponse.setLink(submodule.getSum_rout() != null ? "/" + submodule.getSum_rout() : ""); // Si sum_rout est
+																									// null, le lien
+																									// reste vide
 		jsonResponse.setParentId(99L);
 
 		// Vérifier les types d'événements associés à ce sous-module
@@ -171,7 +177,8 @@ public class MenuService {
 				}
 			}
 			jsonResponse.setSubItems(topLevelChildren.isEmpty() ? null : topLevelChildren);
-			jsonResponse.setCollapsed(topLevelChildren.isEmpty() ? false : true); // Définir IsCollapsed en fonction des enfants
+			jsonResponse.setCollapsed(topLevelChildren.isEmpty() ? false : true); // Définir IsCollapsed en fonction des
+																					// enfants
 		} else {
 			jsonResponse.setSubItems(null);
 			jsonResponse.setCollapsed(false);
@@ -180,13 +187,15 @@ public class MenuService {
 		return jsonResponse;
 	}
 
-	private JsonResponse createChildJsonResponse(Admeventtype eventType, String submoduleRoute, Map<Long, List<Admeventtype>> eventTypeMap) {
+	private JsonResponse createChildJsonResponse(Admeventtype eventType, String submoduleRoute,
+			Map<Long, List<Admeventtype>> eventTypeMap) {
 		JsonResponse child = new JsonResponse();
 		child.setId(eventType.getEvt_id());
 		child.setLabel(eventType.getEvt_name());
 		child.setIcon("");
 
-		// Construire le lien uniquement si submoduleRoute et evt_action ne sont pas null
+		// Construire le lien uniquement si submoduleRoute et evt_action ne sont pas
+		// null
 		String link = "";
 		if (submoduleRoute != null && eventType.getEvt_action() != null) {
 			link = "/" + submoduleRoute + "/" + eventType.getEvt_action();

@@ -1,7 +1,7 @@
-package com.arabsoft.referentiel.Repositories;
+package com.arabsoft.referentiel.repositories;
 
-import com.arabsoft.referentiel.Entities.Maladie;
+import com.arabsoft.referentiel.entities.Maladie;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MaladieRepository extends JpaRepository<Maladie,String> {
+public interface MaladieRepository extends JpaRepository<Maladie, String> {
 }

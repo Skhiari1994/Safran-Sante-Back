@@ -1,4 +1,4 @@
-package com.arabsoft.Gestion_adherent.Configuration;
+package com.arabsoft.gestion_adherent.configuration;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

@@ -1,16 +1,13 @@
 package com.arabsoft.auth.authController;
 
-import com.arabsoft.auth.model.Role;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -18,17 +15,18 @@ import java.util.List;
 @ToString
 public class RegistrationRequest {
 
-
     @NotEmpty(message = "Firstname is mandatory")
     @NotNull(message = "Firstname is mandatory")
     private String firstname;
+
     @NotEmpty(message = "Lastname is mandatory")
     @NotNull(message = "Lastname is mandatory")
     private String lastname;
-   // @Email(message = "Email is not well formatted")
+
     @NotEmpty(message = "Email is mandatory")
     @NotNull(message = "Email is mandatory")
     private String email;
+
     @NotEmpty(message = "Use login is mandatory")
     @NotNull(message = "Use login is mandatory")
     private String useLogin;
@@ -37,7 +35,9 @@ public class RegistrationRequest {
     @NotNull(message = "Password is mandatory")
     @Size(min = 6, message = "Password should be 8 characters long minimum")
     private String password;
+
     @NotEmpty(message = "Role is mandatory")
     @NotNull(message = "Role is mandatory")
-     private String roles;
+    private String roles;
+
 }

@@ -1,50 +1,52 @@
-package com.arabsoft.referentiel.Controllers;
+package com.arabsoft.referentiel.controllers;
 
-import com.arabsoft.referentiel.Entities.MotifRembour;
-import com.arabsoft.referentiel.Entities.ParamCaisse;
-import com.arabsoft.referentiel.Repositories.MotifRembourRepository;
-import com.arabsoft.referentiel.Repositories.ParamCaisseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.arabsoft.referentiel.entities.MotifRembour;
+import com.arabsoft.referentiel.entities.ParamCaisse;
+
+import com.arabsoft.referentiel.repositories.MotifRembourRepository;
+import com.arabsoft.referentiel.repositories.ParamCaisseRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/ParamCaisse")
 public class CaisseRetraiteContoller {
 
-    @Autowired
-    ParamCaisseRepository paramCaisseRepository;
-    @Autowired
-    MotifRembourRepository motifRembourRepository;
+    private final ParamCaisseRepository paramCaisseRepository;
+    private final MotifRembourRepository motifRembourRepository;
 
     @GetMapping("/getAllParamCaisse")
-    List<ParamCaisse> getAllParamCaisses(){
+    List<ParamCaisse> getAllParamCaisses() {
         return paramCaisseRepository.findAll();
     }
 
     @PostMapping("/addParamCaisse")
-    ParamCaisse addParamCaisse(@RequestBody ParamCaisse paramCaisse){
+    ParamCaisse addParamCaisse(@RequestBody ParamCaisse paramCaisse) {
         return paramCaisseRepository.save(paramCaisse);
     }
 
     @DeleteMapping("/deleteParamCaisse")
-    void deleteParamCaisse(@RequestParam String codParam){
+    void deleteParamCaisse(@RequestParam String codParam) {
         paramCaisseRepository.deleteById(codParam);
     }
 
     @GetMapping("/getAllMotifRembour")
-    List<MotifRembour> getAllMotifRembour(){
+    List<MotifRembour> getAllMotifRembour() {
         return motifRembourRepository.findAll();
     }
 
     @PostMapping("/addMotifRembour")
-    MotifRembour addMotifRembour(@RequestBody MotifRembour paramCaisse){
+    MotifRembour addMotifRembour(@RequestBody MotifRembour paramCaisse) {
         return motifRembourRepository.save(paramCaisse);
     }
 
     @DeleteMapping("/deleteMotifRembour")
-    void deleteMotifRembour(@RequestParam String codRemb){
+    void deleteMotifRembour(@RequestParam String codRemb) {
         motifRembourRepository.deleteById(codRemb);
     }
 }

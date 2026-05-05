@@ -1,11 +1,13 @@
-package com.arabsoft.referentiel.Controllers;
+package com.arabsoft.referentiel.controllers;
 
-import com.arabsoft.referentiel.Entities.*;
-import com.arabsoft.referentiel.Entities.Cle.CleRefFillAct;
-import com.arabsoft.referentiel.Projections.RefFillActProjection;
-import com.arabsoft.referentiel.Repositories.*;
-import com.arabsoft.referentiel.Services.RefirentielleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.arabsoft.referentiel.entities.*;
+import com.arabsoft.referentiel.entities.cle.CleRefFillAct;
+import com.arabsoft.referentiel.projections.RefFillActProjection;
+import com.arabsoft.referentiel.repositories.*;
+import com.arabsoft.referentiel.services.RefirentielleService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,53 +16,48 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/ParametrageD")
- public class ParametrageDController {
+@SuppressWarnings({ "java:S100", "java:S117" })
+public class ParametrageDController {
 
-    @Autowired
-    RefVisitRepository refVisitRepository;
-    @Autowired
-    ActeRepository acteRepository;
-    @Autowired
-    RefMedRepository refMedRepository;
-    @Autowired
-    RefActRepository refActRepository;
-    @Autowired
-    RefAppareilRepository refAppareilRepository;
-    @Autowired
-    MaladieRepository maladieRepository;
-    @Autowired
-    ActiviteEtablisRepository activiteEtablisRepository;
-    @Autowired
-    RefEtablisRepository refEtablisRepository;
+    private final RefVisitRepository refVisitRepository;
 
-    @Autowired
-    GouvernoratRepository gouvernoratRepository;
-    @Autowired
-    PosteRepository posteRepository;
+    private final ActeRepository acteRepository;
 
-    @Autowired
-    RegimeRembRepository regimeRembRepository;
+    private final RefMedRepository refMedRepository;
 
-    @Autowired
-    RefFiliereRepository refFiliereRepository;
+    private final RefActRepository refActRepository;
 
-    @Autowired
-    RefFillActRepository refFillActRepository;
+    private final RefAppareilRepository refAppareilRepository;
 
-    @Autowired
-    RefirentielleService refirentielleService;
+    private final MaladieRepository maladieRepository;
 
+    private final ActiviteEtablisRepository activiteEtablisRepository;
+
+    private final RefEtablisRepository refEtablisRepository;
+
+    private final GouvernoratRepository gouvernoratRepository;
+
+    private final PosteRepository posteRepository;
+
+    private final RegimeRembRepository regimeRembRepository;
+
+    private final RefFiliereRepository refFiliereRepository;
+
+    private final RefFillActRepository refFillActRepository;
+
+    private final RefirentielleService refirentielleService;
 
     @GetMapping("/getAllRef")
-    List<RefVisit> getAllRef(){
+    List<RefVisit> getAllRef() {
         return refVisitRepository.findAll();
     }
+
     @PostMapping("/addRef")
-    RefVisit addRef(@RequestBody RefVisit refVisit){
+    RefVisit addRef(@RequestBody RefVisit refVisit) {
         return refVisitRepository.save(refVisit);
     }
 
@@ -70,18 +67,17 @@ import java.util.Optional;
     }
 
     @GetMapping("/getAllActe")
-    List<Acte> getAllActe(){
+    List<Acte> getAllActe() {
         return acteRepository.findAll();
     }
 
     @GetMapping("/getRefMed")
-    List<RefMed> getRefMed(){
+    List<RefMed> getRefMed() {
         return refMedRepository.findAll();
     }
 
-
     @PostMapping("/addRefMed")
-    RefMed addRefMed(@RequestBody RefMed refMed){
+    RefMed addRefMed(@RequestBody RefMed refMed) {
         return refMedRepository.save(refMed);
     }
 
@@ -91,13 +87,12 @@ import java.util.Optional;
     }
 
     @GetMapping("/getRefAct")
-    List<RefAct> getRefAct(){
+    List<RefAct> getRefAct() {
         return refActRepository.findAll();
     }
 
-
     @PostMapping("/addRefAct")
-    RefAct addRefAct(@RequestBody RefAct refAct){
+    RefAct addRefAct(@RequestBody RefAct refAct) {
         return refActRepository.save(refAct);
     }
 
@@ -107,13 +102,12 @@ import java.util.Optional;
     }
 
     @GetMapping("/getRefAppareil")
-    List<RefAppareil> getRefAppareil(){
+    List<RefAppareil> getRefAppareil() {
         return refAppareilRepository.findAll();
     }
 
-
     @PostMapping("/addRefAppareil")
-    RefAppareil addRefAct(@RequestBody RefAppareil refAppareil){
+    RefAppareil addRefAct(@RequestBody RefAppareil refAppareil) {
         return refAppareilRepository.save(refAppareil);
     }
 
@@ -123,13 +117,12 @@ import java.util.Optional;
     }
 
     @GetMapping("/getMaladie")
-    List<Maladie> getMaladie(){
+    List<Maladie> getMaladie() {
         return maladieRepository.findAll();
     }
 
-
     @PostMapping("/addMaladie")
-    Maladie addMaladie(@RequestBody Maladie maladie){
+    Maladie addMaladie(@RequestBody Maladie maladie) {
         return maladieRepository.save(maladie);
     }
 
@@ -139,50 +132,54 @@ import java.util.Optional;
     }
 
     @GetMapping("/getRefEtablis")
-    public List<RefEtablis> getRefEtablis(){
+    public List<RefEtablis> getRefEtablis() {
         return refEtablisRepository.getRefEtablis();
     }
+
     @GetMapping("/getPersPhysique")
-    public List<RefEtablis> getPersPhysique(){
+    public List<RefEtablis> getPersPhysique() {
         return refEtablisRepository.getPersPhysique();
     }
 
     @PostMapping("/addRefEtablis")
-    RefEtablis addRefEtablis(@RequestBody RefEtablis refEtablis){
+    RefEtablis addRefEtablis(@RequestBody RefEtablis refEtablis) {
         return refEtablisRepository.save(refEtablis);
     }
+
     @GetMapping("/getActiviteEtablis/{cod_activ}")
     public ResponseEntity<ActiviteEtablis> getActiviteEtablis(@PathVariable String cod_activ) {
         return activiteEtablisRepository.findById(cod_activ)
-                .map(ResponseEntity::ok)  // Retourne 200 OK avec l'entité
+                .map(ResponseEntity::ok) // Retourne 200 OK avec l'entité
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activité non trouvée"));
     }
+
     @GetMapping("/getAllActiviteEtablis")
-    public  List<ActiviteEtablis>  getAllActiviteEtablis() {
+    public List<ActiviteEtablis> getAllActiviteEtablis() {
         return activiteEtablisRepository.findAll();
     }
+
     @GetMapping("/getGouv/{cod_gouv}")
     public ResponseEntity<Gouvernorat> getGouv(@PathVariable String cod_gouv) {
         return gouvernoratRepository.findById(cod_gouv)
-                .map(ResponseEntity::ok)  // Retourne 200 OK avec l'entité
+                .map(ResponseEntity::ok) // Retourne 200 OK avec l'entité
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gouv non trouvée"));
     }
 
     @GetMapping("/getAllGouv")
-    public List<Gouvernorat> getAllGouv(){
+    public List<Gouvernorat> getAllGouv() {
 
         return gouvernoratRepository.findAll();
     }
 
     @GetMapping("/getAllPoste")
-    public List<Poste> getAllPoste(){
+    public List<Poste> getAllPoste() {
 
         return posteRepository.findAll();
     }
 
     @GetMapping("/getPoste/{cod_gouv}/{cod_post}")
-    public Poste getPoste(@PathVariable String cod_gouv,@PathVariable String cod_post) {
-        return posteRepository.getPosteById(cod_gouv,cod_post);
+    public Poste getPoste(@PathVariable String cod_gouv, @PathVariable String cod_post) {
+        return posteRepository.getPosteById(cod_gouv, cod_post);
     }
 
     @GetMapping("/getPoste/{cod_gouv}")
@@ -195,15 +192,13 @@ import java.util.Optional;
         return ResponseEntity.ok(postes);
     }
 
-
     @GetMapping("/getRegimeRemb")
-    List<RegimeRemb> getRegimeRemb(){
+    List<RegimeRemb> getRegimeRemb() {
         return regimeRembRepository.findAll();
     }
 
-
     @PostMapping("/addRegimeRemb")
-    RegimeRemb addRegimeRemb(@RequestBody RegimeRemb regimeRemb){
+    RegimeRemb addRegimeRemb(@RequestBody RegimeRemb regimeRemb) {
         return regimeRembRepository.save(regimeRemb);
     }
 
@@ -213,13 +208,12 @@ import java.util.Optional;
     }
 
     @GetMapping("/getRefFiliere")
-    List<RefFiliere> getRefFiliere(){
+    List<RefFiliere> getRefFiliere() {
         return refFiliereRepository.findAll();
     }
 
-
     @PostMapping("/addRefFiliere")
-    RefFiliere addRefFiliere(@RequestBody RefFiliere refFiliere){
+    RefFiliere addRefFiliere(@RequestBody RefFiliere refFiliere) {
         return refFiliereRepository.save(refFiliere);
     }
 
@@ -229,13 +223,12 @@ import java.util.Optional;
     }
 
     @GetMapping("/getRefFillAct/{codFil}")
-    List<RefFillActProjection> getRefFillAct(@PathVariable String codFil){
+    List<RefFillActProjection> getRefFillAct(@PathVariable String codFil) {
         return refFillActRepository.getFillAct(codFil);
     }
 
-
     @PostMapping("/addRefFillAct")
-    RefFillAct addRefFillAct(@RequestBody RefFillAct refFillAct){
+    RefFillAct addRefFillAct(@RequestBody RefFillAct refFillAct) {
         return refFillActRepository.save(refFillAct);
     }
 
@@ -243,6 +236,7 @@ import java.util.Optional;
     public void deleteRefFillAct(@RequestBody CleRefFillAct cod_fil) {
         refFillActRepository.deleteById(cod_fil);
     }
+
     @PostMapping("/uploadFile")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {

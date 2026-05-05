@@ -1,40 +1,40 @@
-package com.tn.arabsoft.Administrations.Controllers;
+package com.tn.arabsoft.administrations.controllers;
 
-import com.tn.arabsoft.Administrations.Entities.Admstorageautorisation;
-import com.tn.arabsoft.Administrations.Entities.Role;
-import com.tn.arabsoft.Administrations.Repositories.AdmstorageautorisationDAO;
-import com.tn.arabsoft.Administrations.Repositories.RoleDao;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tn.arabsoft.administrations.entities.Admstorageautorisation;
+import com.tn.arabsoft.administrations.entities.Role;
+import com.tn.arabsoft.administrations.repositories.AdmstorageautorisationDAO;
+import com.tn.arabsoft.administrations.repositories.RoleDao;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/Role")
 public class RoleController {
 
-    @Autowired
-    RoleDao roleDao;
-    @Autowired
-    AdmstorageautorisationDAO admstorageautorisationDAO;
+    private final RoleDao roleDao;
+
+    private final AdmstorageautorisationDAO admstorageautorisationDAO;
+
     @GetMapping("/role")
-    public List<Role> getRole()
-    {
+    public List<Role> getRole() {
         return roleDao.findAll();
     }
 
-
     @GetMapping("/roles/{roleId}")
-    public List<Admstorageautorisation> getModukeByR(@PathVariable("roleId") Long roleId)
-    {
-        Role role =new Role();
+    public List<Admstorageautorisation> getModukeByR(@PathVariable("roleId") Long roleId) {
+        Role role = new Role();
         role.setId(roleId);
         return admstorageautorisationDAO.findByRole(role);
     }
+
     @PostMapping("/AddRole")
-    public Role addRole(@RequestBody Role role)
-    {
+    public Role addRole(@RequestBody Role role) {
         return roleDao.save(role);
 
     }
@@ -44,4 +44,5 @@ public class RoleController {
         roleDao.deleteById(roleId);
         return ResponseEntity.ok().build();
     }
+
 }

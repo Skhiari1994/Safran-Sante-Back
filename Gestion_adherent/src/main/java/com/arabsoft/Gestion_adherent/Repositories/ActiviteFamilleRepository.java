@@ -1,7 +1,8 @@
-package com.arabsoft.Gestion_adherent.Repositories;
+package com.arabsoft.gestion_adherent.repositories;
 
-import com.arabsoft.Gestion_adherent.Entities.ActiviteFamille;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ActiviteFamilleRepository extends JpaRepository<ActiviteFamille,String> {
+import com.arabsoft.gestion_adherent.entities.ActiviteFamille;
+
+public interface ActiviteFamilleRepository extends JpaRepository<ActiviteFamille, String> {
 }

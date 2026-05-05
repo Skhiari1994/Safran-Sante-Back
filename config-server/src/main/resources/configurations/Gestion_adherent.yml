@@ -5,7 +5,7 @@ spring:
     driver-class-name: oracle.jdbc.OracleDriver
     url: jdbc:oracle:thin:@//127.0.0.1:1521/DB11G
     username: assur
-    password: arab
+    password: assur
   jpa:
     hibernate:
       ddl-auto: none

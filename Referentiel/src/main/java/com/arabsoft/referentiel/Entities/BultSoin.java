@@ -1,11 +1,12 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
- import com.arabsoft.referentiel.Configurations.CustomLocalDateDeserializer;
-import com.arabsoft.referentiel.Entities.Cle.BultSoinCle;
+import com.arabsoft.referentiel.configurations.CustomLocalDateDeserializer;
+import com.arabsoft.referentiel.entities.cle.BultSoinCle;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -17,8 +18,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "bult_soin")
 @ToString
 @IdClass(BultSoinCle.class)
+@SuppressWarnings({ "java:S116" })
 public class BultSoin {
     @Id
     private String cod_soc;

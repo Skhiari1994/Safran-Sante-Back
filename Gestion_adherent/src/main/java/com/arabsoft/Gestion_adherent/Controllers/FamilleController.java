@@ -1,29 +1,29 @@
-package com.arabsoft.Gestion_adherent.Controllers;
+package com.arabsoft.gestion_adherent.controllers;
 
-import com.arabsoft.Gestion_adherent.Entities.ActiviteFamille;
-import com.arabsoft.Gestion_adherent.Entities.CarteSoinsPers;
-import com.arabsoft.Gestion_adherent.Entities.Famille;
-import com.arabsoft.Gestion_adherent.Projections.FamilleProjection;
-import com.arabsoft.Gestion_adherent.Repositories.ActiviteFamilleRepository;
-import com.arabsoft.Gestion_adherent.Repositories.CarteSoinsPersRepository;
-import com.arabsoft.Gestion_adherent.Repositories.FamilleRepository;
-import com.arabsoft.Gestion_adherent.Services.FamilleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.*;
+
+import com.arabsoft.gestion_adherent.entities.ActiviteFamille;
+import com.arabsoft.gestion_adherent.entities.CarteSoinsPers;
+import com.arabsoft.gestion_adherent.entities.Famille;
+import com.arabsoft.gestion_adherent.exceptions.FamilleCreationException;
+import com.arabsoft.gestion_adherent.projections.FamilleProjection;
+import com.arabsoft.gestion_adherent.repositories.ActiviteFamilleRepository;
+import com.arabsoft.gestion_adherent.repositories.CarteSoinsPersRepository;
+import com.arabsoft.gestion_adherent.repositories.FamilleRepository;
+
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/famille")
 public class FamilleController {
-    @Autowired
-    FamilleService familleService;
-    @Autowired
-    FamilleRepository familleRepository;
-    @Autowired
-    ActiviteFamilleRepository activiteFamilleRepository;
-    @Autowired
-    CarteSoinsPersRepository carteSoinsPersRepository;
+
+    private final FamilleRepository familleRepository;
+    private final ActiviteFamilleRepository activiteFamilleRepository;
+    private final CarteSoinsPersRepository carteSoinsPersRepository;
 
     @GetMapping("/getFamille/{codSoc}/{matPers}")
     List<Famille> getFamille(@PathVariable String codSoc, @PathVariable String matPers) {
@@ -47,7 +47,6 @@ public class FamilleController {
 
     @PostMapping("/saveFam")
     public void save(@RequestBody Famille f) {
-
         this.familleRepository.save(f);
     }
 
@@ -56,13 +55,6 @@ public class FamilleController {
         return this.familleRepository.getEnfants(codSoc, matPers);
     }
 
-    /*
-     * @GetMapping("/getConjoint/{codSoc}/{matPers}")
-     * List<FamilleProjection> getConjoint(@PathVariable String
-     * codSoc, @PathVariable String matPers){
-     * return this.familleRepository.getEnfants(codSoc,matPers);
-     * }
-     */
     @GetMapping("/getActivite")
     List<ActiviteFamille> getActivite() {
         return this.activiteFamilleRepository.findAll();
@@ -79,7 +71,7 @@ public class FamilleController {
     }
 
     @PostMapping("/AddEnfant")
-    public void AddNewLineEnfant(@RequestBody List<Famille> f) {
+    public void addNewLineEnfant(@RequestBody List<Famille> f) {
         try {
             // Get the cod_soc and mat_pers from the first element (all should have the same
             // values)
@@ -108,18 +100,15 @@ public class FamilleController {
             // Save all enfants in a single operation
             familleRepository.saveAll(f);
 
-        } catch (Exception e) {
-            System.err.println("Erreur lors de l'ajout des enfants: " + e.getMessage());
+        } catch (DataAccessException e) {
             e.printStackTrace();
-            throw new RuntimeException("Échec de l'enregistrement des enfants: " + e.getMessage(), e);
+            throw new FamilleCreationException("Échec de l'enregistrement des enfants: " + e.getMessage(), e);
         }
     }
 
     @PostMapping("/AddCarteSoin")
-    public void AddCarteSoin(@RequestBody List<CarteSoinsPers> f) {
-
+    public void addCarteSoin(@RequestBody List<CarteSoinsPers> f) {
         carteSoinsPersRepository.saveAll(f);
-
     }
 
     @DeleteMapping("/{soc}/{num}/{mat}")

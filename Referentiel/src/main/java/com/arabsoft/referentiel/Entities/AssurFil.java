@@ -1,11 +1,13 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
-import com.arabsoft.referentiel.Entities.Cle.AssurFilCle;
+import com.arabsoft.referentiel.entities.cle.AssurFilCle;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,9 +17,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString
 @Table(name = "assur_fil")
+@ToString
 @IdClass(AssurFilCle.class)
+@SuppressWarnings({ "java:S116" })
 public class AssurFil {
 
     @Id
@@ -45,4 +48,5 @@ public class AssurFil {
 
     @JsonProperty("prorat_pec")
     private String prorat_pec;
+
 }

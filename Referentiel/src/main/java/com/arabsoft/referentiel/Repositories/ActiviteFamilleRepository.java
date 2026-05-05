@@ -1,7 +1,7 @@
-package com.arabsoft.referentiel.Repositories;
+package com.arabsoft.referentiel.repositories;
 
- import com.arabsoft.referentiel.Entities.ActiviteFamille;
- import org.springframework.data.jpa.repository.JpaRepository;
+import com.arabsoft.referentiel.entities.ActiviteFamille;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ActiviteFamilleRepository extends JpaRepository<ActiviteFamille,String> {
+public interface ActiviteFamilleRepository extends JpaRepository<ActiviteFamille, String> {
 }

@@ -1,7 +1,8 @@
-package com.arabsoft.referentiel.Repositories;
+package com.arabsoft.referentiel.repositories;
 
- import com.arabsoft.referentiel.Entities.TypeDepart;
- import org.springframework.data.jpa.repository.JpaRepository;
+import com.arabsoft.referentiel.entities.TypeDepart;
 
-public interface TypeDepartRepository extends JpaRepository<TypeDepart,String> {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface TypeDepartRepository extends JpaRepository<TypeDepart, String> {
 }

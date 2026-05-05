@@ -1,18 +1,21 @@
-package com.arabsoft.reports.Controllers;
+package com.arabsoft.reports.controllers;
 
-import com.arabsoft.reports.Entities.ParamRub;
-import com.arabsoft.reports.Repositories.ParamRubDao;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.arabsoft.reports.entities.ParamRub;
+import com.arabsoft.reports.repositories.ParamRubDao;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/ParamRubController")
 public class ParamRubController {
 
-    @Autowired
-    private ParamRubDao paramRubRepository;
+    private final ParamRubDao paramRubRepository;
 
     @GetMapping
     public List<ParamRub> getAllParamRub() {
@@ -42,7 +45,7 @@ public class ParamRubController {
 
     @PutMapping("/{idRap}")
     public ResponseEntity<ParamRub> updateParamRub(@PathVariable Long idRap,
-                                                   @RequestBody ParamRub updatedParam) {
+            @RequestBody ParamRub updatedParam) {
 
         if (!paramRubRepository.existsById(idRap)) {
             return ResponseEntity.notFound().build();

@@ -1,7 +1,8 @@
-package com.arabsoft.reports.Repositories;
+package com.arabsoft.reports.repositories;
 
- import com.arabsoft.reports.Entities.PrmLieuGeographique;
- import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PrmLieuGeogRepository extends JpaRepository<PrmLieuGeographique,String> {
+import com.arabsoft.reports.entities.PrmLieuGeographique;
+
+public interface PrmLieuGeogRepository extends JpaRepository<PrmLieuGeographique, String> {
 }

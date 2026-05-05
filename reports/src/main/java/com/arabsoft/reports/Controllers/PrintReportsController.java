@@ -1,9 +1,7 @@
-package com.arabsoft.reports.Controllers;
+package com.arabsoft.reports.controllers;
 
-import com.arabsoft.reports.Services.PrintReportsService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.arabsoft.reports.services.PrintReportsService;
+
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -11,17 +9,21 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/Print")
+@SuppressWarnings({ "java:S106" })
 public class PrintReportsController {
 
-    @Autowired
-    PrintReportsService printReportsService;
+    private final PrintReportsService printReportsService;
 
     @PostMapping("/pdf")
     public ResponseEntity<Resource> genererPDF(@RequestParam Long numRap, @RequestBody Map<String, String> params) {
+        System.out.println("genererPDF @@@@@@ ");
         try {
             params.forEach((key, value) -> {
                 System.out.println("Parametre : " + key + ", Valeur : " + value);

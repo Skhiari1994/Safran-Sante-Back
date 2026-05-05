@@ -1,4 +1,4 @@
-package com.arabsoft.referentiel.Configurations;
+package com.arabsoft.referentiel.configurations;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -25,4 +25,3 @@ public class CustomLocalDateDeserializer extends JsonDeserializer<LocalDate> {
         }
     }
 }
-

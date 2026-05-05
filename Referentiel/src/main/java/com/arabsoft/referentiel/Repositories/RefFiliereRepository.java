@@ -1,12 +1,9 @@
-package com.arabsoft.referentiel.Repositories;
+package com.arabsoft.referentiel.repositories;
 
-import com.arabsoft.referentiel.Entities.Assurance;
-import com.arabsoft.referentiel.Entities.RefFiliere;
+import com.arabsoft.referentiel.entities.RefFiliere;
+
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-public interface RefFiliereRepository extends JpaRepository<RefFiliere,String> {
-
+public interface RefFiliereRepository extends JpaRepository<RefFiliere, String> {
 
 }

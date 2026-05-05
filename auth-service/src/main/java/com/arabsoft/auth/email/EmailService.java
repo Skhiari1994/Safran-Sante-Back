@@ -20,29 +20,28 @@ import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE
 @RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender ;
+    private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
+
     @Async
     public void sendEmail(
-         String to ,
-         String username ,
-         EmailTemplateName emailTemplate ,
-         String confirmationUrl ,
-         String activationCode ,
-         String subject
-    ) throws MessagingException {
-    String templateName ;
-    if (emailTemplate == null){
-       templateName = "confirm-email"  ;
-    }else {
-      templateName =emailTemplate.name();
-    }
+            String to,
+            String username,
+            EmailTemplateName emailTemplate,
+            String confirmationUrl,
+            String activationCode,
+            String subject) throws MessagingException {
+        String templateName;
+        if (emailTemplate == null) {
+            templateName = "confirm-email";
+        } else {
+            templateName = emailTemplate.name();
+        }
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
-                mimeMessage ,
-                MULTIPART_MODE_MIXED ,
-                UTF_8.name()
-          );
+                mimeMessage,
+                MULTIPART_MODE_MIXED,
+                UTF_8.name());
         Map<String, Object> properties = new HashMap<>();
         properties.put("username", username);
         properties.put("confirmationUrl", confirmationUrl);
@@ -64,24 +63,22 @@ public class EmailService {
 
     @Async
     public void sendEmailResetPassword(
-            String to ,
-            String username ,
-            EmailTemplateName emailTemplate ,
-            String confirmationUrl ,
-            String subject
-    ) throws MessagingException {
-        String templateName ;
-        if (emailTemplate == null){
-            templateName = "confirm-email"  ;
-        }else {
-            templateName =emailTemplate.name();
+            String to,
+            String username,
+            EmailTemplateName emailTemplate,
+            String confirmationUrl,
+            String subject) throws MessagingException {
+        String templateName;
+        if (emailTemplate == null) {
+            templateName = "confirm-email";
+        } else {
+            templateName = emailTemplate.name();
         }
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
-                mimeMessage ,
-                MULTIPART_MODE_MIXED ,
-                UTF_8.name()
-        );
+                mimeMessage,
+                MULTIPART_MODE_MIXED,
+                UTF_8.name());
         Map<String, Object> properties = new HashMap<>();
         properties.put("username", username);
         properties.put("confirmationUrl", confirmationUrl);
@@ -98,4 +95,4 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
- }
+}

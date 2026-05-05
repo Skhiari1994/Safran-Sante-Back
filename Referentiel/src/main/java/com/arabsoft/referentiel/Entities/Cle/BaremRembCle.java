@@ -1,4 +1,4 @@
-package com.arabsoft.referentiel.Entities.Cle;
+package com.arabsoft.referentiel.entities.cle;
 
 import lombok.*;
 
@@ -9,6 +9,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
+@SuppressWarnings({ "java:S116" })
 public class BaremRembCle implements Serializable {
 
     private String cod_fil;

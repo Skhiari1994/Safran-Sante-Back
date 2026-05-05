@@ -1,22 +1,32 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString
 @Table(name = "types_actes")
+@ToString
+@SuppressWarnings({ "java:S116" })
 public class TypesActes {
 
     @Id
     private String type_acte;
+
     private String lib_type_acte;
+
     private String lib_type_acte_a;
 
 }

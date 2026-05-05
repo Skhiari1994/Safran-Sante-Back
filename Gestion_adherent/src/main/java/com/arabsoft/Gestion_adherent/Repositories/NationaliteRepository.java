@@ -1,7 +1,8 @@
-package com.arabsoft.Gestion_adherent.Repositories;
+package com.arabsoft.gestion_adherent.repositories;
 
-import com.arabsoft.Gestion_adherent.Entities.Nationalite;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface NationaliteRepository extends JpaRepository<Nationalite,String> {
+import com.arabsoft.gestion_adherent.entities.Nationalite;
+
+public interface NationaliteRepository extends JpaRepository<Nationalite, String> {
 }

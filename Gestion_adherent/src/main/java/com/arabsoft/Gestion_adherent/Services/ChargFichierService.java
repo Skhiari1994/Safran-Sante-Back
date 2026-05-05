@@ -1,13 +1,15 @@
-package com.arabsoft.Gestion_adherent.Services;
+package com.arabsoft.gestion_adherent.services;
 
-import com.arabsoft.Gestion_adherent.DTO.ResponseProcedureCharge;
-import com.arabsoft.Gestion_adherent.Entities.FichSal;
-import com.arabsoft.Gestion_adherent.Entities.ResponseProcedure;
-import com.arabsoft.Gestion_adherent.Repositories.FichSalRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.arabsoft.gestion_adherent.dto.ResponseProcedureCharge;
+import com.arabsoft.gestion_adherent.entities.FichSal;
+import com.arabsoft.gestion_adherent.entities.ResponseProcedure;
+import com.arabsoft.gestion_adherent.repositories.FichSalRepository;
+
+import lombok.RequiredArgsConstructor;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -19,29 +21,37 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@SuppressWarnings({ "java:S117" })
 public class ChargFichierService {
-    @Autowired
-    private DataSource dataSource;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    FichSalRepository fichSalRepository;
 
-    public ResponseProcedureCharge lireFichierEtAppelerProcedure(String soc, String mois, MultipartFile file)
-            throws Exception {
-        List<String> lines = new BufferedReader(new InputStreamReader(file.getInputStream()))
-                .lines()
-                .collect(Collectors.toList());
+    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
+
+    private final FichSalRepository fichSalRepository;
+
+    public ResponseProcedureCharge lireFichierEtAppelerProcedure(
+            String soc,
+            String mois,
+            MultipartFile file) throws IOException, SQLException {
 
         int totalLignes = 0;
 
-        for (String line : lines) {
-            if (line.trim().startsWith("FIN"))
-                break;
-            totalLignes += appelerProcedureOraclePourLigne(soc, mois, line);
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream()))) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+
+                if (line.trim().startsWith("FIN")) {
+                    break;
+                }
+
+                totalLignes += appelerProcedureOraclePourLigne(soc, mois, line);
+            }
         }
 
         ResponseProcedureCharge resp = new ResponseProcedureCharge();
@@ -67,7 +77,7 @@ public class ChargFichierService {
         return lignesTransferees;
     }
 
-    public ResponseProcedure fichier_salarie(String wcodSoc, String nom_fichier, String etat_act) {
+    public ResponseProcedure fichierSalarie(String wcodSoc, String nom_fichier, String etat_act) {
         return jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call PK_GESTION_CREDIT.fichier_salarie(?, ?, ?, ?)}";
             try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {

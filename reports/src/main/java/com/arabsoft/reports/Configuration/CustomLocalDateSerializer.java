@@ -1,4 +1,4 @@
-package com.arabsoft.reports.Configuration;
+package com.arabsoft.reports.configuration;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

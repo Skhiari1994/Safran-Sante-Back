@@ -1,11 +1,14 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -14,18 +17,32 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "org_pret")
+@ToString
+@SuppressWarnings({ "java:S116" })
 public class OrgPret {
 
     @Id
-    private String  org_pret;
-    private String  typ_org	;
-    private String   lib_organisme;
-    private String   adr_organisme	;
-    private String   cod_post	;
-    private String  ville;
-    private String   resp_org;
-    private String   rib_org;
-    private String   typ_detach;
-    private String   num_cpt;
-    private String   cod_tier;
+    private String org_pret;
+
+    private String typ_org;
+
+    private String lib_organisme;
+
+    private String adr_organisme;
+
+    private String cod_post;
+
+    private String ville;
+
+    private String resp_org;
+
+    private String rib_org;
+
+    private String typ_detach;
+
+    private String num_cpt;
+
+    private String cod_tier;
+
 }

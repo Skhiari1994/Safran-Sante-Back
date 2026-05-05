@@ -22,19 +22,24 @@ import java.util.List;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id ;
+    private Integer id;
+
     @Column(unique = true)
     private String name;
+
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
-    private List<User> users ;
+    private List<User> users;
 
     @CreatedDate
-    @Column(nullable = false , updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;
+
     @LastModifiedDate
     @Column(insertable = false)
-    private LocalDateTime lastModifiedDate ;
+    private LocalDateTime lastModifiedDate;
+
 }

@@ -1,4 +1,4 @@
-package com.arabsoft.referentiel.Configurations;
+package com.arabsoft.referentiel.configurations;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

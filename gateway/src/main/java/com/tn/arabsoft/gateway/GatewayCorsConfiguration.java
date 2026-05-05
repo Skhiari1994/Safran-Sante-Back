@@ -27,11 +27,7 @@ public class GatewayCorsConfiguration {
             "http://192.168.2.93:4200",
             "http://192.168.2.93:8222",
             "http://172.16.20.111:8222",
-            "http://192.168.137.74:8222"
-
-
-
-    );
+            "http://192.168.137.74:8222");
 
     @Bean
     public WebFilter corsWebFilter() {

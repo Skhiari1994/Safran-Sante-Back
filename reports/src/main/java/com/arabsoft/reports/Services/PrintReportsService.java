@@ -1,8 +1,9 @@
-package com.arabsoft.reports.Services;
+package com.arabsoft.reports.services;
 
-import com.arabsoft.reports.Entities.RapportRub;
-import com.arabsoft.reports.Entities.ReponseGenererFich;
-import com.arabsoft.reports.Repositories.RapportRubDao;
+import com.arabsoft.reports.entities.RapportRub;
+import com.arabsoft.reports.entities.ReponseGenererFich;
+import com.arabsoft.reports.repositories.RapportRubDao;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -15,8 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -28,26 +27,27 @@ import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporterParameter;
 import net.sf.jasperreports.engine.JRExporterParameter;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.*;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class PrintReportsService {
 
-	@Autowired
-	private ConnectionBdReport bdReport;
-	@Autowired
-	RapportRubDao rubDao;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	private final ConnectionBdReport bdReport;
+	private final RapportRubDao rubDao;
+	private final JdbcTemplate jdbcTemplate;
 
 	public byte[] genererRapportPDF(Long numRap, Map<String, String> params) throws JRException, IOException {
+		System.out.println("numRap ::  " + numRap);
+		System.out.println("params ::  " + params);
 		JasperPrint jasperPrint = prepareJasperPrint(numRap, params);
+		System.out.println("jasperPrint ::  " + jasperPrint);
 		if (jasperPrint == null)
 			return null;
 
@@ -124,7 +124,6 @@ public class PrintReportsService {
 			}
 
 			String filePath = rapport.getPath_report() + "\\" + rapport.getLib_rap_jsp() + ".jrxml";
-			System.out.println("Chemin du fichier JRXML : " + filePath);
 
 			File jrxmlFile = new File(filePath);
 			if (!jrxmlFile.exists()) {
@@ -143,7 +142,7 @@ public class PrintReportsService {
 				parameters.put("titre", rapport.getTitre());
 			}
 
-			conn = bdReport.BdReport();
+			conn = bdReport.bdReport();
 			return JasperFillManager.fillReport(jasperReport, parameters, conn);
 		} catch (Exception ex) {
 			System.err.println("Erreur lors de la préparation du rapport : " + ex.getMessage());
@@ -160,7 +159,7 @@ public class PrintReportsService {
 		}
 	}
 
-	public ReponseGenererFich generer_fich(String soc, String mois, String corps, String wcodGrpPret, String wtypPret) {
+	public ReponseGenererFich genererFich(String soc, String mois, String corps, String wcodGrpPret, String wtypPret) {
 
 		return jdbcTemplate.execute((Connection connection) -> {
 			String procedureCall = "{call pk_gestion_credit.generer_fich(?, ?, ?, ?, ?,?)}";
@@ -172,10 +171,10 @@ public class PrintReportsService {
 				callableStatement.setString(5, wtypPret); // IN parameter
 				callableStatement.registerOutParameter(6, Types.VARCHAR);
 				callableStatement.execute();
-				String file_name = callableStatement.getString(6);
+				String fileName = callableStatement.getString(6);
 				ReponseGenererFich responseProcedure = new ReponseGenererFich();
 
-				responseProcedure.setFileName(file_name);
+				responseProcedure.setFileName(fileName);
 				return responseProcedure;
 			}
 		});
@@ -186,7 +185,7 @@ public class PrintReportsService {
 				"SELECT ligne FROM generer_fich ORDER BY ordre",
 				String.class);
 
-		Workbook workbook = new HSSFWorkbook(); // Pour .xls
+		Workbook workbook = new HSSFWorkbook();
 		Sheet sheet = workbook.createSheet("Prêts");
 
 		int rowNum = 0;

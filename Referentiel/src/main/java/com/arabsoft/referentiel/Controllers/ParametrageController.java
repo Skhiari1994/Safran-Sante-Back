@@ -1,16 +1,17 @@
-package com.arabsoft.referentiel.Controllers;
+package com.arabsoft.referentiel.controllers;
 
+import com.arabsoft.referentiel.entities.*;
+import com.arabsoft.referentiel.entities.cle.AssurActivCle;
+import com.arabsoft.referentiel.entities.cle.AssurFilCle;
+import com.arabsoft.referentiel.entities.cle.BaremRembCle;
 
-import com.arabsoft.referentiel.Entities.*;
-import com.arabsoft.referentiel.Entities.Cle.AssurActivCle;
-import com.arabsoft.referentiel.Entities.Cle.AssurFilCle;
-import com.arabsoft.referentiel.Entities.Cle.BaremRembCle;
-import com.arabsoft.referentiel.Projections.AssurActivProjection;
-import com.arabsoft.referentiel.Projections.AssurFilProjection;
-import com.arabsoft.referentiel.Projections.BaremeRembProjection;
-import com.arabsoft.referentiel.Repositories.*;
-import com.netflix.discovery.converters.Auto;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.arabsoft.referentiel.projections.AssurActivProjection;
+import com.arabsoft.referentiel.projections.AssurFilProjection;
+import com.arabsoft.referentiel.projections.BaremeRembProjection;
+import com.arabsoft.referentiel.repositories.*;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,46 +19,37 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/Parametrage")
+@SuppressWarnings({ "java:S100", "java:S117" })
 public class ParametrageController {
 
-    @Autowired
-    private AssuranceRepository assuranceRepository;
+    private final AssuranceRepository assuranceRepository;
 
-    @Autowired
-    private AssurActivRepository assurActivRepository;
+    private final AssurActivRepository assurActivRepository;
 
-    @Autowired
-    private AssurFilRepository assurFilRepository;
+    private final AssurFilRepository assurFilRepository;
 
-    @Autowired
-    private RefFiliereRepository refFiliereRepository;
+    private final RefFiliereRepository refFiliereRepository;
 
-    @Autowired
-    private ActiviteFamilleRepository activiteFamilleRepository;
+    private final ActiviteFamilleRepository activiteFamilleRepository;
 
-    @Autowired
-    private TypesActesRepository typesActesRepository;
+    private final TypesActesRepository typesActesRepository;
 
-    @Autowired
-    private ActeRepository acteRepository;
+    private final ActeRepository acteRepository;
 
-    @Autowired
-    private BaremRembRepository repository;
+    private final BaremRembRepository repository;
 
+    private final ActiviteEtablisRepository activiteEtablisRepository;
 
-    @Autowired
-    private ActiviteEtablisRepository activiteEtablisRepository;
-    @Autowired
-    RefEtablisRepository refEtablisRepository;
+    private final RefEtablisRepository refEtablisRepository;
+
     @PostMapping("/Assurance")
     public ResponseEntity<Assurance> createOrUpdateAssurance(@RequestBody Assurance assurance) {
         Assurance savedAssurance = assuranceRepository.save(assurance);
         return ResponseEntity.ok(savedAssurance);
     }
-
 
     @GetMapping("/Assurance/{cod_assur}")
     public ResponseEntity<Assurance> getAssuranceById(@PathVariable String cod_assur) {
@@ -65,13 +57,11 @@ public class ParametrageController {
         return assurance.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/Assurance")
     public ResponseEntity<List<Assurance>> getAllAssurances() {
         List<Assurance> assurances = assuranceRepository.findAll();
         return ResponseEntity.ok(assurances);
     }
-
 
     @DeleteMapping("/Assurance/{cod_assur}")
     public ResponseEntity<Void> deleteAssurance(@PathVariable String cod_assur) {
@@ -103,10 +93,9 @@ public class ParametrageController {
         return new ResponseEntity<>(savedAssurActiv, HttpStatus.CREATED);
     }
 
-
     @PutMapping("/AssureActive/{codActivite}/{codAssur}")
     public ResponseEntity<AssurActiv> updateAssurActiv(@PathVariable String codActivite, @PathVariable String codAssur,
-                                                       @RequestBody AssurActiv updatedAssurActiv) {
+            @RequestBody AssurActiv updatedAssurActiv) {
         AssurActivCle cle = new AssurActivCle();
         cle.setCod_activite(codActivite);
         cle.setCod_assur(codAssur);
@@ -122,7 +111,6 @@ public class ParametrageController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-
 
     @DeleteMapping("/AssureActive/{codActivite}/{codAssur}")
     public ResponseEntity<Void> deleteAssurActiv(@PathVariable String codActivite, @PathVariable String codAssur) {
@@ -140,16 +128,13 @@ public class ParametrageController {
         }
     }
 
-
-
-    //AssurFil
-// Create
+    // AssurFil
+    // Create
     @PostMapping("/AssurFil")
     public ResponseEntity<AssurFil> createAssurFil(@RequestBody AssurFil filiere) {
         AssurFil savedAssurFil = assurFilRepository.save(filiere);
         return new ResponseEntity<>(savedAssurFil, HttpStatus.CREATED);
     }
-
 
     @GetMapping("/AssurFilMutuelle/{cod_assur}")
     public List<AssurFilProjection> getAssurFilDetails(@PathVariable String cod_assur) {
@@ -160,6 +145,7 @@ public class ParametrageController {
     public List<AssurActivProjection> getAssurActivDetails(@PathVariable String cod_assur) {
         return assurActivRepository.GetListAssurActiv(cod_assur);
     }
+
     // Read
     @GetMapping("/AssurFil/{codAssur}/{codFil}")
     public ResponseEntity<AssurFil> getAssurFil(@PathVariable String codAssur, @PathVariable String codFil) {
@@ -176,7 +162,7 @@ public class ParametrageController {
     // Update
     @PutMapping("/AssurFil/{codAssur}/{codFil}")
     public ResponseEntity<AssurFil> updateAssurFil(@PathVariable String codAssur, @PathVariable String codFil,
-                                                   @RequestBody AssurFil updatedAssurFil) {
+            @RequestBody AssurFil updatedAssurFil) {
         AssurFilCle cle = new AssurFilCle();
         cle.setCod_assur(codAssur);
         cle.setCod_fil(codFil);
@@ -254,20 +240,17 @@ public class ParametrageController {
         return ResponseEntity.ok(savedTypesActes);
     }
 
-
     @GetMapping("/TypesActes/{type_acte}")
     public ResponseEntity<TypesActes> getTypesActesById(@PathVariable String type_acte) {
         Optional<TypesActes> typesActes = typesActesRepository.findById(type_acte);
         return typesActes.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/TypesActes")
     public ResponseEntity<List<TypesActes>> getAllTypesActes() {
         List<TypesActes> typesActes = typesActesRepository.findAll();
         return ResponseEntity.ok(typesActes);
     }
-
 
     @DeleteMapping("/TypesActes/{type_acte}")
     public ResponseEntity<Void> deleteTypesActes(@PathVariable String type_acte) {
@@ -277,13 +260,11 @@ public class ParametrageController {
 
     // Controller Acte
 
-
     @PostMapping("/Acte")
     public ResponseEntity<Acte> createOrUpdateActe(@RequestBody Acte acte) {
         Acte savedActe = acteRepository.save(acte);
         return ResponseEntity.ok(savedActe);
     }
-
 
     @GetMapping("/Acte/{abrv_act}")
     public ResponseEntity<Acte> getActesById(@PathVariable String abrv_act) {
@@ -291,13 +272,11 @@ public class ParametrageController {
         return acte.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/Acte")
     public ResponseEntity<List<Acte>> getAllActes() {
         List<Acte> acte = acteRepository.findAll();
         return ResponseEntity.ok(acte);
     }
-
 
     @DeleteMapping("/Acte/{abrv_act}")
     public ResponseEntity<Void> deleteActes(@PathVariable String abrv_act) {
@@ -305,7 +284,7 @@ public class ParametrageController {
         return ResponseEntity.noContent().build();
     }
 
-    //BaremeRemb
+    // BaremeRemb
     // Récupérer tous les enregistrements
     @GetMapping("/bareme-remb")
     public ResponseEntity<List<BaremeRemb>> getAll() {
@@ -316,8 +295,6 @@ public class ParametrageController {
     public ResponseEntity<List<BaremeRembProjection>> getAllBareme() {
         return ResponseEntity.ok(repository.getAllBareme());
     }
-
-
 
     // Récupérer un enregistrement par clé composite
     @GetMapping("/bareme-remb/{cod_fil}/{abrv_act}/{cod_assur}")
@@ -375,14 +352,14 @@ public class ParametrageController {
         return ResponseEntity.noContent().build();
     }
 
-    //activité établiss controllerrr
+    // activité établiss controllerrr
 
     @PostMapping("/ActiviteEtabliss")
-    public ResponseEntity<ActiviteEtablis> createOrUpdateActiviteEtabliss(@RequestBody ActiviteEtablis activiteEtablis) {
+    public ResponseEntity<ActiviteEtablis> createOrUpdateActiviteEtabliss(
+            @RequestBody ActiviteEtablis activiteEtablis) {
         ActiviteEtablis savedActiviteEtablis = activiteEtablisRepository.save(activiteEtablis);
         return ResponseEntity.ok(savedActiviteEtablis);
     }
-
 
     @GetMapping("/ActiviteEtabliss/{cod_activ}")
     public ResponseEntity<ActiviteEtablis> getActiviteEtablisById(@PathVariable String cod_activ) {
@@ -390,13 +367,11 @@ public class ParametrageController {
         return activiteEtablis.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/ActiviteEtabliss")
     public ResponseEntity<List<ActiviteEtablis>> getAllActiviteEtablis() {
         List<ActiviteEtablis> ActiviteEtabliss = activiteEtablisRepository.findAll();
         return ResponseEntity.ok(ActiviteEtabliss);
     }
-
 
     @DeleteMapping("/ActiviteEtabliss/{cod_activ}")
     public ResponseEntity<Void> deleteActiviteEtablis(@PathVariable String cod_activ) {
@@ -405,12 +380,13 @@ public class ParametrageController {
     }
 
     @GetMapping("/getPersPhysiqueParamMutuelle")
-    public List<RefEtablis> getPersPhysique(){
+    public List<RefEtablis> getPersPhysique() {
         return refEtablisRepository.getPersPhysiqueParamMutuelle();
     }
 
     @GetMapping("/getEtablissParamMutuelle")
-    public List<RefEtablis> getEtabliss(){
+    public List<RefEtablis> getEtabliss() {
         return refEtablisRepository.getEtablissParamMutuelle();
     }
+
 }

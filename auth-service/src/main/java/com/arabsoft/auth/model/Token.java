@@ -22,19 +22,22 @@ public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqUser")
     @SequenceGenerator(name = "seqUser", sequenceName = "SEQ_TOKEN", allocationSize = 1)
-    private Integer id ;
-    @Column(name="token")
-    private String token ;
-    @Column(name="created_at")
+    private Integer id;
 
-    private LocalDateTime createdAt ;
-    @Column(name="expires_at")
+    @Column(name = "token")
+    private String token;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;
-    @Column(name="validated_at")
+
+    @Column(name = "validated_at")
     private LocalDateTime validatedAt;
 
     @ManyToOne
-    @JoinColumn(name="userid" , nullable = false)
+    @JoinColumn(name = "userid", nullable = false)
     private User user;
 
     @Override
@@ -48,4 +51,5 @@ public class Token {
                 ", user=" + user +
                 '}';
     }
+
 }

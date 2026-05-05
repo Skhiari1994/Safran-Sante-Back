@@ -1,4 +1,4 @@
-package com.arabsoft.reports.Configuration;
+package com.arabsoft.reports.configuration;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;

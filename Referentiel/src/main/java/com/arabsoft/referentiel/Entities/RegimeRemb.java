@@ -1,8 +1,14 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.*;
+import jakarta.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -11,16 +17,26 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "regime_remb")
 @ToString
+@SuppressWarnings({ "java:S116" })
 public class RegimeRemb {
+
     @Id
     private String reg_remb;
-    private String  lib_remb;
-    private String  lib_remb_a;
-    private String  dat_accouch;
-    private String  apci;
+
+    private String lib_remb;
+
+    private String lib_remb_a;
+
+    private String dat_accouch;
+
+    private String apci;
+
     private String pec;
-    private String sexe	;
-    private String  parente	;
+
+    private String sexe;
+
+    private String parente;
 
 }

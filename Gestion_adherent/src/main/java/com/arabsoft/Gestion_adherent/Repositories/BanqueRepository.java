@@ -1,11 +1,8 @@
-package com.arabsoft.Gestion_adherent.Repositories;
+package com.arabsoft.gestion_adherent.repositories;
 
-import com.arabsoft.Gestion_adherent.Entities.Agence;
-import com.arabsoft.Gestion_adherent.Entities.Banque;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.arabsoft.gestion_adherent.entities.Banque;
 
-public interface BanqueRepository extends JpaRepository<Banque,String> {
-
+public interface BanqueRepository extends JpaRepository<Banque, String> {
 }

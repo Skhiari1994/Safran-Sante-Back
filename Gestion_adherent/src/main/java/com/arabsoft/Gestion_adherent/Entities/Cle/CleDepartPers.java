@@ -1,11 +1,19 @@
-package com.arabsoft.Gestion_adherent.Entities.Cle;
+package com.arabsoft.gestion_adherent.entities.cle;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
-public class CleDepartPers implements Serializable {
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@SuppressWarnings({ "java:S116" })
+public class CleDepartPers {
+
+    private String cod_soc;
+
+    private String mat_pers;
 
     private LocalDate dat_depart;
-    private String cod_soc;
-    private String  mat_pers;
+
 }

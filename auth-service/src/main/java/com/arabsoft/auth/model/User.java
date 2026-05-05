@@ -144,7 +144,8 @@ public class User implements UserDetails, Principal {
         return use_type;
     }
 
-    public String fullName(){
+    public String fullName() {
         return use_fname + " " + use_lname;
     }
+
 }

@@ -1,4 +1,4 @@
-package com.arabsoft.reports.Entities;
+package com.arabsoft.reports.entities;
 
 import lombok.Getter;
 import lombok.Setter;

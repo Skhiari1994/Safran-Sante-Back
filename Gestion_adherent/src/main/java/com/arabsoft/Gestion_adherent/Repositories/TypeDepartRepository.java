@@ -1,7 +1,8 @@
-package com.arabsoft.Gestion_adherent.Repositories;
+package com.arabsoft.gestion_adherent.repositories;
 
-import com.arabsoft.Gestion_adherent.Entities.TypeDepart;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TypeDepartRepository extends JpaRepository<TypeDepart,String> {
+import com.arabsoft.gestion_adherent.entities.TypeDepart;
+
+public interface TypeDepartRepository extends JpaRepository<TypeDepart, String> {
 }

@@ -1,8 +1,9 @@
-package com.arabsoft.referentiel.Repositories;
+package com.arabsoft.referentiel.repositories;
 
- import com.arabsoft.referentiel.Entities.RefVisit;
- import org.springframework.data.jpa.repository.JpaRepository;
+import com.arabsoft.referentiel.entities.RefVisit;
 
-public interface RefVisitRepository extends JpaRepository<RefVisit,String> {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RefVisitRepository extends JpaRepository<RefVisit, String> {
 
 }

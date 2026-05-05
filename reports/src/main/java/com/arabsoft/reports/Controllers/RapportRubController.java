@@ -1,21 +1,23 @@
-package com.arabsoft.reports.Controllers;
+package com.arabsoft.reports.controllers;
 
-import com.arabsoft.reports.Entities.RapportRub;
-import com.arabsoft.reports.Repositories.RapportRubDao;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.arabsoft.reports.entities.RapportRub;
+import com.arabsoft.reports.repositories.RapportRubDao;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/RapportRubController")
 public class RapportRubController {
 
-    @Autowired
-    private RapportRubDao rapportRubRepository;
+    private final RapportRubDao rapportRubRepository;
 
     @GetMapping("/findAll")
     public List<RapportRub> getAllRapports() {

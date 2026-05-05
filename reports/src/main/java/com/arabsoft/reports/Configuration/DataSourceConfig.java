@@ -1,4 +1,4 @@
-package com.arabsoft.reports.Configuration;
+package com.arabsoft.reports.configuration;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;

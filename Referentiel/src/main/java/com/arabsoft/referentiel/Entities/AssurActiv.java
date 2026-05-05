@@ -1,6 +1,6 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
-import com.arabsoft.referentiel.Entities.Cle.AssurActivCle;
+import com.arabsoft.referentiel.entities.cle.AssurActivCle;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,18 +13,23 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString
 @Table(name = "assur_activ")
+@ToString
 @IdClass(AssurActivCle.class)
+@SuppressWarnings({ "java:S116" })
 public class AssurActiv {
+
     @Id
     @JsonProperty("cod_activite")
     private String cod_activite;
+
     @Id
     @JsonProperty("cod_assur")
     private String cod_assur;
+
     @JsonProperty("age_max")
     private Integer age_max;
+
     @JsonProperty("age_alert")
     private Integer age_alert;
 

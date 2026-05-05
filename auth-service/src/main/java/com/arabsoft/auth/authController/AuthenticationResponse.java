@@ -11,8 +11,8 @@ import java.util.List;
 @Setter
 @Builder
 public class AuthenticationResponse {
-    private String token ;
-    private List<Role>roles;
+    private String token;
+    private List<Role> roles;
     private String useLogin;
     private String matPers;
     private String codSoc;

@@ -1,11 +1,12 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
- import com.arabsoft.referentiel.Configurations.CustomLocalDateDeserializer;
- import com.arabsoft.referentiel.Entities.Cle.BordEnvoiCle;
+import com.arabsoft.referentiel.configurations.CustomLocalDateDeserializer;
+import com.arabsoft.referentiel.entities.cle.BordEnvoiCle;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -17,8 +18,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "bord_envoi")
 @ToString
 @IdClass(BordEnvoiCle.class)
+@SuppressWarnings({ "java:S116" })
 public class BordEnvoi {
 
     @Id
@@ -40,6 +43,5 @@ public class BordEnvoi {
     private String reg_bord;
     private String tot_remb;
     private String envoi_bord;
-
 
 }

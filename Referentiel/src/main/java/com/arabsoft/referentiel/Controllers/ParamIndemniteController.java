@@ -1,36 +1,40 @@
-package com.arabsoft.referentiel.Controllers;
+package com.arabsoft.referentiel.controllers;
 
-import com.arabsoft.referentiel.Entities.NatureDon;
-import com.arabsoft.referentiel.Entities.NatureDonMotif;
-import com.arabsoft.referentiel.Projections.AffectationProjection;
-import com.arabsoft.referentiel.Projections.CompteIndParamProjection;
-import com.arabsoft.referentiel.Projections.NatureDonProjection;
-import com.arabsoft.referentiel.Repositories.NatureDonMotifRepository;
-import com.arabsoft.referentiel.Repositories.NatureDonRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.arabsoft.referentiel.entities.NatureDon;
+import com.arabsoft.referentiel.entities.NatureDonMotif;
+import com.arabsoft.referentiel.projections.AffectationProjection;
+import com.arabsoft.referentiel.projections.CompteIndParamProjection;
+import com.arabsoft.referentiel.projections.NatureDonProjection;
+import com.arabsoft.referentiel.repositories.NatureDonMotifRepository;
+import com.arabsoft.referentiel.repositories.NatureDonRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/CompteIndParam")
+@SuppressWarnings({ "java:S100", "java:S117" })
 public class ParamIndemniteController {
 
-    @Autowired
-    NatureDonRepository natureDonRepository;
-    @Autowired
-    NatureDonMotifRepository natureDonMotifRepository;
+    private final NatureDonRepository natureDonRepository;
 
+    private final NatureDonMotifRepository natureDonMotifRepository;
 
     @GetMapping("/typind")
-    List<CompteIndParamProjection> CompteIndParam(){
+    List<CompteIndParamProjection> CompteIndParam() {
         return natureDonRepository.getListCompte();
     }
+
     @PostMapping("/addNatDon")
-    public NatureDon addNatDon(@RequestBody  NatureDon natDonList) {
+    public NatureDon addNatDon(@RequestBody NatureDon natDonList) {
         return natureDonRepository.save(natDonList);
     }
+
     @GetMapping("/getNatDon")
     public List<NatureDon> getNatDon() {
         return natureDonRepository.findAll();
@@ -61,6 +65,5 @@ public class ParamIndemniteController {
                     .body("Item not found with ID: " + id);
         }
     }
-
 
 }

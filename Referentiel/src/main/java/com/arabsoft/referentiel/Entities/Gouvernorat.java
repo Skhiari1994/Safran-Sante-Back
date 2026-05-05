@@ -1,11 +1,14 @@
-package com.arabsoft.referentiel.Entities;
+package com.arabsoft.referentiel.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -14,10 +17,16 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "gouvernorat")
+@ToString
+@SuppressWarnings({ "java:S116" })
 public class Gouvernorat {
-     @Id
+
+    @Id
     private String cod_gouv;
-    private String  lib_gouv;
-    private String  lib_gouv_a;
+
+    private String lib_gouv;
+
+    private String lib_gouv_a;
 
 }

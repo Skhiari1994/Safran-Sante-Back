@@ -1,8 +1,8 @@
-package com.arabsoft.referentiel.Repositories;
+package com.arabsoft.referentiel.repositories;
 
- import com.arabsoft.referentiel.Entities.Banque;
- import org.springframework.data.jpa.repository.JpaRepository;
+import com.arabsoft.referentiel.entities.Banque;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BanqueRepository extends JpaRepository<Banque,String> {
+public interface BanqueRepository extends JpaRepository<Banque, String> {
 
 }

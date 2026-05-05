@@ -1,4 +1,4 @@
-package com.arabsoft.referentiel.Configurations;
+package com.arabsoft.referentiel.configurations;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
