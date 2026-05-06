@@ -5,7 +5,9 @@ import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDat
 
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface BordEnvoiPrejection {
+
     String getCod_bord();
 
     String getCod_soc();

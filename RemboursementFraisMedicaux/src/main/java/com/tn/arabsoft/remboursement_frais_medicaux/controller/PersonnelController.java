@@ -121,8 +121,8 @@ public class PersonnelController {
     }
 
     @GetMapping("/getDossierMll")
-    List<DossierMldProjection> getDossierMll(@RequestParam String mat) {
-        return dossierMldRepository.getDossierMll(mat);
+    List<DossierMldProjection> getDossierMll(@RequestParam String soc, @RequestParam String mat) {
+        return dossierMldRepository.getDossierMll(soc, mat);
     }
 
     @GetMapping("/getNumDoss")

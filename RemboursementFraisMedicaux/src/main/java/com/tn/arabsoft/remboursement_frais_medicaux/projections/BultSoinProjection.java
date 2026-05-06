@@ -6,7 +6,9 @@ import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDat
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface BultSoinProjection {
+
     String getCod_soc();
 
     String getMat_pers();
@@ -72,11 +74,9 @@ public interface BultSoinProjection {
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     LocalDate getDat_nais();
 
-    // ADD THESE MISSING FIELDS:
-
     String getChoix();
 
-    String getNum_retr(); // Add this
+    String getNum_retr();
 
     String getNom_complet_pers();
 
@@ -84,7 +84,8 @@ public interface BultSoinProjection {
 
     String getLib_fill();
 
-    String getLib_remb(); // Add this
+    String getLib_remb();
 
     String getNom_adherent();
+
 }

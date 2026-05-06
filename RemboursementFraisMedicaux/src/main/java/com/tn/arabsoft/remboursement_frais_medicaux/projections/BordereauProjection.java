@@ -5,6 +5,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDat
 
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface BordereauProjection {
 
     String getCod_bord();

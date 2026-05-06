@@ -1,5 +1,6 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
+@SuppressWarnings({ "java:S100" })
 public interface LigPharProjection {
 
     String getLIB_MED();
@@ -13,4 +14,5 @@ public interface LigPharProjection {
     Double getPRIX_REMB();
 
     String getABRV_ACT();
+
 }

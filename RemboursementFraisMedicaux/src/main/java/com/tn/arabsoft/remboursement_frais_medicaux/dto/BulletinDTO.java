@@ -33,5 +33,5 @@ public class BulletinDTO {
 
     @JsonProperty("ord_bult")
     private int ordBult;
-    // Getters and setters
+
 }

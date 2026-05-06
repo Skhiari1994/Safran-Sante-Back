@@ -6,6 +6,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDat
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface PriseChargeProjection {
 
     String getCod_soc();
@@ -34,4 +35,5 @@ public interface PriseChargeProjection {
     String getNom();
 
     String getNomEtab();
+
 }

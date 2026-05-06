@@ -1,8 +1,8 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
-import java.time.LocalDate;
-
+@SuppressWarnings({ "java:S100" })
 public interface LovNumFilCnamLibre {
+
     String getNum_retr();
 
     String getMat_pers();

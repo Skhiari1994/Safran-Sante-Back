@@ -2,7 +2,9 @@ package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface LigBultArriverProjection {
+
     String getCod_bord();
 
     String getMat_pers();
@@ -56,4 +58,5 @@ public interface LigBultArriverProjection {
     Double getImput_plaf();
 
     String getLib_act();
+
 }

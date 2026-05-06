@@ -3,7 +3,9 @@ package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface LigActArriverProjection {
+
     LocalDate getDat_act();
 
     String getCod_act();
@@ -43,4 +45,5 @@ public interface LigActArriverProjection {
     String getAbrv_act();
 
     String getNum_lig();
+
 }

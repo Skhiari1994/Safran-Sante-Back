@@ -1,5 +1,6 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
+@SuppressWarnings({ "java:S100" })
 public interface PersonnelBultSoinProjection {
 
     String getNum_retr();
@@ -21,4 +22,5 @@ public interface PersonnelBultSoinProjection {
     String getLib_fill();
 
     String getNum_assur();
+
 }

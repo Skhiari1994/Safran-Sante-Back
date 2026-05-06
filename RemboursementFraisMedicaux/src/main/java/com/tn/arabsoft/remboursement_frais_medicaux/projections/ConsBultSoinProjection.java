@@ -6,7 +6,9 @@ import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDat
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface ConsBultSoinProjection {
+
     String getCod_soc();
 
     String getMat_pers();
@@ -69,7 +71,7 @@ public interface ConsBultSoinProjection {
 
     String getChoix();
 
-    String getNom_complet_pers(); // Concaténation nom + prénom
+    String getNom_complet_pers();
 
     String getLib_assur();
 

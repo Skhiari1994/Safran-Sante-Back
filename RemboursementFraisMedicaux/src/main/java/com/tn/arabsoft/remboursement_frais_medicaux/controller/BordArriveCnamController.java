@@ -16,8 +16,10 @@ import com.tn.arabsoft.remboursement_frais_medicaux.projections.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.BordArriverCnamService;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.FileProcessingService;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,8 +189,8 @@ public class BordArriveCnamController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return ligActArriverRepository.findLigActArriverById(cod_soc, mat_pers,
-                num_fam, dat_soin);
+        LocalDate dateSoin = LocalDate.parse(dat_soin);
+        return ligActArriverRepository.findLigActArriverById(cod_soc, mat_pers, num_fam, dateSoin);
     }
 
     @GetMapping("/LigMedArriverById")
@@ -205,13 +207,14 @@ public class BordArriveCnamController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return ligAppArriverRepository.findLigAppArriverById(cod_soc, mat_pers,
-                num_fam, dat_soin);
+        LocalDate dateSoin = DateParser.parse(dat_soin);
+        return ligAppArriverRepository.findLigAppArriverById(cod_soc, mat_pers, num_fam, dateSoin);
     }
 
     @GetMapping("/BultArriverByCodBord")
-    public ResponseEntity<List<BultArriverProjection>> getBultArriverByCodBord(@RequestParam String cod_bord) {
-        List<BultArriverProjection> bultArrivers = bultArriverRepository.findBultArriverByCodBord(cod_bord);
+    public ResponseEntity<List<BultArriverProjection>> getBultArriverByCodBord(@RequestParam String cod_soc,
+            @RequestParam String cod_bord) {
+        List<BultArriverProjection> bultArrivers = bultArriverRepository.findBultArriverByCodBord(cod_soc, cod_bord);
         if (bultArrivers.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -225,7 +228,9 @@ public class BordArriveCnamController {
             @RequestParam("numLig") String numLig, @RequestParam("datAct") String datAct,
             @RequestParam("codAct") String codAct) {
         try {
-            ligActArriverRepository.deleteLigActArriver(soc, mat, fam, datSoin, abrv, numLig, datAct, codAct);
+            LocalDate date_soin = LocalDate.parse(datSoin);
+            LocalDate date_acte = LocalDate.parse(datAct);
+            ligActArriverRepository.deleteLigActArriver(soc, mat, fam, date_soin, abrv, numLig, date_acte, codAct);
             Map<String, Object> response = new HashMap<>();
             response.put(KEY_SUCCESS, true);
             return ResponseEntity.ok(response);
@@ -243,7 +248,8 @@ public class BordArriveCnamController {
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam(value = "numLig", required = false) String numLig, @RequestParam("codApp") String codApp) {
         try {
-            ligAppArriverRepository.deleteLigAppArriver(soc, mat, fam, datSoin, abrv, numLig, codApp);
+            LocalDate dat_soin = DateParser.parse(datSoin);
+            ligAppArriverRepository.deleteLigAppArriver(soc, mat, fam, dat_soin, abrv, numLig, codApp);
             Map<String, Object> response = new HashMap<>();
             response.put(KEY_SUCCESS, true);
             return ResponseEntity.ok(response);
@@ -324,14 +330,15 @@ public class BordArriveCnamController {
             Long famLong = Long.parseLong(fam);
 
             // 1. Cleanup all detail tables
-            ligActArriverRepository.deleteByBulletin(soc, mat, famInt, datSoin);
+            LocalDate date_soin = DateParser.parse(datSoin);
+            ligActArriverRepository.deleteByBulletin(soc, mat, famInt, date_soin);
             ligVisitArriverRepository.deleteByBulletin(soc, mat, famLong, datSoin);
             ligMedArriverRepository.deleteByBulletin(soc, mat, famInt, datSoin);
-            ligAppArriverRepository.deleteByBulletin(soc, mat, famInt, datSoin);
+            ligAppArriverRepository.deleteByBulletin(soc, mat, famInt, date_soin);
             ligBultArriverRepository.deleteByBulletin(soc, mat, fam, datSoin);
 
             // 2. Delete the bulletin header
-            bultArriverRepository.deleteBulletin(soc, mat, fam, datSoin);
+            bultArriverRepository.deleteBulletin(soc, mat, fam, date_soin);
 
             response.put(KEY_SUCCESS, true);
             response.put(KEY_MESSAGE, "Bulletin and all details deleted successfully");
@@ -377,7 +384,8 @@ public class BordArriveCnamController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return bultArriverRepository.findBultArriverById(cod_soc, mat_pers, num_fam, dat_soin);
+        LocalDate dateSoin = DateParser.parse(dat_soin);
+        return bultArriverRepository.findBultArriverById(cod_soc, mat_pers, num_fam, dateSoin);
     }
 
     @PostMapping("/upload-file")

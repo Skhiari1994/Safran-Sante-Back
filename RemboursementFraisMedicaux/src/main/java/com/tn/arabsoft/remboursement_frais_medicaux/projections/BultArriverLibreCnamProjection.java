@@ -5,6 +5,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDat
 
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface BultArriverLibreCnamProjection {
 
     String getAnn_plaf_imp();
@@ -82,4 +83,5 @@ public interface BultArriverLibreCnamProjection {
     Double getTot_remb_med();
 
     String getTyp_bult();
+
 }

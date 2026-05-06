@@ -12,6 +12,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.projections.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.BulletinSoinService;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -371,13 +372,15 @@ public class BulletinSoinController {
     @GetMapping("/getLigBultAct")
     public List<LigBultAct> getLigBultAct(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultActRepository.getLigBultAct(soc, mat, numFam, datSoin);
+        LocalDate dat_soin = DateParser.parse(datSoin);
+        return ligBultActRepository.getLigBultAct(soc, mat, Long.valueOf(numFam), dat_soin);
     }
 
     @GetMapping("/getLigBultActCons")
     public List<LigBultActProjection> getLigBultActCons(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultActRepository.getLigBultActCons(soc, mat, numFam, datSoin);
+        LocalDate dat_soin = DateParser.parse(datSoin);
+        return ligBultActRepository.getLigBultActCons(soc, mat, Long.valueOf(numFam), dat_soin);
     }
 
     @GetMapping("/getLigBultVisit")
@@ -421,7 +424,11 @@ public class BulletinSoinController {
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig, @RequestParam("datAct") String datAct,
             @RequestParam("codAct") String codAct) {
-        ligBultActRepository.deleteLigBultAct(soc, mat, fam, datSoin, abrv, numLig, datAct, codAct);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        LocalDate date_acte = DateParser.parse(datAct);
+        Long num_prest = Long.valueOf(fam);
+        Long numero_ligne = Long.valueOf(numLig);
+        ligBultActRepository.deleteLigBultAct(soc, mat, num_prest, date_soin, abrv, numero_ligne, date_acte, codAct);
     }
 
     @DeleteMapping("/deleteLigBultApp")

@@ -20,10 +20,14 @@ import java.time.LocalDate;
 public class UpdateBultSoinDTO {
 
     private String cod_soc;
+
     private String mat_pers;
+
     private String num_fam;
+
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     private LocalDate dat_soin;
+
     private String envoi;
 
 }

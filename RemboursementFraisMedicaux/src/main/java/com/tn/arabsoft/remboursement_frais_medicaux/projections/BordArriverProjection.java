@@ -1,10 +1,10 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface BordArriverProjection {
+
     String getCod_bord();
 
     LocalDate getDat_bord();

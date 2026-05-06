@@ -9,5 +9,7 @@ import java.util.List;
 
 @Repository
 public interface CnamFichDataRepository extends JpaRepository<CnamFichData, CnamFichData.CnamFichDataId> {
+
     List<CnamFichData> findBySeqOrderByLigne(Long seq);
+
 }

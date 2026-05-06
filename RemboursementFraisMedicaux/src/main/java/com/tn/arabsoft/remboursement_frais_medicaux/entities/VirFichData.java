@@ -2,14 +2,13 @@ package com.tn.arabsoft.remboursement_frais_medicaux.entities;
 
 import jakarta.persistence.*;
 import java.util.Date;
-import java.io.Serializable;
-import java.util.Objects;
 
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.VirFichDataId;
 
 @Entity
-@Table(name = "VIR_FICH_DATA")
+@Table(name = "vir_fich_data")
 public class VirFichData {
+
     @EmbeddedId
     private VirFichDataId id;
 

@@ -1,12 +1,11 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface BultArriverProjection {
+
     LocalDate getDat_saisie();
 
     String getCod_soc();
@@ -50,4 +49,5 @@ public interface BultArriverProjection {
     String getCod_bord();
 
     String getReg_remb();
+
 }

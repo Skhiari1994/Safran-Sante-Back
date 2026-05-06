@@ -8,6 +8,9 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.CnamFileGen;
 import java.util.Optional;
 
 @Repository
+@SuppressWarnings({ "java:S117" })
 public interface CnamFileGenRepository extends JpaRepository<CnamFileGen, Long> {
+
     Optional<CnamFileGen> findByCodSocAndCodBord(String cod_soc, String cod_bord);
+
 }

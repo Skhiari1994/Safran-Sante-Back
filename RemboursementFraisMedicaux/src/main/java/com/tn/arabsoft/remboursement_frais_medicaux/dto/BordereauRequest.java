@@ -2,32 +2,15 @@ package com.tn.arabsoft.remboursement_frais_medicaux.dto;
 
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 public class BordereauRequest {
+
     private String codBord;
+
     private String codSoc;
+
     private List<BulletinDTO> bulletins;
 
-    public String getCodBord() {
-        return codBord;
-    }
-
-    public void setCodBord(String codBord) {
-        this.codBord = codBord;
-    }
-
-    public String getCodSoc() {
-        return codSoc;
-    }
-
-    public void setCodSoc(String codSoc) {
-        this.codSoc = codSoc;
-    }
-
-    public List<BulletinDTO> getBulletins() {
-        return bulletins;
-    }
-
-    public void setBulletins(List<BulletinDTO> bulletins) {
-        this.bulletins = bulletins;
-    }
 }

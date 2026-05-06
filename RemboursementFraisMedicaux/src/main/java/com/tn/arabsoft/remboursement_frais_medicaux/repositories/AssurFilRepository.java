@@ -8,5 +8,4 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.AssurFilCle;
 
 @Repository
 public interface AssurFilRepository extends JpaRepository<AssurFil, AssurFilCle> {
-
 }

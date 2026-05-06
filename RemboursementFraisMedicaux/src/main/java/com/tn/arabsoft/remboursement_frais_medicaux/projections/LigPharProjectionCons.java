@@ -3,7 +3,9 @@ package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface LigPharProjectionCons {
+
     String getCod_soc();
 
     String getMat_pers();
@@ -49,4 +51,5 @@ public interface LigPharProjectionCons {
     String getLib_med();
 
     String getLib_etablis();
+
 }

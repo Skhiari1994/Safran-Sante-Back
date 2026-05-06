@@ -8,5 +8,4 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.AssurActivCle;
 
 @Repository
 public interface AssurActivRepository extends JpaRepository<AssurActiv, AssurActivCle> {
-
 }

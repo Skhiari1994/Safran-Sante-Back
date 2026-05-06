@@ -15,6 +15,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.ResponsePr
 import com.tn.arabsoft.remboursement_frais_medicaux.projections.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.ReglementService;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -75,7 +76,6 @@ public class ReglementController {
     @GetMapping("/getBultSoinCpt")
     public List<ControleBordCnamProjection> getBultSoinCpt(@RequestParam String cod_soc,
             @RequestParam String cod_bord) {
-        System.out.println("test @@@@@@@@@@@@@@@@@@");
         return bultSoinRepository.getBultSoinCpt(cod_soc, cod_bord);
     }
 
@@ -183,7 +183,8 @@ public class ReglementController {
     @PutMapping("/MajModPayCnam/{modPay}")
     BultArriver majModPayCnam(@RequestParam String soc, @RequestParam String mat, @RequestParam Integer numFam,
             @RequestParam String dat, @PathVariable String modPay) {
-        BultArriver bultArriver = this.bultArriverRepository.findBultArriverById(soc, mat, numFam, dat);
+        LocalDate dateSoin = DateParser.parse(dat);
+        BultArriver bultArriver = this.bultArriverRepository.findBultArriverById(soc, mat, numFam, dateSoin);
         bultArriver.setMod_pay(modPay);
         return bultArriverRepository.save(bultArriver);
     }

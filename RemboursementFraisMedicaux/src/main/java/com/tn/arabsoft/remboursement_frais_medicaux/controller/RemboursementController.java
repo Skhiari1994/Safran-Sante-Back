@@ -12,6 +12,8 @@ import com.tn.arabsoft.remboursement_frais_medicaux.projections.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.LigService;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.RemboursementService;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.RequiredArgsConstructor;
@@ -144,12 +146,14 @@ public class RemboursementController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return bultArriverRepository.findBultArriverById(cod_soc, mat_pers, num_fam, dat_soin);
+        LocalDate dateSoin = DateParser.parse(dat_soin);
+        return bultArriverRepository.findBultArriverById(cod_soc, mat_pers, num_fam, dateSoin);
     }
 
     @GetMapping("/BultArriverByCodBord")
-    public ResponseEntity<List<BultArriverProjection>> getBultArriverByCodBord(@RequestParam String cod_bord) {
-        return ResponseEntity.ok(bultArriverRepository.findBultArriverByCodBord(cod_bord));
+    public ResponseEntity<List<BultArriverProjection>> getBultArriverByCodBord(@RequestParam String cod_soc,
+            @RequestParam String cod_bord) {
+        return ResponseEntity.ok(bultArriverRepository.findBultArriverByCodBord(cod_soc, cod_bord));
     }
 
     @GetMapping("/BultArriverByCodBord4")
@@ -212,8 +216,8 @@ public class RemboursementController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return ligActArriverRepository.findLigActArriverById(cod_soc, mat_pers,
-                num_fam, dat_soin);
+        LocalDate dateSoin = DateParser.parse(dat_soin);
+        return ligActArriverRepository.findLigActArriverById(cod_soc, mat_pers, num_fam, dateSoin);
     }
 
     @GetMapping("/LigActArriver")
@@ -300,8 +304,8 @@ public class RemboursementController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return ligAppArriverRepository.findLigAppArriverById(cod_soc, mat_pers,
-                num_fam, dat_soin);
+        LocalDate dateSoin = DateParser.parse(dat_soin);
+        return ligAppArriverRepository.findLigAppArriverById(cod_soc, mat_pers, num_fam, dateSoin);
     }
 
     @GetMapping("/LigAppArriver")

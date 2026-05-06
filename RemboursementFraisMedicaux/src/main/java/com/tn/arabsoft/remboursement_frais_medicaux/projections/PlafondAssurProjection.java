@@ -1,9 +1,8 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
-import jakarta.persistence.Id;
-
 import java.math.BigDecimal;
 
+@SuppressWarnings({ "java:S100" })
 public interface PlafondAssurProjection {
 
     Long getAnnee_assur();

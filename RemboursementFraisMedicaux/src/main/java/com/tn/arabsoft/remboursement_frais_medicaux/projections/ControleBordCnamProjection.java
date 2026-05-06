@@ -3,6 +3,7 @@ package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface ControleBordCnamProjection {
 
     String getMat_pers();
@@ -32,4 +33,5 @@ public interface ControleBordCnamProjection {
     LocalDate getDat_vir();
 
     BigDecimal getTot_remb();
+
 }

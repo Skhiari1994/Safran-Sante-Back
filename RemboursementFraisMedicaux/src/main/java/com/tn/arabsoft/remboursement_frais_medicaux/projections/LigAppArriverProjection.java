@@ -3,7 +3,9 @@ package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface LigAppArriverProjection {
+
     LocalDate getDat_act();
 
     String getCod_app();
@@ -35,4 +37,5 @@ public interface LigAppArriverProjection {
     String getAbrv_act();
 
     String getNum_pec_app();
+
 }

@@ -3,7 +3,9 @@ package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings({ "java:S100" })
 public interface LigBultVisitProjection {
+
         String getCod_soc();
 
         String getMat_pers();
@@ -41,4 +43,5 @@ public interface LigBultVisitProjection {
         String getLib_visit();
 
         String getLib_etablis();
+
 }
