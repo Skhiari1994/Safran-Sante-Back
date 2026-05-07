@@ -6,45 +6,86 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tn.arabsoft.remboursement_frais_medicaux.entities.LigBultMed;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.LigBultVisit;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.CleLigBultVisit;
 import com.tn.arabsoft.remboursement_frais_medicaux.projections.LigBultVisitProjection;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface LigBultVisitRepository extends JpaRepository<LigBultVisit, CleLigBultVisit> {
 
-        @Query(value = "select * from lig_bult_visit where cod_soc=:soc and mat_pers=:mat and num_fam=:numFam and dat_soin=:datSoin", nativeQuery = true)
-        List<LigBultVisit> getLigBultVisit(@Param("soc") String soc, @Param("mat") String mat,
-                        @Param("numFam") String numFam, @Param("datSoin") String datSoin);
+        @Query(value = """
+                        select *
+                          from lig_bult_visit
+                         where cod_soc = :soc
+                           and mat_pers = :mat
+                           and num_fam = :numFam
+                           and dat_soin = :datSoin
+                        """, nativeQuery = true)
+        List<LigBultVisit> getLigBultVisit(
+                        @Param("soc") String soc,
+                        @Param("mat") String mat,
+                        @Param("numFam") Integer numFam,
+                        @Param("datSoin") LocalDate datSoin);
 
-        @Query(value = "select t.cod_soc,\n" +
-                        "       t.mat_pers,\n" +
-                        "       t.num_fam,\n" +
-                        "       t.dat_soin,\n" +
-                        "       t.abrv_act,\n" +
-                        "       t.cod_visit,\n" +
-                        "       t.num_lig,\n" +
-                        "       t.mnt_honor,\n" +
-                        "       t.mnt_remb,\n" +
-                        "       t.mnt_net,\n" +
-                        "       t.indice,\n" +
-                        "       t.dat_act,\n" +
-                        "       t.prf_typ,\n" +
-                        "       t.prf_cod,\n" +
-                        "       t.prix_visit,\n" +
-                        "       t.taux_remb,\n" +
-                        "       t.mut_mnt_net,\n" +
-                        "       (select lib_visit from ref_visit r where r.cod_visit=t.cod_visit)lib_visit,\n" +
-                        "       (select ETAB_RSOC ||' '|| PR_RSOC  from ref_etablis e where e.prf_typ=t.prf_typ and e.prf_cod=t.prf_cod)lib_etablis from lig_bult_visit t  where cod_soc=:soc and mat_pers=:mat and num_fam=:numFam and dat_soin=:datSoin", nativeQuery = true)
-        List<LigBultVisitProjection> getLigBultVisitCons(@Param("soc") String soc, @Param("mat") String mat,
-                        @Param("numFam") String numFam, @Param("datSoin") String datSoin);
+        @Query(value = """
+                        select
+                            t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            t.abrv_act,
+                            t.cod_visit,
+                            t.num_lig,
+                            t.mnt_honor,
+                            t.mnt_remb,
+                            t.mnt_net,
+                            t.indice,
+                            t.dat_act,
+                            t.prf_typ,
+                            t.prf_cod,
+                            t.prix_visit,
+                            t.taux_remb,
+                            t.mut_mnt_net,
+                            r.lib_visit,
+                            concat(coalesce(e.etab_rsoc, ''), concat(' ', coalesce(e.pr_rsoc, ''))) as lib_etablis
+                        from lig_bult_visit t
+                        left join ref_visit r
+                               on r.cod_visit = t.cod_visit
+                        left join ref_etablis e
+                               on e.prf_typ = t.prf_typ
+                              and e.prf_cod = t.prf_cod
+                        where t.cod_soc = :soc
+                          and t.mat_pers = :mat
+                          and t.num_fam = :numFam
+                          and t.dat_soin = :datSoin
+                        """, nativeQuery = true)
+        List<LigBultVisitProjection> getLigBultVisitCons(
+                        @Param("soc") String soc,
+                        @Param("mat") String mat,
+                        @Param("numFam") Integer numFam,
+                        @Param("datSoin") LocalDate datSoin);
 
         @Modifying
         @Transactional
-        @Query(value = "delete from lig_bult_visit where   cod_soc=:soc and mat_pers=:mat and num_fam=:fam and dat_soin=:datSoin and abrv_act=:abrv and dat_act=:datAct and cod_visit=:codVisit", nativeQuery = true)
-        void deleteLigBultVisit(@Param("soc") String soc, @Param("mat") String mat, @Param("fam") String fam,
-                        @Param("datSoin") String datSoin, @Param("abrv") String abrv, @Param("datAct") String datAct,
+        @Query(value = """
+                        delete from lig_bult_visit
+                         where cod_soc = :soc
+                           and mat_pers = :mat
+                           and num_fam = :fam
+                           and dat_soin = :datSoin
+                           and abrv_act = :abrv
+                           and dat_act = :datAct
+                           and cod_visit = :codVisit
+                        """, nativeQuery = true)
+        void deleteLigBultVisit(
+                        @Param("soc") String soc,
+                        @Param("mat") String mat,
+                        @Param("fam") Integer fam,
+                        @Param("datSoin") LocalDate datSoin,
+                        @Param("abrv") String abrv,
+                        @Param("datAct") LocalDate datAct,
                         @Param("codVisit") String codVisit);
+
 }

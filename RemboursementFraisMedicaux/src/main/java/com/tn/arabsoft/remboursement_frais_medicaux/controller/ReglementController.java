@@ -120,9 +120,13 @@ public class ReglementController {
     @GetMapping("/getLigBultArriver")
     public ResponseEntity<List<LigBultArriverProjection>> getLigBultArriver(@RequestParam String soc,
             @RequestParam String mat, @RequestParam String numFam, @RequestParam String datSoin) {
-        List<LigBultArriverProjection> bultArriverReg = ligBultArriverRepository.getLigBultArriver(soc, mat, numFam,
-                datSoin);
-
+        Integer prestInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        List<LigBultArriverProjection> bultArriverReg = ligBultArriverRepository.getLigBultArriver(soc, mat, prestInt,
+                date_soin);
+        if (bultArriverReg.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(bultArriverReg);
     }
 
@@ -154,7 +158,7 @@ public class ReglementController {
     @GetMapping("/vir_bord")
     public ResponseProcedure virBord(@RequestParam String soc, @RequestParam String codBord,
             @RequestParam String nomFichier) {
-        return reglementService.vir_bord(soc, codBord, nomFichier);
+        return reglementService.virBord(soc, codBord, nomFichier);
 
     }
 
@@ -162,7 +166,7 @@ public class ReglementController {
     public ResponseEntity<FileSystemResource> downloadFile(
             @RequestParam(defaultValue = "C:/vir/virements.txt") String filePath, @RequestParam String fileName) {
         // Générer le fichier
-        reglementService.generateVirementFile(filePath, fileName);
+        reglementService.generateVirementFile(filePath);
 
         // Vérifier si le fichier existe
         File file = new File(filePath);

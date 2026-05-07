@@ -11,67 +11,89 @@ import java.util.List;
 
 public interface RefEtablisRepository extends JpaRepository<RefEtablis, CleRefEtablis> {
 
-        @Query(value = "select * from ref_etablis where PRF_TYP = '2' AND COnv_cnam = 'O'", nativeQuery = true)
+        @Query(value = """
+                        select *
+                        from ref_etablis
+                        where prf_typ = '2'
+                          and conv_cnam = 'O'
+                        """, nativeQuery = true)
         List<RefEtablis> getRefEtablis();
 
-        @Query(value = "select * from ref_etablis where PRF_TYP = '1' AND COnv_cnam = 'O'", nativeQuery = true)
+        @Query(value = """
+                        select *
+                        from ref_etablis
+                        where prf_typ = '1'
+                          and conv_cnam = 'O'
+                        """, nativeQuery = true)
         List<RefEtablis> getPersPhysique();
 
-        @Query(value = " select t.prf_typ,  \n" +
-                        "       t.prf_cod,\n" +
-                        "       t.prf_cle,\n" +
-                        "      t.ETAB_RSOC||' '||t.PR_RSOC etab_rsoc  ,\n" +
-                        "       t.pr_rsoc,\n" +
-                        "       t.etab_rsoc_a,\n" +
-                        "       t.pr_rsoc_a,\n" +
-                        "       t.met_etab,\n" +
-                        "       t.comp_etab,\n" +
-                        "       t.adr_etablis,\n" +
-                        "       t.cod_post,\n" +
-                        "       t.cod_gouv,\n" +
-                        "       t.conv_etab,\n" +
-                        "       t.dat_conv_etab,\n" +
-                        "       t.rib_etab,\n" +
-                        "       t.ref_conv_etat,\n" +
-                        "       t.adr_etablis_a,\n" +
-                        "       t.cod_activ,\n" +
-                        "       t.conv_cnam,\n" +
-                        "       t.tel_etablis,\n" +
-                        "       t.fax_etablis,\n" +
-                        "       t.email_etablis,\n" +
-                        "       t.resp,\n" +
-                        "       t.resp_a,\n" +
-                        "       t.etat_act_mut,\n" +
-                        "       t.etat_act_cnam \n" +
-                        "from ref_etablis t  where PRF_TYP =:refTyp", nativeQuery = true)
+        @Query(value = """
+                        select
+                            t.prf_typ,
+                            t.prf_cod,
+                            t.prf_cle,
+                            concat(coalesce(t.etab_rsoc, ''), concat(' ', coalesce(t.pr_rsoc, ''))) as etab_rsoc,
+                            t.pr_rsoc,
+                            t.etab_rsoc_a,
+                            t.pr_rsoc_a,
+                            t.met_etab,
+                            t.comp_etab,
+                            t.adr_etablis,
+                            t.cod_post,
+                            t.cod_gouv,
+                            t.conv_etab,
+                            t.dat_conv_etab,
+                            t.rib_etab,
+                            t.ref_conv_etat,
+                            t.adr_etablis_a,
+                            t.cod_activ,
+                            t.conv_cnam,
+                            t.tel_etablis,
+                            t.fax_etablis,
+                            t.email_etablis,
+                            t.resp,
+                            t.resp_a,
+                            t.etat_act_mut,
+                            t.etat_act_cnam
+                        from ref_etablis t
+                        where t.prf_typ = :refTyp
+                        """, nativeQuery = true)
         List<RefEtablis> getRefEtablis(@Param("refTyp") String refTyp);
 
-        @Query(value = " select t.prf_typ,  \n" +
-                        "       t.prf_cod,\n" +
-                        "       t.prf_cle,\n" +
-                        "      t.ETAB_RSOC||' '||t.PR_RSOC etab_rsoc  ,\n" +
-                        "       t.pr_rsoc,\n" +
-                        "       t.etab_rsoc_a,\n" +
-                        "       t.pr_rsoc_a,\n" +
-                        "       t.met_etab,\n" +
-                        "       t.comp_etab,\n" +
-                        "       t.adr_etablis,\n" +
-                        "       t.cod_post,\n" +
-                        "       t.cod_gouv,\n" +
-                        "       t.conv_etab,\n" +
-                        "       t.dat_conv_etab,\n" +
-                        "       t.rib_etab,\n" +
-                        "       t.ref_conv_etat,\n" +
-                        "       t.adr_etablis_a,\n" +
-                        "       t.cod_activ,\n" +
-                        "       t.conv_cnam,\n" +
-                        "       t.tel_etablis,\n" +
-                        "       t.fax_etablis,\n" +
-                        "       t.email_etablis,\n" +
-                        "       t.resp,\n" +
-                        "       t.resp_a,\n" +
-                        "       t.etat_act_mut,\n" +
-                        "       t.etat_act_cnam \n" +
-                        "from ref_etablis t  where PRF_TYP =:refTyp and t.prf_cod=:prfCod", nativeQuery = true)
-        RefEtablis getRefEtablisByCode(@Param("prfCod") String prfCod, @Param("refTyp") String refTyp);
+        @Query(value = """
+                        select
+                            t.prf_typ,
+                            t.prf_cod,
+                            t.prf_cle,
+                            concat(coalesce(t.etab_rsoc, ''), concat(' ', coalesce(t.pr_rsoc, ''))) as etab_rsoc,
+                            t.pr_rsoc,
+                            t.etab_rsoc_a,
+                            t.pr_rsoc_a,
+                            t.met_etab,
+                            t.comp_etab,
+                            t.adr_etablis,
+                            t.cod_post,
+                            t.cod_gouv,
+                            t.conv_etab,
+                            t.dat_conv_etab,
+                            t.rib_etab,
+                            t.ref_conv_etat,
+                            t.adr_etablis_a,
+                            t.cod_activ,
+                            t.conv_cnam,
+                            t.tel_etablis,
+                            t.fax_etablis,
+                            t.email_etablis,
+                            t.resp,
+                            t.resp_a,
+                            t.etat_act_mut,
+                            t.etat_act_cnam
+                        from ref_etablis t
+                        where t.prf_typ = :refTyp
+                          and t.prf_cod = :prfCod
+                        """, nativeQuery = true)
+        RefEtablis getRefEtablisByCode(
+                        @Param("prfCod") String prfCod,
+                        @Param("refTyp") String refTyp);
+
 }

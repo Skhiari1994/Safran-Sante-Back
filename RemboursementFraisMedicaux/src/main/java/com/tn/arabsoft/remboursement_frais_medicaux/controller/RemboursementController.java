@@ -53,7 +53,7 @@ public class RemboursementController {
     @GetMapping("/initialisationPlafond")
     void suspPret(@RequestParam String soc, @RequestParam String annee, @RequestParam String mat_deb,
             @RequestParam String mat_fin) {
-        remboursementService.InitialtionPlafond(soc, annee, mat_deb, mat_fin);
+        remboursementService.initialtionPlafond(soc, annee, mat_deb, mat_fin);
     }
 
     @GetMapping("/BordArriver")
@@ -406,8 +406,7 @@ public class RemboursementController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return ligMedArriverRepository.findLigMedArriverById(cod_soc, mat_pers,
-                num_fam, dat_soin);
+        return ligMedArriverRepository.findLigMedArriverById(cod_soc, mat_pers, num_fam, DateParser.parse(dat_soin));
     }
 
     @DeleteMapping("/LigMedArriver/{cod_soc}/{mat_pers}/{num_fam}/{dat_soin}")
@@ -435,8 +434,8 @@ public class RemboursementController {
             @RequestParam String mat_pers,
             @RequestParam Integer num_fam,
             @RequestParam String dat_soin) {
-        return ligVisitArriverRepository.findLigVisitArriverById(cod_soc,
-                mat_pers, num_fam, dat_soin);
+        LocalDate date_soin_sql = DateParser.parse(dat_soin);
+        return ligVisitArriverRepository.findLigVisitArriverById(cod_soc, mat_pers, num_fam, date_soin_sql);
     }
 
     @PostMapping("/LigVisitArriver/batch")
@@ -622,19 +621,19 @@ public class RemboursementController {
 
     @GetMapping("/regler_bord")
     public ReponseRegBord reglerBord(@RequestParam String cod_soc, @RequestParam String cod_bord) {
-        return remboursementService.regler_bord(cod_soc, cod_bord);
+        return remboursementService.reglerBord(cod_soc, cod_bord);
     }
 
     @GetMapping("/cloture_bord")
     public ReponseCloture clotureBord(@RequestParam String cod_soc, @RequestParam String cod_bord,
             @RequestParam String cod_assur) {
-        return remboursementService.cloture_bord(cod_soc, cod_assur, cod_bord);
+        return remboursementService.clotureBord(cod_soc, cod_assur, cod_bord);
     }
 
     @GetMapping("/cloture_bord_vir")
     public ReponseCloture clotureBordVir(@RequestParam String cod_soc, @RequestParam String cod_bord,
             @RequestParam String cod_assur) {
-        return remboursementService.cloture_bord_vir(cod_soc, cod_assur, cod_bord);
+        return remboursementService.clotureBordVir(cod_soc, cod_assur, cod_bord);
     }
 
     @GetMapping("/BultArriveLibrCnam")

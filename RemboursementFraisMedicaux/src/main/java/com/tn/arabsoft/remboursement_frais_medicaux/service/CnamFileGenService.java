@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings({ "java:S117" })
 public class CnamFileGenService {
     private final CnamFileGenRepository fileGenRepository;
 

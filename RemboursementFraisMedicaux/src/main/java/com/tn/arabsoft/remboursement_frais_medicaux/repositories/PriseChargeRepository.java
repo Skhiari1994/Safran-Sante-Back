@@ -14,37 +14,51 @@ import java.util.List;
 
 public interface PriseChargeRepository extends JpaRepository<PriseCharge, ClePriseCharge> {
 
-    @Query(value = "\n" +
-            "select t.cod_soc,\n" +
-            "       t.mat_pers,\n" +
-            "       t.num_pec,\n" +
-            "       t.dat_pec,\n" +
-            "       t.num_fam,\n" +
-            "       t.etat_pec,\n" +
-            "       t.prf_typ,\n" +
-            "       t.prf_cod,\n" +
-            "       t.mnt_pec,\n" +
-            "       t.mnt_remb,\n" +
-            "       t.dat_eff,\n" +
-            "       CASE\n" +
-            "         WHEN t.num_fam <> 0 THEN\n" +
-            "          (SELECT nom_pren\n" +
-            "             FROM famille\n" +
-            "            WHERE cod_soc = t.cod_soc\n" +
-            "              AND mat_pers = t.mat_pers\n" +
-            "              AND num_fam = t.num_fam)\n" +
-            "         ELSE\n" +
-            "          'Adhérent'\n" +
-            "       END AS nom,\n" +
-            "       (select ETAB_RSOC || ' ' || PR_RSOC\n" +
-            "          from ref_etablis\n" +
-            "         where PRF_TYP = t.prf_typ\n" +
-            "           and PRF_COD = t.PRF_COD) nomEtab\n" +
-            "  from prise_charge t where t.cod_soc=:soc and t.mat_pers=:mat ORDER BY t.dat_pec DESC\n", nativeQuery = true)
-    List<PriseChargeProjection> getPriseCharge(@Param("soc") String soc, @Param("mat") String mat);
+    @Query(value = """
+            select
+                t.cod_soc,
+                t.mat_pers,
+                t.num_pec,
+                t.dat_pec,
+                t.num_fam,
+                t.etat_pec,
+                t.prf_typ,
+                t.prf_cod,
+                t.mnt_pec,
+                t.mnt_remb,
+                t.dat_eff,
+                case
+                    when t.num_fam <> 0 then f.nom_pren
+                    else 'Adhérent'
+                end as nom,
+                concat(coalesce(r.etab_rsoc, ''), concat(' ', coalesce(r.pr_rsoc, ''))) as nomEtab
+            from prise_charge t
+            left join famille f
+                   on f.cod_soc = t.cod_soc
+                  and f.mat_pers = t.mat_pers
+                  and f.num_fam = t.num_fam
+            left join ref_etablis r
+                   on r.prf_typ = t.prf_typ
+                  and r.prf_cod = t.prf_cod
+            where t.cod_soc = :soc
+              and t.mat_pers = :mat
+            order by t.dat_pec desc
+            """, nativeQuery = true)
+    List<PriseChargeProjection> getPriseCharge(
+            @Param("soc") String soc,
+            @Param("mat") String mat);
 
     @Modifying
     @Transactional
-    @Query(value = "delete from prise_charge where   cod_soc=:soc and mat_pers=:mat and num_pec=:pec", nativeQuery = true)
-    void deletePriseCharge(@Param("soc") String soc, @Param("mat") String mat, @Param("pec") String pec);
+    @Query(value = """
+            delete from prise_charge
+            where cod_soc = :soc
+              and mat_pers = :mat
+              and num_pec = :pec
+            """, nativeQuery = true)
+    void deletePriseCharge(
+            @Param("soc") String soc,
+            @Param("mat") String mat,
+            @Param("pec") String pec);
+
 }

@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface MaladieRepository extends JpaRepository<Maladie, String> {
 
-    @Query(value = "select * \n" +
-            "from maladie\n" +
-            "where APCI = 'O'", nativeQuery = true)
+    @Query(value = "select * from maladie where apci = 'O'", nativeQuery = true)
     List<Maladie> getMaladie();
 }

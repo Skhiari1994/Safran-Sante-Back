@@ -2,12 +2,10 @@ package com.tn.arabsoft.remboursement_frais_medicaux.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import com.tn.arabsoft.remboursement_frais_medicaux.repositories.BordEnvoiRepository;
-import com.tn.arabsoft.remboursement_frais_medicaux.repositories.CnamFichDataRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.CallableStatement;
@@ -18,23 +16,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 @Service
+@RequiredArgsConstructor
 public class CnamFichDataService {
+
     private static final Logger log = LoggerFactory.getLogger(CnamFichDataService.class);
 
-    @Autowired
-    private CnamFichDataRepository repository;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private BordEnvoiRepository bordEnvoiRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public Map<String, Object> generateCnamFichFile(String codSoc, String codBord) {
         String procedureCall = "{call PK_BORD_ARRIVER.PREP_FICH_CNAM(?, ?, ?, ?)}"; // 2 IN, 2 OUT
         Map<String, Object> response = new HashMap<>();
 
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+        DataSource dataSource = jdbcTemplate.getDataSource();
+
+        if (dataSource == null) {
+            throw new IllegalStateException("DataSource is not configured");
+        }
+
+        try (Connection connection = dataSource.getConnection();
                 CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
 
             // Set input parameters
@@ -97,7 +99,6 @@ public class CnamFichDataService {
 
         if (rows.isEmpty()) {
             log.warn("No data found for sequence: {}", seq);
-            throw new RuntimeException("No data found for sequence: " + seq);
         }
 
         log.debug("Retrieved {} records for seq: {}", rows.size(), seq);
@@ -111,9 +112,8 @@ public class CnamFichDataService {
             content.append(ligne).append("\n");
         }
 
-        if (content.length() == 0) {
+        if (content.isEmpty()) {
             log.error("No valid data to generate file for seq: {}", seq);
-            throw new RuntimeException("No valid data to generate file for seq: " + seq);
         }
 
         String updateSql = "UPDATE CNAM_FICH_DATA SET status = 'PROCESSED' WHERE seq_ = ?";

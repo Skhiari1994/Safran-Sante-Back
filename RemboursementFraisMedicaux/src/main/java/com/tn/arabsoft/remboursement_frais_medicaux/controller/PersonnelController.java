@@ -35,12 +35,52 @@ public class PersonnelController {
 
     @GetMapping("/getAdherent")
     List<AdherentProjection> getAdherent(@RequestParam String soc, @RequestParam String mat) {
-        return personnelRepository.getListAdherent(soc, mat);
+        List<AdherentProjection> list = personnelRepository.getListAdherent(soc, mat);
+
+        // Add synthetic row in Java
+        list.add(new AdherentProjection() {
+            @Override
+            public Integer getNum_fam() {
+                return 0;
+            }
+
+            @Override
+            public String getNOM_PREN() {
+                return "Adhérent";
+            }
+
+            @Override
+            public String getDat_nais() {
+                return null;
+            }
+        });
+
+        return list;
     }
 
     @GetMapping("/getListAdherentDossMld")
     List<AdherentProjection> getListAdherentDossMld(@RequestParam String soc, @RequestParam String mat) {
-        return personnelRepository.getListAdherentDossMld(soc, mat);
+        List<AdherentProjection> list = personnelRepository.getListAdherentDossMld(soc, mat);
+
+        // Add synthetic row in Java
+        list.add(new AdherentProjection() {
+            @Override
+            public Integer getNum_fam() {
+                return 0;
+            }
+
+            @Override
+            public String getNOM_PREN() {
+                return "Adhérent";
+            }
+
+            @Override
+            public String getDat_nais() {
+                return null;
+            }
+        });
+
+        return list;
     }
 
     @GetMapping("/getPersonnelBultSoinSaisie")
@@ -75,19 +115,19 @@ public class PersonnelController {
     @GetMapping("/calPlafondMutuelle")
     ResponseProcedure calPlafondMutuelle(@RequestParam String wcodSoc, @RequestParam Long annee,
             @RequestParam String matDeb, @RequestParam String matFin) {
-        return adherentService.cal_plafond_mutuelle(wcodSoc, annee, matDeb, matFin);
+        return adherentService.calPlafondMutuelle(wcodSoc, annee, matDeb, matFin);
     }
 
     @GetMapping("/calPlafondCnam")
     ResponseProcedure calPlafondCnam(@RequestParam String wcodSoc, @RequestParam String annee,
             @RequestParam String matDeb, @RequestParam String matFin) {
-        return adherentService.cal_plafond_cnam(wcodSoc, annee, matDeb, matFin);
+        return adherentService.calPlafondCnam(wcodSoc, annee, matDeb, matFin);
     }
 
     @GetMapping("/majPecEnf")
     ResponseProcedure majPecEnf(@RequestParam String wcodSoc, @RequestParam String annee, @RequestParam String matDeb,
             @RequestParam String matFin) {
-        return adherentService.maj_pec_enf(wcodSoc, annee, matDeb, matFin);
+        return adherentService.majPecEnf(wcodSoc, annee, matDeb, matFin);
     }
 
     @GetMapping("/GetAllPers")
@@ -189,7 +229,8 @@ public class PersonnelController {
     @GetMapping("/getListAdherentFamille")
     List<AdherentProjection> getListAdherentFamille(@RequestParam String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam) {
-        return this.personnelRepository.getListAdherentFamille(soc, mat, fam);
+        Integer famInt = fam != null ? Integer.parseInt(fam) : null;
+        return this.personnelRepository.getListAdherentFamille(soc, mat, famInt);
     }
 
 }

@@ -1,32 +1,30 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.service;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.VirBord;
-import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.ReponseDatNais;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.ReponseReglerBord;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.ResponseProcedure;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.VirBordRepository;
 
+import lombok.RequiredArgsConstructor;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Types;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ReglementService {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    VirBordRepository virBordRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final VirBordRepository virBordRepository;
 
     @Transactional
     public ReponseReglerBord reglerBord(String soc, String codBord, String codAssur) {
@@ -51,12 +49,12 @@ public class ReglementService {
         });
     }
 
-    public ResponseProcedure vir_bord(String wcodSoc, String cod_bord_, String nomFichier) {
+    public ResponseProcedure virBord(String wcodSoc, String codBord, String nomFichier) {
         return jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call PK_REGLEMENT.vir_bord(?, ?, ?, ?)}";
             try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
                 callableStatement.setString(1, wcodSoc); // IN parameter
-                callableStatement.setString(2, cod_bord_); // IN parameter
+                callableStatement.setString(2, codBord); // IN parameter
                 callableStatement.setString(3, nomFichier); // IN parameter
                 callableStatement.registerOutParameter(4, Types.VARCHAR);
                 callableStatement.execute(); // Exécuted la procédure stockée
@@ -70,31 +68,31 @@ public class ReglementService {
         });
     }
 
-    public void majRegAdh(String wcodSoc, String cod_bord_) {
+    public void majRegAdh(String wcodSoc, String codBord) {
         jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call PK_REGLEMENT.majRegAdh(?, ?)}";
             try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
                 callableStatement.setString(1, wcodSoc); // IN parameter
-                callableStatement.setString(2, cod_bord_); // IN parameter
+                callableStatement.setString(2, codBord); // IN parameter
                 callableStatement.execute(); // Exécuter la procédure stockée
             }
             return null; // Nécessaire car execute() attend un retour
         });
     }
 
-    public void majRegAdhVirCnam(String wcodSoc, String cod_bord_) {
+    public void majRegAdhVirCnam(String wcodSoc, String codBord) {
         jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call PK_REGLEMENT.majRegAdhVirCnam(?, ?)}";
             try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
                 callableStatement.setString(1, wcodSoc); // IN parameter
-                callableStatement.setString(2, cod_bord_); // IN parameter
+                callableStatement.setString(2, codBord); // IN parameter
                 callableStatement.execute(); // Exécuter la procédure stockée
             }
             return null; // Nécessaire car execute() attend un retour
         });
     }
 
-    public String generateVirementFile(String filePath, String fileName) {
+    public String generateVirementFile(String filePath) {
         List<VirBord> virements = virBordRepository.findAllByOrderByOrdreAsc();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {

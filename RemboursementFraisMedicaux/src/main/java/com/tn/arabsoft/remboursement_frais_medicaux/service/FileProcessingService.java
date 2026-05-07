@@ -1,20 +1,31 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 @Service
+@RequiredArgsConstructor
+@SuppressWarnings({ "java:S1141", "java:S6909" })
 public class FileProcessingService {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+
+    private final JdbcTemplate jdbcTemplate;
 
     public void loadFile(String[] lines, String codSoc) throws SQLException {
-        try (Connection conn = jdbcTemplate.getDataSource().getConnection()) {
+        DataSource dataSource = jdbcTemplate.getDataSource();
+
+        if (dataSource == null) {
+            throw new IllegalStateException("DataSource is not configured");
+        }
+
+        try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 // Process each line

@@ -115,13 +115,17 @@ public class BulletinSoinController {
     @GetMapping("/getLigBult")
     public List<LigBult> getLigBult(@RequestParam String soc, @RequestParam String mat, @RequestParam String numFam,
             @RequestParam String datSoin) {
-        return ligBultRepository.getLigBult(soc, mat, numFam, datSoin);
+        Integer famInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        return ligBultRepository.getLigBult(soc, mat, famInt, date_soin);
     }
 
     @GetMapping("/getLigBultCons")
     public List<LigBultProjection> getLigBultCons(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultRepository.getLigBultCons(soc, mat, numFam, datSoin);
+        Integer famInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        return ligBultRepository.getLigBultCons(soc, mat, famInt, date_soin);
     }
 
     @GetMapping("/getAct")
@@ -185,13 +189,17 @@ public class BulletinSoinController {
     @GetMapping("/getLigPhar")
     List<LigPhar> getMed(@RequestParam String soc, @RequestParam String mat, @RequestParam String numFam,
             @RequestParam String datSoin) {
-        return ligPharRepository.getLigPhar(soc, mat, numFam, datSoin);
+        Integer numFamInt = Integer.valueOf(numFam);
+        LocalDate datSoinSql = DateParser.parse(datSoin);
+        return ligPharRepository.getLigPhar(soc, mat, numFamInt, datSoinSql);
     }
 
     @GetMapping("/getLigPharCons")
     List<LigPharProjectionCons> getLigPharCons(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligPharRepository.getLigPharCons(soc, mat, numFam, datSoin);
+        Integer numFamInt = Integer.valueOf(numFam);
+        LocalDate datSoinSql = DateParser.parse(datSoin);
+        return ligPharRepository.getLigPharCons(soc, mat, numFamInt, datSoinSql);
     }
 
     @PostMapping("/addLigPhar")
@@ -221,14 +229,20 @@ public class BulletinSoinController {
     void deleteLigBult(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig) {
-        ligBultRepository.deleteLigBult(soc, mat, fam, datSoin, abrv, numLig);
+        Integer famInt = Integer.valueOf(fam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        Long num_lig = Long.valueOf(numLig);
+        ligBultRepository.deleteLigBult(soc, mat, famInt, date_soin, abrv, num_lig);
     }
 
     @DeleteMapping("/deleteLigPhar")
     void deleteLigPhar(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("med") String med,
             @RequestParam("numLig") String numLig) {
-        ligPharRepository.deleteLigPhar(soc, mat, fam, datSoin, med, numLig);
+        Integer famInt = Integer.valueOf(fam);
+        LocalDate date_soin_sql = DateParser.parse(datSoin);
+        Long numero_ligne = Long.valueOf(numLig);
+        ligPharRepository.deleteLigPhar(soc, mat, famInt, date_soin_sql, med, numero_ligne);
     }
 
     @GetMapping("/getRegimeRemb")
@@ -386,37 +400,49 @@ public class BulletinSoinController {
     @GetMapping("/getLigBultVisit")
     public List<LigBultVisit> getLigBultVisit(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultVisitRepository.getLigBultVisit(soc, mat, numFam, datSoin);
+        Integer famInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        return ligBultVisitRepository.getLigBultVisit(soc, mat, famInt, date_soin);
     }
 
     @GetMapping("/getLigBultVisitCons")
     public List<LigBultVisitProjection> getLigBultVisitCons(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultVisitRepository.getLigBultVisitCons(soc, mat, numFam, datSoin);
+        Integer famInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        return ligBultVisitRepository.getLigBultVisitCons(soc, mat, famInt, date_soin);
     }
 
     @GetMapping("/getLigBultMed")
     public List<LigBultMed> getLigBultMed(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultMedRepository.getLigBultMed(soc, mat, numFam, datSoin);
+        Integer famInt = Integer.valueOf(numFam);
+        LocalDate date_soin_sql = DateParser.parse(datSoin);
+        return ligBultMedRepository.getLigBultMed(soc, mat, famInt, date_soin_sql);
     }
 
     @GetMapping("/getLigBultMedCons")
     public List<LigBultMedProjection> getLigBultMedCons(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultMedRepository.getLigBultMedCons(soc, mat, numFam, datSoin);
+        Integer famInt = Integer.valueOf(numFam);
+        LocalDate date_soin_sql = DateParser.parse(datSoin);
+        return ligBultMedRepository.getLigBultMedCons(soc, mat, famInt, date_soin_sql);
     }
 
     @GetMapping("/getLigBultApp")
     public List<LigBultApp> getLigBultApp(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultAppRepository.getLigBultApp(soc, mat, numFam, datSoin);
+        Integer prestInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        return ligBultAppRepository.getLigBultApp(soc, mat, prestInt, date_soin);
     }
 
     @GetMapping("/getLigBultAppCons")
     public List<LigBultAppProjection> getLigBultAppCons(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String numFam, @RequestParam String datSoin) {
-        return ligBultAppRepository.getLigBultAppCons(soc, mat, numFam, datSoin);
+        Integer prestInt = Integer.valueOf(numFam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        return ligBultAppRepository.getLigBultAppCons(soc, mat, prestInt, date_soin);
     }
 
     @DeleteMapping("/deleteLigBultAct")
@@ -435,21 +461,30 @@ public class BulletinSoinController {
     void deleteLigBultApp(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig, @RequestParam("codApp") String codApp) {
-        ligBultAppRepository.deleteLigBultApp(soc, mat, fam, datSoin, abrv, numLig, codApp);
+        Integer prestInt = Integer.valueOf(fam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        Long numero_ligne = Long.valueOf(numLig);
+        ligBultAppRepository.deleteLigBultApp(soc, mat, prestInt, date_soin, abrv, numero_ligne, codApp);
     }
 
     @DeleteMapping("/deleteLigBultVisit")
     void deleteLigBultVisit(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("datAct") String datAct, @RequestParam("codVisit") String codVisit) {
-        ligBultVisitRepository.deleteLigBultVisit(soc, mat, fam, datSoin, abrv, datAct, codVisit);
+        Integer famInt = Integer.valueOf(fam);
+        LocalDate date_soin = DateParser.parse(datSoin);
+        LocalDate date_acte = DateParser.parse(datAct);
+        ligBultVisitRepository.deleteLigBultVisit(soc, mat, famInt, date_soin, abrv, date_acte, codVisit);
     }
 
     @DeleteMapping("/deleteLigBultMed")
     void deleteLigBultMed(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig, @RequestParam("codMed") String codMed) {
-        ligBultMedRepository.deleteLigBultMed(soc, mat, fam, datSoin, abrv, numLig, codMed);
+        Integer famInt = Integer.valueOf(fam);
+        LocalDate date_soin_sql = DateParser.parse(datSoin);
+        Long numero_ligne = Long.valueOf(numLig);
+        ligBultMedRepository.deleteLigBultMed(soc, mat, famInt, date_soin_sql, abrv, numero_ligne, codMed);
     }
 
     @PostMapping("/existeLigBult")

@@ -18,7 +18,7 @@ public class AdherentService {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public ResponseProcedure cal_plafond_mutuelle(String wcodSoc, Long annee, String matDeb, String matFin) {
+    public ResponseProcedure calPlafondMutuelle(String wcodSoc, Long annee, String matDeb, String matFin) {
         return jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call plafond_pkg.cal_plafond_mutuelle(?, ?, ?, ?, ?)}";
             try (CallableStatement cs = connection.prepareCall(procedureCall)) {
@@ -36,7 +36,7 @@ public class AdherentService {
         });
     }
 
-    public ResponseProcedure cal_plafond_cnam(String wcodSoc, String annee, String matDeb, String matFin) {
+    public ResponseProcedure calPlafondCnam(String wcodSoc, String annee, String matDeb, String matFin) {
         return jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call plafond_pkg.cal_plafond_cnam(?, ?, ?, ?, ?)}";
             try (CallableStatement cs = connection.prepareCall(procedureCall)) {
@@ -54,7 +54,7 @@ public class AdherentService {
         });
     }
 
-    public ResponseProcedure maj_pec_enf(String wcodSoc, String annee, String matDeb, String matFin) {
+    public ResponseProcedure majPecEnf(String wcodSoc, String annee, String matDeb, String matFin) {
         return jdbcTemplate.execute((Connection connection) -> {
             String procedureCall = "{call plafond_pkg.maj_pec_enf(?, ?, ?, ?, ?)}";
             try (CallableStatement cs = connection.prepareCall(procedureCall)) {

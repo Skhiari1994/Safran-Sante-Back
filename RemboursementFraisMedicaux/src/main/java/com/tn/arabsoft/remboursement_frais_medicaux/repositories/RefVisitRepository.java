@@ -12,30 +12,63 @@ import java.util.List;
 
 public interface RefVisitRepository extends JpaRepository<RefVisit, String> {
 
-        @Query(value = "select COD_VISIT,r.LIB_VISIT,r.abrv_act,r.PRIX_VISIT,r.TAUX_REMB\n" +
-                        "from ref_visit r ,acte a,bareme_remb b \n" +
-                        "where r.ABRV_ACT = a.abrv_act\n" +
-                        "and nvl(a.parente,:parente) =:parente \n" +
-                        "and nvl(a.sexe,:sexe) =:sexe \n" +
-                        "and b.abrv_act = a.abrv_act\n" +
-                        "and b.cod_fil =:codFil \n" +
-                        "and b.COD_ASSUR =:codAssur ", nativeQuery = true)
-        List<VisitProjection> getVisit(@Param("parente") String parente, @Param("sexe") String sexe,
-                        @Param("codFil") String codFil, @Param("codAssur") String codAssur);
+        @Query(value = """
+                        select
+                            r.cod_visit,
+                            r.lib_visit,
+                            r.abrv_act,
+                            r.prix_visit,
+                            r.taux_remb
+                        from ref_visit r
+                        inner join acte a
+                                on r.abrv_act = a.abrv_act
+                        inner join bareme_remb b
+                                on b.abrv_act = a.abrv_act
+                        where coalesce(a.parente, :parente) = :parente
+                          and coalesce(a.sexe, :sexe) = :sexe
+                          and b.cod_fil = :codFil
+                          and b.cod_assur = :codAssur
+                        """, nativeQuery = true)
+        List<VisitProjection> getVisit(
+                        @Param("parente") String parente,
+                        @Param("sexe") String sexe,
+                        @Param("codFil") String codFil,
+                        @Param("codAssur") String codAssur);
 
-        @Query(value = "select COD_APP,r.LIB_APP,r.abrv_act\n" +
-                        "from ref_appareil r ,acte a,bareme_remb b \n" +
-                        "where r.ABRV_ACT = a.abrv_act\n" +
-                        "and b.abrv_act = a.abrv_act\n" +
-                        "and b.cod_fil =:codFil \n" +
-                        "and b.COD_ASSUR =:codAssur", nativeQuery = true)
-        List<AppareilProjection> getAppareil(@Param("codFil") String codFil, @Param("codAssur") String codAssur);
+        @Query(value = """
+                        select
+                            r.cod_app,
+                            r.lib_app,
+                            r.abrv_act
+                        from ref_appareil r
+                        inner join acte a
+                                on r.abrv_act = a.abrv_act
+                        inner join bareme_remb b
+                                on b.abrv_act = a.abrv_act
+                        where b.cod_fil = :codFil
+                          and b.cod_assur = :codAssur
+                        """, nativeQuery = true)
+        List<AppareilProjection> getAppareil(
+                        @Param("codFil") String codFil,
+                        @Param("codAssur") String codAssur);
 
-        @Query(value = "select COD_VISIT,r.LIB_VISIT,r.abrv_act,r.PRIX_VISIT,r.TAUX_REMB\n" +
-                        "from ref_visit r ,acte a,bareme_remb b \n" +
-                        "where r.ABRV_ACT = a.abrv_act\n" +
-                        "and b.abrv_act = a.abrv_act\n" +
-                        "and b.cod_fil = :codFil\n" +
-                        "and b.COD_ASSUR = :codAssur", nativeQuery = true)
-        List<VisitProjection> getVisitManuel(@Param("codFil") String codFil, @Param("codAssur") String codAssur);
+        @Query(value = """
+                        select
+                            r.cod_visit,
+                            r.lib_visit,
+                            r.abrv_act,
+                            r.prix_visit,
+                            r.taux_remb
+                        from ref_visit r
+                        inner join acte a
+                                on r.abrv_act = a.abrv_act
+                        inner join bareme_remb b
+                                on b.abrv_act = a.abrv_act
+                        where b.cod_fil = :codFil
+                          and b.cod_assur = :codAssur
+                        """, nativeQuery = true)
+        List<VisitProjection> getVisitManuel(
+                        @Param("codFil") String codFil,
+                        @Param("codAssur") String codAssur);
+
 }
