@@ -21,16 +21,27 @@ import java.time.LocalDate;
 @Table(name = "disk_pret")
 @SuppressWarnings({ "java:S116" })
 public class DiskPret {
+
     private LocalDate dat_disk;
+
     private String pret_disk;
+
     private String num_retr;
+
     private String mat_pers;
+
     private BigDecimal montant;
+
     private String observation;
+
     private String valid;
+
     private String cod_grp_pret;
+
     private String typ_pret;
+
     private Long cod_pret;
+
     @Id
     private Long id;
 

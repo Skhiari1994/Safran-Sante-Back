@@ -23,7 +23,9 @@ public class PrintReportsController {
 
     @PostMapping("/pdf")
     public ResponseEntity<Resource> genererPDF(@RequestParam Long numRap, @RequestBody Map<String, String> params) {
+
         System.out.println("genererPDF @@@@@@ ");
+
         try {
             params.forEach((key, value) -> {
                 System.out.println("Parametre : " + key + ", Valeur : " + value);
@@ -46,6 +48,7 @@ public class PrintReportsController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
+
     }
 
     @PostMapping("/excel")

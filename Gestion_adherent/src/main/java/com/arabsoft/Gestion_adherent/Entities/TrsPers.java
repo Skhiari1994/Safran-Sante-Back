@@ -21,8 +21,8 @@ import lombok.experimental.SuperBuilder;
 public class TrsPers {
 
     private String cin;
-    @Id
 
+    @Id
     private String mat;
 
     private String retr;

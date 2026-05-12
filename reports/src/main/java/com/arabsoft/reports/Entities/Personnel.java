@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +23,8 @@ import java.time.LocalDate;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "Personnel")
+@Entity
+@Table(name = "personnel")
 @ToString
 @IdClass(ClePersonnel.class)
 @SuppressWarnings({ "java:S116" })

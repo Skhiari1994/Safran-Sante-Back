@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/ParamRubController")
+@SuppressWarnings({ "java:S4684", "java:S1452" })
 public class ParamRubController {
 
     private final ParamRubDao paramRubRepository;

@@ -15,6 +15,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/RapportRubController")
+@SuppressWarnings({ "java:S4684", "java:S1452" })
 public class RapportRubController {
 
     private final RapportRubDao rapportRubRepository;
@@ -45,16 +46,21 @@ public class RapportRubController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteRapport(@PathVariable Long id) {
-        return (ResponseEntity<Object>) rapportRubRepository.findById(id).map(rapport -> {
-            try {
-                rapportRubRepository.deleteById(id);
-                return ResponseEntity.status(204).body(null); // <- évite le warning
-            } catch (DataIntegrityViolationException e) {
-                return ResponseEntity
-                        .status(500)
-                        .body("ORA-02292: Des paramètres dépendent encore de ce rapport");
-            }
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> deleteRapport(@PathVariable Long id) {
+
+        return rapportRubRepository.findById(id)
+                .map(rapport -> {
+                    try {
+                        rapportRubRepository.deleteById(id);
+                        return ResponseEntity.noContent().build();
+
+                    } catch (DataIntegrityViolationException e) {
+                        return ResponseEntity
+                                .status(500)
+                                .body("ORA-02292: Des paramètres dépendent encore de ce rapport");
+                    }
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 }

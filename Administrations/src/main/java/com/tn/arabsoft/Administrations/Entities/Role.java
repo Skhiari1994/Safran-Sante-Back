@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Entity
 @ToString
-@Table(name = "Role")
+@Table(name = "role")
 @SuppressWarnings({ "java:S101", "java:S116" })
 public class Role {
 

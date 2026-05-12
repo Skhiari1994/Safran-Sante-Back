@@ -47,6 +47,16 @@ public class FamilleController {
 
     @PostMapping("/saveFam")
     public void save(@RequestBody Famille f) {
+        // Sexe Pere P : Masculin
+        if (f.getParente().equals("P") && (f.getSexe().equals("") || f.getSexe() == null)) {
+            f.setSexe("M");
+        }
+
+        // Sexe Mere M : Feminin
+        if (f.getParente().equals("M") && (f.getSexe().equals("") || f.getSexe() == null)) {
+            f.setSexe("F");
+        }
+
         this.familleRepository.save(f);
     }
 
@@ -121,4 +131,5 @@ public class FamilleController {
     Long getNbreEnf(@RequestParam("soc") String soc, @RequestParam("mat") String mat) {
         return this.familleRepository.countNbreEnf(soc, mat);
     }
+
 }

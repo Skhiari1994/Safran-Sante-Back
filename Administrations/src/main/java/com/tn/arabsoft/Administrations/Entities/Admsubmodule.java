@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "Admsubmodule")
+@Table(name = "admsubmodule")
 @ToString
 @SuppressWarnings({ "java:S101", "java:S116" })
 public class Admsubmodule {
