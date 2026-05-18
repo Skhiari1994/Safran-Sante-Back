@@ -27,6 +27,7 @@ public class FamilleController {
 
     @GetMapping("/getFamille/{codSoc}/{matPers}")
     List<Famille> getFamille(@PathVariable String codSoc, @PathVariable String matPers) {
+        System.out.println("getFamille @@@@@@@@@@@@@@@");
         return this.familleRepository.getFamille(codSoc, matPers);
     }
 

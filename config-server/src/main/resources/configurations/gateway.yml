@@ -29,26 +29,18 @@ spring:
           uri: http://localhost:8001
           predicates:
             - Path=/admin/**
-        - id: adherent
-          uri: http://localhost:8004
-          predicates:
-            - Path=/adherent/**
         - id: auth
           uri: http://localhost:8002
           predicates:
             - Path=/api/auth/**
-        - id: remb
-          uri: http://localhost:8008
-          predicates:
-            - Path=/Remb/**
-        - id: referentiel
-          uri: http://localhost:8007
-          predicates:
-            - Path=/referentiel/**
         - id: Credits
           uri: http://localhost:8003
           predicates:
             - Path=/Credits/**
+        - id: adherent
+          uri: http://localhost:8004
+          predicates:
+            - Path=/adherent/**
         - id: Cotis
           uri: http://localhost:8005
           predicates:
@@ -57,6 +49,14 @@ spring:
           uri: http://localhost:8006
           predicates:
             - Path=/Indemnite/**
+        - id: referentiel
+          uri: http://localhost:8007
+          predicates:
+            - Path=/referentiel/**
+        - id: remb
+          uri: http://localhost:8008
+          predicates:
+            - Path=/Remb/**
         - id: Convention
           uri: http://localhost:8010
           predicates:
@@ -69,5 +69,9 @@ spring:
           uri: http://localhost:8012
           predicates:
             - Path=/CaisseRetr/**
+        - id: communicationService
+          uri: http://localhost:8014
+          predicates:
+            - Path=/Communication/**
 server:
   port: 8222
