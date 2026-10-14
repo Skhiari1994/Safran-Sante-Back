@@ -156,7 +156,7 @@ public interface DepartPersRepository extends JpaRepository<DepartPers, CleDepar
                        from personnel p
                        left join affectation a
                               on a.cod_affect = p.cod_affect
-                       left join PRM_LIEU_GEOGRAPHIQUE lg
+                       left join prm_lieu_geographique lg
                               on lg.cod_lieu_geog = p.cod_lieu_geog
                        left join type_depart td
                               on td.cod_typ_depart = p.cod_typ_depart
