@@ -2,23 +2,36 @@ package com.arabsoft.communication.serviceImpl;
 
 import com.arabsoft.communication.Entities.AdmUser;
 import com.arabsoft.communication.Entities.ChatMessage;
+
+import com.arabsoft.communication.Entities.ChatReaction;
+
 import com.arabsoft.communication.Entities.ChatRoom;
 import com.arabsoft.communication.Entities.MessageType;
 import com.arabsoft.communication.dto.ChatMessageDTO;
 import com.arabsoft.communication.dto.ChatRoomDTO;
+import com.arabsoft.communication.dto.ReactionDTO;
+
 import com.arabsoft.communication.dto.UserInfoDTO;
 import com.arabsoft.communication.mapper.ChatMapper;
 import com.arabsoft.communication.repository.AdmUserRepository;
 import com.arabsoft.communication.repository.ChatMessageRepository;
+import com.arabsoft.communication.repository.ChatReactionRepository;
+
 import com.arabsoft.communication.repository.ChatRoomRepository;
 import com.arabsoft.communication.service.ChatService;
 import com.arabsoft.communication.service.PresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.web.server.ResponseStatusException;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +48,9 @@ public class ChatServiceImpl implements ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final PresenceService presenceService;
     private final JdbcTemplate jdbcTemplate;
+
+    private final ChatReactionRepository reactionRepository;
+
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -126,6 +142,19 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatMessageDTO> getRoomMessages(String roomId) {
         List<ChatMessage> entities = messageRepository.findByRoomIdOrderByTimestampAsc(roomId);
         return ChatMapper.toDTOList(entities);
+        List<ChatMessageDTO> dtos = ChatMapper.toDTOList(entities);
+
+        // réactions de tous les messages de la conversation (une seule requête)
+        List<Long> ids = dtos.stream().map(ChatMessageDTO::getId).filter(Objects::nonNull).toList();
+        if (!ids.isEmpty()) {
+            Map<Long, List<ReactionDTO>> byMessage = new HashMap<>();
+            for (ChatReaction r : reactionRepository.findByMessageIdIn(ids)) {
+                byMessage.computeIfAbsent(r.getMessageId(), k -> new ArrayList<>())
+                        .add(new ReactionDTO(r.getUserId(), decodeEmoji(r.getEmoji())));
+            }
+            dtos.forEach(d -> d.setReactions(byMessage.getOrDefault(d.getId(), new ArrayList<>())));
+        }
+        return dtos;
     }
 
     @Override
@@ -202,7 +231,9 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public void markRoomAsRead(String roomId, String userId) {
+
         messageRepository.markRoomMessagesAsRead(roomId, userId);
+        messageRepository.markRoomMessagesAsRead(roomId, userId, LocalDateTime.now());
 
         // Notify interlocutor of read receipt via WebSocket
         roomRepository.findByRoomId(roomId).ifPresent(room -> {
@@ -223,6 +254,106 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void markMessageAsRead(Long messageId) {
         messageRepository.markMessageAsRead(messageId);
+        messageRepository.markMessageAsRead(messageId, LocalDateTime.now());
+    }
+
+    private static String encodeEmoji(String emoji) {
+        if (emoji == null) {
+            return "";
+        }
+        return emoji.codePoints().mapToObj(Integer::toHexString).collect(java.util.stream.Collectors.joining("-"));
+    }
+
+    private static String decodeEmoji(String code) {
+        if (code == null || code.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String part : code.split("-")) {
+            try {
+                sb.appendCodePoint(Integer.parseInt(part, 16));
+            } catch (NumberFormatException ignored) {
+                // code inconnu : ignoré
+            }
+        }
+        return sb.toString();
+    }
+
+    @Override
+    @Transactional
+    public void reactToMessage(Long messageId, String userId, String emoji) {
+        ChatMessage message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message introuvable"));
+        boolean isParticipant = userId != null
+                && (userId.equals(message.getSenderId()) || userId.equals(message.getReceiverId()));
+        boolean isGroup = message.getReceiverId() == null || message.getReceiverId().trim().isEmpty();
+        if (!isParticipant && !isGroup) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous ne participez pas à cette conversation");
+        }
+
+        // la base Oracle ne conserve pas les émojis : on stocke leurs codes (ex. « 2764-fe0f »)
+        String code = encodeEmoji(emoji);
+        if (code.isEmpty() || code.length() > 20) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Émoji invalide");
+        }
+
+        // même émoji une seconde fois = retirer ; autre émoji = remplacer
+        String result = emoji;
+        Optional<ChatReaction> existing = reactionRepository.findByMessageIdAndUserId(messageId, userId);
+        if (existing.isPresent()) {
+            if (existing.get().getEmoji().equals(code)) {
+                reactionRepository.delete(existing.get());
+                result = "";
+            } else {
+                existing.get().setEmoji(code);
+                reactionRepository.save(existing.get());
+            }
+        } else {
+            reactionRepository.save(ChatReaction.builder().messageId(messageId).userId(userId).emoji(code).build());
+        }
+
+        String other = userId.equals(message.getSenderId()) ? message.getReceiverId() : message.getSenderId();
+        ChatMessageDTO notice = ChatMessageDTO.builder()
+                .id(messageId)
+                .roomId(message.getRoomId())
+                .senderId(userId)
+                .receiverId(other)
+                .content(result)
+                .messageType(MessageType.REACTION)
+                .timestamp(LocalDateTime.now())
+                .build();
+        if (other != null && !other.trim().isEmpty()) {
+            messagingTemplate.convertAndSend("/topic/messages/" + other, notice);
+        } else {
+            messagingTemplate.convertAndSend("/topic/public", notice);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteMessage(Long messageId, String userId) {
+        ChatMessage message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message introuvable"));
+        if (userId == null || !userId.equals(message.getSenderId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Seul l'expéditeur peut supprimer son message");
+        }
+        reactionRepository.deleteByMessageId(messageId);
+        messageRepository.delete(message);
+
+        ChatMessageDTO notice = ChatMessageDTO.builder()
+                .id(message.getId())
+                .roomId(message.getRoomId())
+                .senderId(message.getSenderId())
+                .receiverId(message.getReceiverId())
+                .messageType(MessageType.DELETE)
+                .timestamp(LocalDateTime.now())
+                .build();
+        if (message.getReceiverId() != null && !message.getReceiverId().trim().isEmpty()) {
+            messagingTemplate.convertAndSend("/topic/messages/" + message.getReceiverId(), notice);
+        } else {
+            messagingTemplate.convertAndSend("/topic/public", notice);
+        }
+        log.info("Deleted message {} by {}", messageId, userId);
     }
 
     @Override

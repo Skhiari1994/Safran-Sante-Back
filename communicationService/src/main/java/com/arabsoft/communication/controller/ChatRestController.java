@@ -74,6 +74,21 @@ public class ChatRestController {
         return ResponseEntity.ok(chatService.getRecentConversations(userId));
     }
 
+    @PutMapping("/message/{messageId}/reaction")
+    public ResponseEntity<Void> reactToMessage(@PathVariable("messageId") Long messageId,
+                                               @RequestParam("userId") String userId,
+                                               @RequestParam("emoji") String emoji) {
+        chatService.reactToMessage(messageId, userId, emoji);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/message/{messageId}")
+    public ResponseEntity<Void> deleteMessage(@PathVariable("messageId") Long messageId,
+                                              @RequestParam("userId") String userId) {
+        chatService.deleteMessage(messageId, userId);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/messages/{roomId}")
     public ResponseEntity<Void> deleteRoomMessages(@PathVariable("roomId") String roomId) {
         chatService.deleteRoomMessages(roomId);

@@ -23,7 +23,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Register WebSocket /ws endpoint with SockJS fallback support
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .withSockJS()
+                // le gateway gère déjà le CORS : éviter un en-tête Access-Control-Allow-Origin en double
+                .setSuppressCors(true);
 
         // Plain WebSocket endpoint without SockJS as secondary fallback
         registry.addEndpoint("/ws")

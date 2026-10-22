@@ -1,5 +1,8 @@
 package com.arabsoft.referentiel.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -23,7 +26,9 @@ import lombok.experimental.SuperBuilder;
 public class TypesActes {
 
     @Id
-    private String type_acte;
+    @Column(name = "type_acte")
+    @JsonProperty("type_acte") // Garantit que le format JSON en entrée/sortie reste inchangé pour le frontend
+    private String typeActe;
 
     private String lib_type_acte;
 

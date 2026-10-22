@@ -22,6 +22,12 @@ public interface ChatService {
 
     void markMessageAsRead(Long messageId);
 
+    /** Supprime un message (seul son expéditeur peut le faire) et prévient l'interlocuteur. */
+    void deleteMessage(Long messageId, String userId);
+
+    /** Pose, remplace ou retire (même émoji) la réaction de l'utilisateur sur un message et prévient l'interlocuteur. */
+    void reactToMessage(Long messageId, String userId, String emoji);
+
     int getUnreadCount(String userId);
 
     List<ChatMessageDTO> getUnreadMessages(String userId);

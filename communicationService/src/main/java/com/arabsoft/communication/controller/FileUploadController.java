@@ -55,8 +55,9 @@ public class FileUploadController {
 
             log.info("File uploaded successfully: {} -> {}", originalFileName, storedFileName);
 
-            // Construct file URL through gateway context-path
-            String fileUrl = "/Communication/files/view/" + storedFileName;
+            // Construct file URL relative to the gateway route /communication-service
+            String fileUrl = "/files/view/" + storedFileName;
+
             return ResponseEntity.ok(fileUrl);
         } catch (IOException ex) {
             log.error("Could not store file", ex);

@@ -17,17 +17,40 @@ public interface AdmstorageautorisationDAO extends JpaRepository<Admstorageautor
 
     List<Admstorageautorisation> findByRole(Role role);
 
-    @Query(value = "SELECT a.id_autho, a.role_id, a.sum_id, a.evt_id from Admstorageautorisation a where a.role_id=:id", nativeQuery = true)
+    @Query(value = """
+            select a.id_autho,
+                   a.role_id,
+                   a.sum_id,
+                   a.evt_id
+            from admstorageautorisation a
+            where a.role_id = :id
+            """, nativeQuery = true)
     public List<Admstorageautorisation> getAdmStorageByRole(@Param("id") Long id);
 
-    @Query(value = "SELECT a.id_autho, a.role_id, a.sum_id, a.evt_id " +
-            "FROM ADMSTORAGEAUTORISATION a " +
-            "WHERE a.sum_id = :sum_id AND a.role_id = :role", nativeQuery = true)
-    public List<Admstorageautorisation> getMenuRole(@Param("sum_id") Long sum_id, @Param("role") Long role);
+    @Query(value = """
+            select a.id_autho,
+                   a.role_id,
+                   a.sum_id,
+                   a.evt_id
+            from admstorageautorisation a
+            where a.sum_id = :sum_id
+              and a.role_id = :role
+            """, nativeQuery = true)
+    public List<Admstorageautorisation> getMenuRole(
+            @Param("sum_id") Long sum_id,
+            @Param("role") Long role);
 
     @Transactional
     @Modifying
-    @Query(value = "delete from Admstorageautorisation where role_id=:role and sum_id=:sum_id and nvl(evt_id,-1)=nvl(:evt,-1)", nativeQuery = true)
-    void deleteFromAdmautorisation(@Param("sum_id") Long sum_id, @Param("role") Long role, @Param("evt") Long evt);
+    @Query(value = """
+            delete from admstorageautorisation
+            where role_id = :role
+              and sum_id = :sum_id
+              and coalesce(evt_id, -1) = coalesce(:evt, -1)
+            """, nativeQuery = true)
+    void deleteFromAdmautorisation(
+            @Param("sum_id") Long sum_id,
+            @Param("role") Long role,
+            @Param("evt") Long evt);
 
 }

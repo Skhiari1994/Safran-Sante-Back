@@ -28,6 +28,9 @@ public final class ChatMapper {
                 .messageType(entity.getMessageType())
                 .timestamp(entity.getTimestamp())
                 .isRead(entity.getIsRead() != null ? entity.getIsRead() : false)
+
+                .readAt(entity.getReadAt())
+                .replyToId(entity.getReplyToId())
                 .build();
     }
 
@@ -45,6 +48,8 @@ public final class ChatMapper {
                 .messageType(dto.getMessageType())
                 .timestamp(dto.getTimestamp())
                 .isRead(dto.getIsRead() != null ? dto.getIsRead() : false)
+
+                .replyToId(dto.getReplyToId())
                 .build();
     }
 

@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Fichiers envoyes dans le chat (donnees de test, non versionnees)
+uploads/

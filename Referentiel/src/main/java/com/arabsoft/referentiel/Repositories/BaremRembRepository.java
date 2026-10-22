@@ -26,10 +26,12 @@ public interface BaremRembRepository extends JpaRepository<BaremeRemb, BaremRemb
              t.verif_vign,
              t.duree_act,
              t.plafon_prest,
-             (select a.lib_act
-                from acte a
-               where a.abrv_act = t.abrv_act) as lib_act
+             a.lib_act as lib_act
         from bareme_remb t
+        left join acte a
+          on t.abrv_act = a.abrv_act
+       order by t.cod_fil,
+                t.abrv_act
       """, nativeQuery = true)
   List<BaremeRembProjection> getAllBareme();
 

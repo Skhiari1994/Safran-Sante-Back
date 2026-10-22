@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDateDeserializer;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.CleLigBultMed;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
@@ -80,5 +81,8 @@ public class LigBultMed {
   private BigDecimal mut_mnt_net;
 
   private Long nbr_j;
+
+  @Column(name = "DAT_SAISIE", insertable = false, updatable = false)
+  private LocalDate dat_saisie;
 
 }

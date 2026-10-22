@@ -10,5 +10,7 @@ public enum MessageType {
     ONLINE,
     OFFLINE,
     TYPING,
-    VOICE
+    VOICE,
+    DELETE,
+    REACTION
 }

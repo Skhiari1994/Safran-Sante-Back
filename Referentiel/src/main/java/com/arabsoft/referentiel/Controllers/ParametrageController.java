@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/Parametrage")
@@ -248,7 +250,9 @@ public class ParametrageController {
 
     @GetMapping("/TypesActes")
     public ResponseEntity<List<TypesActes>> getAllTypesActes() {
-        List<TypesActes> typesActes = typesActesRepository.findAll();
+        List<TypesActes> typesActes = typesActesRepository.findAll(
+                Sort.by(Sort.Direction.ASC, "typeActe"));
+
         return ResponseEntity.ok(typesActes);
     }
 
@@ -274,8 +278,13 @@ public class ParametrageController {
 
     @GetMapping("/Acte")
     public ResponseEntity<List<Acte>> getAllActes() {
-        List<Acte> acte = acteRepository.findAll();
-        return ResponseEntity.ok(acte);
+
+        List<Acte> actes = acteRepository.findAll(
+                Sort.by(
+                        Sort.Order.asc("typeAct"),
+                        Sort.Order.asc("abrvAct")));
+
+        return ResponseEntity.ok(actes);
     }
 
     @DeleteMapping("/Acte/{abrv_act}")

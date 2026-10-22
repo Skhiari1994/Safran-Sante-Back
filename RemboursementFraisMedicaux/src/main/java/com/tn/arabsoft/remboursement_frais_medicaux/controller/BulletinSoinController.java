@@ -104,12 +104,20 @@ public class BulletinSoinController {
 
     @GetMapping("/getBultCnamCons")
     public List<BultSoinProjection> getBultCnamCons(
+            @RequestParam String soc,
             @RequestParam(required = false) String mat,
-            @RequestParam(required = false) String num_fam,
+            @RequestParam(required = false) Integer num_fam,
             @RequestParam(required = false) String dat_soin) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-        LocalDate localDate = LocalDate.parse(dat_soin, formatter);
-        return bultSoinRepository.getBulletinCnamCons(mat, num_fam, localDate);
+
+        LocalDate localDate = null;
+
+        if (dat_soin != null && !dat_soin.isBlank()) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
+            localDate = LocalDate.parse(dat_soin, formatter);
+        }
+
+        return bultSoinRepository.getBulletinCnamCons(soc, mat, num_fam, localDate);
+
     }
 
     @GetMapping("/getLigBult")
@@ -159,6 +167,9 @@ public class BulletinSoinController {
                 bultSoin.getMat_pers(),
                 bultSoin.getNum_fam(),
                 bultSoin.getDat_soin());
+
+                System.out.println("getCod_soc :: "+bultSoin.getCod_soc()+ ", getMat_pers : "+bultSoin.getMat_pers() + ",getNum_fam:: "+bultSoin.getNum_fam());
+                System.out.println("getDat_soin :: "+bultSoin.getDat_soin());
 
         return bultSoinRepository.findById(id)
                 .map(existingBult -> {

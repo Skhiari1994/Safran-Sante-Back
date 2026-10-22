@@ -49,6 +49,14 @@ public class ChatMessage {
     @Column(name = "IS_READ")
     private Boolean isRead = false;
 
+    // heure de lecture par le destinataire (affichée « Vu à HH:mm »)
+    @Column(name = "READ_AT")
+    private LocalDateTime readAt;
+
+    // message auquel celui-ci répond (citation)
+    @Column(name = "REPLY_TO_ID")
+    private Long replyToId;
+
     @PrePersist
     public void prePersist() {
         if (this.timestamp == null) {

@@ -1,5 +1,6 @@
 package com.arabsoft.referentiel.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -12,6 +13,8 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -23,14 +26,22 @@ import java.time.LocalDate;
 @SuppressWarnings({ "java:S116" })
 public class Acte {
 
-    private String type_act;
+    @Column(name = "type_act")
+    @JsonProperty("type_act") // Garantit que le format JSON en entrée/sortie reste inchangé pour le frontend
+    private String typeAct;
 
     @Id
-    private String abrv_act;
+    @Column(name = "abrv_act")
+    @JsonProperty("abrv_act") // Garantit que le format JSON en entrée/sortie reste inchangé pour le frontend
+    private String abrvAct;
 
-    private String lib_act;
+    @Column(name = "lib_act")
+    @JsonProperty("lib_act") // Garantit que le format JSON en entrée/sortie reste inchangé pour le frontend
+    private String libAct;
 
-    private String lib_act_a;
+    @Column(name = "lib_act_a")
+    @JsonProperty("lib_act_a") // Garantit que le format JSON en entrée/sortie reste inchangé pour le frontend
+    private String libActA;
 
     private String a_indice;
 
