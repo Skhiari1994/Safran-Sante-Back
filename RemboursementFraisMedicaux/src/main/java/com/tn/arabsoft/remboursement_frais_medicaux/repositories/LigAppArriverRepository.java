@@ -22,8 +22,8 @@ public interface LigAppArriverRepository extends JpaRepository<LigAppArriver, Li
                                lbv.mnt_honor,
                                lbv.mnt_remb,
                                case lbv.prf_typ
-                                   when 1 then 'Personne physique'
-                                   when 2 then 'Etablissement'
+                                   when '1' then 'Personne physique'
+                                   when '2' then 'Etablissement'
                                    else 'Autre'
                                end as prf_type,
                                lbv.prf_typ,

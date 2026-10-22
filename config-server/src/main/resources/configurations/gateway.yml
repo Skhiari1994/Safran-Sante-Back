@@ -69,9 +69,16 @@ spring:
           uri: http://localhost:8012
           predicates:
             - Path=/CaisseRetr/**
+
         - id: communicationService
           uri: http://localhost:8014
           predicates:
             - Path=/Communication/**
+        - id: communicationServiceWS
+          uri: http://localhost:8014
+          predicates:
+            - Path=/communication-service/**
+          filters:
+            - RewritePath=/communication-service/?(?<segment>.*), /Communication/${segment}
 server:
   port: 8222

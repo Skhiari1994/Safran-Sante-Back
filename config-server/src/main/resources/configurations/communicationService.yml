@@ -1,6 +1,4 @@
 spring:
-  config:
-    import: "optional:configserver:http://localhost:8888"
   application:
     name: communicationService
   datasource:
@@ -11,7 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    database-platform:  org.hibernate.dialect.OracleDialect
+    database-platform: org.hibernate.dialect.OracleDialect
     show-sql: true
 eureka:
   instance:
@@ -24,4 +22,3 @@ server:
   port: 8014
   servlet:
     context-path: /Communication
-

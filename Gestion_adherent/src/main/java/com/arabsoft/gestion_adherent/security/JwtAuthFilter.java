@@ -22,7 +22,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final com.arabsoft.gestion_adherent.security.JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
     @Override
