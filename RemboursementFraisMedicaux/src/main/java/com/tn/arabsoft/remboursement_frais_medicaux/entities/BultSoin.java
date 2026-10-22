@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.tn.arabsoft.remboursement_frais_medicaux.configuration.CustomLocalDateDeserializer;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.BultSoinCle;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
@@ -73,6 +74,7 @@ public class BultSoin {
     private String num_ass_conj;
 
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
+    @Column(name = "DAT_SAISIE", insertable = false, updatable = false)
     private LocalDate dat_saisie;
 
     private String obs;

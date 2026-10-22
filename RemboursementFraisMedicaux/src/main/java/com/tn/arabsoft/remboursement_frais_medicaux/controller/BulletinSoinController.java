@@ -104,12 +104,20 @@ public class BulletinSoinController {
 
     @GetMapping("/getBultCnamCons")
     public List<BultSoinProjection> getBultCnamCons(
+            @RequestParam String soc,
             @RequestParam(required = false) String mat,
-            @RequestParam(required = false) String num_fam,
+            @RequestParam(required = false) Integer num_fam,
             @RequestParam(required = false) String dat_soin) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-        LocalDate localDate = LocalDate.parse(dat_soin, formatter);
-        return bultSoinRepository.getBulletinCnamCons(mat, num_fam, localDate);
+
+        LocalDate localDate = null;
+
+        if (dat_soin != null && !dat_soin.isBlank()) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
+            localDate = LocalDate.parse(dat_soin, formatter);
+        }
+
+        return bultSoinRepository.getBulletinCnamCons(soc, mat, num_fam, localDate);
+
     }
 
     @GetMapping("/getLigBult")

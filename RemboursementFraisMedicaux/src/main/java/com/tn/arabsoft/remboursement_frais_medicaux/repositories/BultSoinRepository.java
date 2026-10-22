@@ -200,26 +200,32 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          r.lib_fill as lib_fill,
                          f.nom_pren as nom_adherent
                      from bult_soin t
+
                      left join personnel p
-                            on p.mat_pers = t.mat_pers
+                            on t.cod_soc = p.cod_soc
+                           and t.mat_pers = p.mat_pers
+
                      left join assurance a
-                            on a.cod_assur = t.cod_assur
+                            on t.cod_assur = a.cod_assur
+
                      left join ref_filliere r
-                            on r.cod_fil = t.cod_fil
+                            on t.cod_fil = r.cod_fil
+
                      left join famille f
-                            on f.num_fam = t.num_fam
-                           and f.mat_pers = t.mat_pers
+                            on t.cod_soc = f.cod_soc
+                           and t.mat_pers = f.mat_pers
+                           and t.num_fam = f.num_fam
+
                      where t.nat_bult = 'C'
                        and coalesce(t.envoi, 'N') = 'O'
+                       and t.cod_soc = :soc
                        and (:mat is null or t.mat_pers = :mat)
                        and (:num_fam is null or t.num_fam = :num_fam)
                        and (:dat_soin is null or t.dat_soin = :dat_soin)
                      order by t.dat_saisie desc, t.dat_soin desc, t.mat_pers, t.num_fam
                      """, nativeQuery = true)
-       List<BultSoinProjection> getBulletinCnamCons(
-                     @Param("mat") String mat,
-                     @Param("num_fam") String num_fam,
-                     @Param("dat_soin") LocalDate dat_soin);
+       List<BultSoinProjection> getBulletinCnamCons(@Param("soc") String soc, @Param("mat") String mat,
+                     @Param("num_fam") Integer num_fam, @Param("dat_soin") LocalDate dat_soin);
 
        @Query(value = """
                      select
@@ -699,6 +705,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                            and f.num_fam = t.num_fam
                      where t.cod_soc = :soc
                        and t.nat_bult = 'C'
+                       and t.cod_bord is null
                      order by t.dat_saisie desc,
                               t.dat_soin desc
                      """, nativeQuery = true)
