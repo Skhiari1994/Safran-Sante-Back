@@ -49,12 +49,14 @@ public class FamilleController {
     @PostMapping("/saveFam")
     public void save(@RequestBody Famille f) {
         // Sexe Pere P : Masculin
-        if (f.getParente().equals("P") && (f.getSexe().equals("") || f.getSexe() == null)) {
+        if ("P".equals(f.getParente())
+                && (f.getSexe() == null || f.getSexe().isEmpty())) {
             f.setSexe("M");
         }
 
         // Sexe Mere M : Feminin
-        if (f.getParente().equals("M") && (f.getSexe().equals("") || f.getSexe() == null)) {
+        if ("M".equals(f.getParente())
+                && (f.getSexe() == null || f.getSexe().isEmpty())) {
             f.setSexe("F");
         }
 
