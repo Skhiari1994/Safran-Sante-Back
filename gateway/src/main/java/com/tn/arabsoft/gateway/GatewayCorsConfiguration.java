@@ -41,6 +41,8 @@ public class GatewayCorsConfiguration {
                 if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
                     HttpHeaders headers = response.getHeaders();
                     headers.add("Access-Control-Allow-Origin", origin);
+                    // requis par sockjs-client (chat), dont la requête /info est envoyée avec les cookies
+                    headers.add("Access-Control-Allow-Credentials", "true");
                     headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
                     headers.add("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization");
                     headers.add("Access-Control-Expose-Headers", "Authorization");

@@ -160,6 +160,9 @@ public class BulletinSoinController {
                 bultSoin.getNum_fam(),
                 bultSoin.getDat_soin());
 
+                System.out.println("getCod_soc :: "+bultSoin.getCod_soc()+ ", getMat_pers : "+bultSoin.getMat_pers() + ",getNum_fam:: "+bultSoin.getNum_fam());
+                System.out.println("getDat_soin :: "+bultSoin.getDat_soin());
+
         return bultSoinRepository.findById(id)
                 .map(existingBult -> {
                     // Mise à jour

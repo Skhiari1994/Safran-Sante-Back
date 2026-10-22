@@ -26,8 +26,8 @@ public interface LigMedArriverRepository extends JpaRepository<LigMedArriver, Li
                             lbv.mnt_remb,
                             lbv.mut_mnt_net,
                             case lbv.prf_typ
-                                when 1 then 'Personne physique'
-                                when 2 then 'Etablissement'
+                                when '1' then 'Personne physique'
+                                when '2' then 'Etablissement'
                                 else 'Autre'
                             end as prf_type,
                             lbv.prf_typ,
