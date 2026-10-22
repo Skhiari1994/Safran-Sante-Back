@@ -18,6 +18,7 @@
         <option value="$PROJECT_DIR$/reports/pom.xml" />
         <option value="$PROJECT_DIR$/GestionConvention/pom.xml" />
         <option value="$PROJECT_DIR$/CaisseRetraite/pom.xml" />
+        <option value="$PROJECT_DIR$/communicationService/pom.xml" />
       </list>
     </option>
   </component>
