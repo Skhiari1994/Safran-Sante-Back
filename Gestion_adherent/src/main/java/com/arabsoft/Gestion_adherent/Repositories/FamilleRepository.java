@@ -1,6 +1,8 @@
 package com.arabsoft.gestion_adherent.repositories;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -157,6 +159,8 @@ public interface FamilleRepository extends JpaRepository<Famille, CleFamille> {
    @Query(value = "select max(f.num_fam) from famille f where f.cod_soc = :codSoc and f.mat_pers = :mat and f.parente ='E'", nativeQuery = true)
    public Long getmaxEnfant(@Param("codSoc") String codSoc, @Param("mat") String mat);
 
+   @Modifying
+   @Transactional
    @Query(value = "delete from famille f where f.cod_soc = :soc and f.num_fam = :num and f.mat_pers = :mat", nativeQuery = true)
    public void deleteFamille(@Param("soc") String soc, @Param("num") Long num, @Param("mat") String mat);
 

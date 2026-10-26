@@ -4,6 +4,7 @@ import com.arabsoft.communication.Entities.AdmUser;
 import com.arabsoft.communication.Entities.ChatMessage;
 
 import com.arabsoft.communication.Entities.ChatReaction;
+import com.arabsoft.communication.mapper.ChatMapper;
 
 import com.arabsoft.communication.Entities.ChatRoom;
 import com.arabsoft.communication.Entities.MessageType;
@@ -12,7 +13,6 @@ import com.arabsoft.communication.dto.ChatRoomDTO;
 import com.arabsoft.communication.dto.ReactionDTO;
 
 import com.arabsoft.communication.dto.UserInfoDTO;
-import com.arabsoft.communication.mapper.ChatMapper;
 import com.arabsoft.communication.repository.AdmUserRepository;
 import com.arabsoft.communication.repository.ChatMessageRepository;
 import com.arabsoft.communication.repository.ChatReactionRepository;
@@ -137,11 +137,9 @@ public class ChatServiceImpl implements ChatService {
         log.info("Created new ChatRoom: {} between {} and {}", generatedRoomId, user1Id, user2Id);
         return generatedRoomId;
     }
-
     @Override
     public List<ChatMessageDTO> getRoomMessages(String roomId) {
         List<ChatMessage> entities = messageRepository.findByRoomIdOrderByTimestampAsc(roomId);
-        return ChatMapper.toDTOList(entities);
         List<ChatMessageDTO> dtos = ChatMapper.toDTOList(entities);
 
         // réactions de tous les messages de la conversation (une seule requête)
