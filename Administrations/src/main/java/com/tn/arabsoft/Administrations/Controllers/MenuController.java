@@ -86,6 +86,16 @@ public class MenuController {
         return submoduleRepository.save(adm);
     }
 
+    /** Premier Evt id libre strictement supérieur à {@code from}. */
+    @GetMapping("/nextEvtId/{from}")
+    public java.util.Map<String, Long> getNextEvtId(@PathVariable Long from) {
+        long next = from + 1;
+        while (eventTypeRepository.existsById(next)) {
+            next++;
+        }
+        return java.util.Map.of("nextId", next);
+    }
+
     @PostMapping("/addEvntType1")
     public Admeventtype saveAddEvntType(@RequestBody Admeventtype adm) {
         return eventTypeRepository.save(adm);

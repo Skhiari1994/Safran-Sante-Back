@@ -7,6 +7,9 @@ import com.arabsoft.referentiel.repositories.*;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -77,6 +80,36 @@ public class ParamAdherents {
     @PostMapping("/deleteAgence")
     public void deleteAgence(@RequestBody CleAgence agence) {
         agenceRepository.deleteById(agence);
+    }
+
+    @DeleteMapping("/deleteBanque/{codBanq}")
+    public ResponseEntity<String> deleteBanque(@PathVariable String codBanq) {
+        if (!agenceRepository.getAgence(codBanq).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cette banque contient des agences : supprimez-les d'abord.");
+        }
+        try {
+            banqueRepository.deleteById(codBanq);
+            return ResponseEntity.ok().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cette banque est utilisée ailleurs et ne peut pas être supprimée.");
+        }
+    }
+
+    @DeleteMapping("/deleteGouv/{codGouv}")
+    public ResponseEntity<String> deleteGouv(@PathVariable String codGouv) {
+        if (!posteRepository.getPoste(codGouv).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ce gouvernorat contient des postes : supprimez-les d'abord.");
+        }
+        try {
+            gouvernoratRepository.deleteById(codGouv);
+            return ResponseEntity.ok().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ce gouvernorat est utilisé ailleurs et ne peut pas être supprimé.");
+        }
     }
 
     @GetMapping("/getBanque")
