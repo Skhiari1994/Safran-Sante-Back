@@ -17,7 +17,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
       select
           p.num_retr,
           p.mat_pers,
-          p.mat_int,
           p.dat_nais,
           p.num_assur,
           concat(p.nom_pers, concat(' ', p.pren_pers)) AS nom,
@@ -213,7 +212,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
   @Query(value = """
       select
           mat_pers,
-          mat_int,
           dat_nais,
           num_retr,
           concat(nom_pers, concat(' ', pren_pers)) as nom
@@ -226,7 +224,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
   @Query(value = """
       select
           mat_pers,
-          mat_int,
           dat_nais,
           num_retr,
           concat(nom_pers, concat(' ', pren_pers)) as nom

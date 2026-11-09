@@ -43,8 +43,6 @@ public class RefFiliere {
 
     private String lib_param;
 
-    private String lib_param_a;
-
     private Double taux_param;
 
     private Integer nbr_membre;

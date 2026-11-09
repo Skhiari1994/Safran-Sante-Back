@@ -20,6 +20,9 @@ public class FichSal {
 
     @Id
     private Long ordre;
+
     private String ligne;
+
     private String typ_lig;
+
 }

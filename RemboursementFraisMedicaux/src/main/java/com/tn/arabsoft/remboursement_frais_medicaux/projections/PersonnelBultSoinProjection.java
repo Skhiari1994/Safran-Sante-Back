@@ -7,8 +7,6 @@ public interface PersonnelBultSoinProjection {
 
     String getMat_pers();
 
-    String getMat_int();
-
     String getDat_nais();
 
     String getNom();

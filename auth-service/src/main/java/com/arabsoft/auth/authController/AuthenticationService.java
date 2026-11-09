@@ -15,6 +15,7 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -111,23 +112,48 @@ public class AuthenticationService {
         return codeBuilder.toString();
     }
 
+    /*
+     * public AuthenticationResponse authenticate(AuthenticationRequest request) {
+     * var auth = authenticationManager.authenticate(
+     * new UsernamePasswordAuthenticationToken(
+     * request.getUseLogin(),
+     * request.getPassword()));
+     * var claims = new HashMap<String, Object>();
+     * var user = ((User) auth.getPrincipal());
+     * claims.put("fullName", user.fullName());
+     * var jwtToken = jwtService.generateToken(claims, user);
+     * return AuthenticationResponse.builder()
+     * .token(jwtToken)
+     * .roles(user.getRoles())
+     * .matPers(user.getMatpers())
+     * .useLogin(user.getUselogin())
+     * .codSoc(user.getCod_soc())
+     * .build();
+     * }
+     */
+
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUseLogin(),
+                        request.getUseLogin() + "|" + request.getCodSoc(),
                         request.getPassword()));
+
         var claims = new HashMap<String, Object>();
+
         var user = ((User) auth.getPrincipal());
+
         claims.put("fullName", user.fullName());
         claims.put("matPers", user.getMatpers());
         claims.put("codSoc", user.getCodSoc());
         var jwtToken = jwtService.generateToken(claims, user);
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .roles(user.getRoles())
                 .matPers(user.getMatpers())
                 .useLogin(user.getUselogin())
-                .codSoc(user.getCod_soc())
+                .codSoc(user.getCodSoc())
                 .build();
     }
 

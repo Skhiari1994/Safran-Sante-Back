@@ -57,8 +57,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
-                            p.mat_int,
-                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as lib_lieu
                        from personnel p
@@ -112,8 +110,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
-                            p.mat_int,
-                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as libLieu
                        from personnel p
@@ -168,8 +164,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
-                            p.mat_int,
-                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as libLieu
                        from personnel p
@@ -183,11 +177,10 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
        Long countCodSocAndMatPers(@Param("soc") String codSoc, @Param("mat") String matPers);
 
        @Query(value = """
-                     select p.mat_int matInt,
-                            p.mat_pers matPers,
+                     select p.mat_pers matPers,
                             concat(p.nom_pers, concat(' ', p.pren_pers)) nomPren
                        from personnel p
-                      order by p.mat_int
+                      order by p.cod_soc, p.mat_pers
                      """, nativeQuery = true)
        List<MatIntProjection> getMatInt();
 

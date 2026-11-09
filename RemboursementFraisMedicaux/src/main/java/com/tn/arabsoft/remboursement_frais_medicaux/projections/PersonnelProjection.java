@@ -89,10 +89,6 @@ public interface PersonnelProjection {
 
     LocalDate getDat_maj();
 
-    String getMat_int();
-
-    String getPers_carte();
-
     String getFull_name();
 
     String getLib_assur();

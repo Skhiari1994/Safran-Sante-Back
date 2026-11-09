@@ -100,10 +100,6 @@ public class PersonnelDTO {
 
     private LocalDate dat_maj;
 
-    private String mat_int;
-
-    private String pers_carte;
-
     private String fullName;
 
 }

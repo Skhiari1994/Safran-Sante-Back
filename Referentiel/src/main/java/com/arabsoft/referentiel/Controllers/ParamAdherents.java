@@ -7,6 +7,9 @@ import com.arabsoft.referentiel.repositories.*;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -79,9 +82,42 @@ public class ParamAdherents {
         agenceRepository.deleteById(agence);
     }
 
+    @DeleteMapping("/deleteBanque/{codBanq}")
+    public ResponseEntity<String> deleteBanque(@PathVariable String codBanq) {
+        if (!agenceRepository.getAgence(codBanq).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cette banque contient des agences : supprimez-les d'abord.");
+        }
+        try {
+            banqueRepository.deleteById(codBanq);
+            return ResponseEntity.ok().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cette banque est utilisée ailleurs et ne peut pas être supprimée.");
+        }
+    }
+
+    @DeleteMapping("/deleteGouv/{codGouv}")
+    public ResponseEntity<String> deleteGouv(@PathVariable String codGouv) {
+        if (!posteRepository.getPoste(codGouv).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ce gouvernorat contient des postes : supprimez-les d'abord.");
+        }
+        try {
+            gouvernoratRepository.deleteById(codGouv);
+            return ResponseEntity.ok().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ce gouvernorat est utilisé ailleurs et ne peut pas être supprimé.");
+        }
+    }
+
     @GetMapping("/getBanque")
     List<Banque> getBanque() {
-        return banqueRepository.findAll();
+        return banqueRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Banque::getCod_banq))
+                .toList();
     }
 
     @GetMapping("/getAgence/{codBanq}")
@@ -96,16 +132,12 @@ public class ParamAdherents {
 
     @PostMapping("/addAgence")
     public void addAgence(@RequestBody List<Agence> f) {
-
         agenceRepository.saveAll(f);
-
     }
 
     @PostMapping("/addSociete")
     public void addSociete(@RequestBody Societe f) {
-
         societeRepository.save(f);
-
     }
 
     @GetMapping("/getSociete")
@@ -115,13 +147,11 @@ public class ParamAdherents {
 
     @PostMapping("/addDepartement")
     public void addDepartement(@RequestBody PrmLieuGeographique f) {
-
         prmLieuGeogRepository.save(f);
     }
 
     @PostMapping("/deleteDep")
     public void deleteDep(@RequestBody String f) {
-
         prmLieuGeogRepository.deleteById(f);
     }
 
@@ -132,47 +162,47 @@ public class ParamAdherents {
 
     @PostMapping("/addAffectation")
     public void addAffectation(@RequestBody Affectation f) {
-
         affectationRepository.save(f);
     }
 
     @PostMapping("/delAffectation")
     public void delAffectation(@RequestBody String f) {
-
         affectationRepository.deleteById(f);
     }
 
     @GetMapping("/getAffectation")
     List<Affectation> getAffectation() {
-        return affectationRepository.findAll();
+        return affectationRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Affectation::getCod_affect))
+                .toList();
     }
 
     @PostMapping("/addTypDepart")
     public void addTypDepart(@RequestBody TypeDepart f) {
-
         typeDepartRepository.save(f);
     }
 
     @PostMapping("/deleTypeDepart")
     public void deleTypeDepart(@RequestBody String f) {
-
         typeDepartRepository.deleteById(f);
     }
 
     @GetMapping("/getTypDepart")
     List<TypeDepart> getTypDepart() {
-        return typeDepartRepository.findAll();
+        return typeDepartRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(TypeDepart::getCod_typ_depart))
+                .toList();
     }
 
     @PostMapping("/addActiviteEnf")
     public void addActiviteEnf(@RequestBody ActiviteFamille f) {
-
         activiteFamilleRepository.save(f);
     }
 
     @PostMapping("/deletActiviteEnf")
     public void deletActiviteEnf(@RequestBody String f) {
-
         activiteFamilleRepository.deleteById(f);
     }
 

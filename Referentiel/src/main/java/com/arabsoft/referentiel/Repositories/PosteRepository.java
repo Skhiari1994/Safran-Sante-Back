@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface PosteRepository extends JpaRepository<Poste, ClePoste> {
 
-    @Query(value = "select * from poste where cod_gouv = :gouv", nativeQuery = true)
+    @Query(value = "select * from poste where cod_gouv = :gouv order by cod_gouv, cod_poste", nativeQuery = true)
     List<Poste> getPoste(@Param("gouv") String gouv);
 
     @Query(value = "select * from poste where cod_gouv = :gouv and cod_poste = :post", nativeQuery = true)

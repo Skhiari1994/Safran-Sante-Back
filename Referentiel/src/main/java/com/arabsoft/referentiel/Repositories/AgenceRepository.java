@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface AgenceRepository extends JpaRepository<Agence, CleAgence> {
 
-  @Query(value = "select * from agence where cod_banq=:banq", nativeQuery = true)
+  @Query(value = "select * from agence where cod_banq = :banq order by cod_banq, cod_agc", nativeQuery = true)
   List<Agence> getAgence(@Param("banq") String banq);
 
 }
