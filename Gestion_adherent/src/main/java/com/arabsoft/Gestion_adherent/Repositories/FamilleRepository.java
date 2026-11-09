@@ -119,7 +119,7 @@ public interface FamilleRepository extends JpaRepository<Famille, CleFamille> {
                 t.pec_mut,
                 t.dat_pec_mut
            from famille t
-          where cod_soc = :codSoc
+          where cod_soc = :codSoc 
             and mat_pers = :matPers
          """, nativeQuery = true)
    public List<Famille> getFamille(@Param("codSoc") String codSoc,
