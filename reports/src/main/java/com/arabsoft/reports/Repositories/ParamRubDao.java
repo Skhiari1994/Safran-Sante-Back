@@ -14,6 +14,9 @@ public interface ParamRubDao extends JpaRepository<ParamRub, Long> {
 	public List<ParamRub> getParams(@Param("codRap") Long codRap);
 
 	@Query(value = "select seq_param_rapport_rub.nextval from dual", nativeQuery = true)
-	Long getNextSequenceValue();
+	Long getNextSequenceValueOracle();
+
+	@Query(value = "select next value for dbo.seq_param_rapport_rub", nativeQuery = true)
+	Long getNextSequenceValueSqlServer();
 
 }

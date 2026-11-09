@@ -39,7 +39,6 @@ public class ConnectionBdReport {
 		String path = "c:/pdf";
 		try {
 			File file = ResourceUtils.getFile("classpath:" + param1 + ".jrxml");
-			System.out.println("parameters" + file);
 			JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
 			Map parameters = new HashMap();
 			parameters.put("mat1", param2);
@@ -47,17 +46,12 @@ public class ConnectionBdReport {
 			parameters.put("dat", param4);
 			parameters.put("ctb", param5);
 
-			System.out.println("parameters" + parameters.values());
-			// parameters.put("numFactInd",Long.parseLong(param2));
-
-			// parameters.put("Logo",context.getRealPath("/")+"/images/articles/angular.png");
 			// get Connection
 			Connection conn = bdReport();
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, conn);
 			// create file jasper
 			param1 = param1 + System.currentTimeMillis();
 			JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\" + param1 + ".pdf");
-			// return Files.readAllBytes(Paths.get(path + "\\" + ReportName + ".pdf"));
 			return Files.readAllBytes(Paths.get(path + "\\" + param1 + ".pdf"));
 		} catch (Exception ex) {
 			return null;
@@ -70,7 +64,6 @@ public class ConnectionBdReport {
 			// Chargement du fichier JRXML
 			String cheminJRXML = "E:\\PARTAGE\\rapport_grh_pub\\Jasperfile\\" + param1 + ".jrxml";
 			File jrxmlFile = ResourceUtils.getFile(cheminJRXML);
-			System.out.println("jrxmlInputStream **************" + jrxmlFile);
 			// System.out.println("cheminJRXML **************"+cheminJRXML);
 			String path = "E:/PARTAGE/pdf";
 
@@ -81,14 +74,12 @@ public class ConnectionBdReport {
 
 			// Compilation du rapport JRXML en JasperReport
 			JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlFile.getAbsolutePath());
-			System.out.println("jasperReport **************" + jasperReport);
 			// Paramètres du rapport
 			Map<String, Object> parametres = new HashMap<>();
 			parametres.put("mat1", param2);
 			parametres.put("COD_SOC", param3);
 			parametres.put("dat", param4);
 			parametres.put("ctb", param5);
-			System.out.println("parametres **************" + parametres.values());
 			// Connexion à la base de données (si nécessaire)
 			Connection conn = bdReport();
 
@@ -99,7 +90,6 @@ public class ConnectionBdReport {
 			byte[] rapportPDF = JasperExportManager.exportReportToPdf(jasperPrint);
 			param1 = param1 + System.currentTimeMillis();
 			JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\" + param1 + ".pdf");
-			// return Files.readAllBytes(Paths.get(path + "\\" + ReportName + ".pdf"));
 			return Files.readAllBytes(Paths.get(path + "\\" + param1 + ".pdf"));
 
 		} catch (Exception ex) {

@@ -5,6 +5,7 @@ import com.tn.arabsoft.administrations.projections.AutorisationNoeudProjection;
 import com.tn.arabsoft.administrations.repositories.AdmeventtypeDAO;
 import com.tn.arabsoft.administrations.repositories.AdmsubmoduleDAO;
 import com.tn.arabsoft.administrations.repositories.MenuGestionDao;
+import com.tn.arabsoft.administrations.services.DatabaseService;
 
 import jakarta.transaction.Transactional;
 
@@ -18,7 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/** Écran Gestion des modules : arbre complet, autorisations par noeud, rangs et suppressions en cascade. */
+/**
+ * Écran Gestion des modules : arbre complet, autorisations par noeud, rangs et
+ * suppressions en cascade.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/Menu")
@@ -31,7 +35,11 @@ public class MenuGestionController {
 
     private final AdmsubmoduleDAO submoduleRepository;
 
-    /** Tous les sous-menus de tous les niveaux (l arbre est reconstruit côté écran). */
+    private final DatabaseService databaseService;
+
+    /**
+     * Tous les sous-menus de tous les niveaux (l arbre est reconstruit côté écran).
+     */
     @GetMapping("/evtAll")
     public List<Admeventtype> getAllEvt() {
         return eventTypeRepository.findAll();
@@ -44,7 +52,8 @@ public class MenuGestionController {
     }
 
     /**
-     * Fixe la liste des rôles autorisés sur un noeud. Un rôle retiré l est aussi sur tous les
+     * Fixe la liste des rôles autorisés sur un noeud. Un rôle retiré l est aussi
+     * sur tous les
      * sous-éléments du noeud.
      */
     @PutMapping("/autorisations")
@@ -66,7 +75,18 @@ public class MenuGestionController {
 
         for (Long role : voulus) {
             if (!actuels.contains(role)) {
-                dao.insertAutorisation(sumId, evtId, role);
+
+                if (databaseService.isSqlServer()) {
+                    dao.insertAutorisationSqlServer(
+                            sumId,
+                            evtId,
+                            role);
+                } else {
+                    dao.insertAutorisationOracle(
+                            sumId,
+                            evtId,
+                            role);
+                }
             }
         }
         List<Long> noeuds = evtId == null
@@ -86,15 +106,17 @@ public class MenuGestionController {
     }
 
     /**
-     * Crée un module. La séquence peut être en retard sur les identifiants déjà présents :
-     * on avance jusqu à un identifiant libre au lieu d échouer sur la contrainte d unicité.
+     * Crée un module. La séquence peut être en retard sur les identifiants déjà
+     * présents :
+     * on avance jusqu à un identifiant libre au lieu d échouer sur la contrainte d
+     * unicité.
      */
     @PostMapping("/module")
     @Transactional
     public Map<String, Long> createModule(@RequestBody Map<String, Object> body) {
-        Long id = dao.nextModuleId();
+        Long id = databaseService.isSqlServer() ? dao.nextModuleIdSqlServer() : dao.nextModuleIdOracle();
         while (submoduleRepository.existsById(id)) {
-            id = dao.nextModuleId();
+            id = databaseService.isSqlServer() ? dao.nextModuleIdSqlServer() : dao.nextModuleIdOracle();
         }
         dao.insertModule(id, String.valueOf(body.getOrDefault("sum_name", "")),
                 toLong(body.get("sum_rank")), String.valueOf(body.getOrDefault("sum_status", "O")),
@@ -160,7 +182,10 @@ public class MenuGestionController {
         }
     }
 
-    /** Identifiants de tous les descendants (à tous les niveaux) d un sous-menu, lui-même exclu. */
+    /**
+     * Identifiants de tous les descendants (à tous les niveaux) d un sous-menu,
+     * lui-même exclu.
+     */
     private List<Long> descendants(Long evtId) {
         List<Admeventtype> tous = eventTypeRepository.findAll();
         List<Long> resultat = new ArrayList<>();
