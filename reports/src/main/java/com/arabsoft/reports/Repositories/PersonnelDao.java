@@ -14,7 +14,7 @@ import java.util.List;
 public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
 
         @Query(value = """
-                        select mat_pers, mat_int, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
+                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
                         from personnel
                         where cod_soc = :soc
                         and etat_act = 'A'
@@ -24,7 +24,7 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
         List<PersonnelProjection> getPersonnel(@Param("soc") String soc, @Param("mat_pers") String mat_pers);
 
         @Query(value = """
-                        select mat_pers, mat_int, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
+                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
                         from personnel
                         where cod_soc = :soc
                         and mat_pers in (select mat_pers from bult_soin
@@ -35,7 +35,7 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
         List<PersonnelProjection> getPersRecap(@Param("soc") String soc, @Param("annee") String annee);
 
         @Query(value = """
-                        select mat_pers, mat_int, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
+                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
                         from personnel
                         where cod_soc = :soc
                         and etat_act = 'A'
@@ -50,7 +50,7 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
         List<PersonnelProjection> getPersBultMutDeb(@Param("soc") String soc, @Param("mat_fin") String mat_fin);
 
         @Query(value = """
-                        select mat_pers, mat_int, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
+                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
                         from personnel
                         where cod_soc = :soc
                         and etat_act = 'A'
@@ -65,7 +65,7 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
         List<PersonnelProjection> getPersBultMutFin(@Param("soc") String soc, @Param("mat_deb") String mat_fin);
 
         @Query(value = """
-                        select mat_pers, mat_int, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
+                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
                         from personnel
                         where cod_soc = :soc
                         and etat_act = 'A'
@@ -80,7 +80,7 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
         List<PersonnelProjection> getPersBultCnamDeb(@Param("soc") String soc, @Param("mat_fin") String mat_fin);
 
         @Query(value = """
-                        select mat_pers, mat_int, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
+                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
                         from personnel
                         where cod_soc = :soc
                         and etat_act = 'A'

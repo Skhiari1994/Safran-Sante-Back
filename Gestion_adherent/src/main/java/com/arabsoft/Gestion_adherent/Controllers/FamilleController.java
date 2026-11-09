@@ -1,15 +1,18 @@
 package com.arabsoft.gestion_adherent.controllers;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 
+import com.arabsoft.gestion_adherent.dto.FamilleDTO;
 import com.arabsoft.gestion_adherent.entities.ActiviteFamille;
 import com.arabsoft.gestion_adherent.entities.CarteSoinsCnam;
 import com.arabsoft.gestion_adherent.entities.CarteSoinsPers;
 import com.arabsoft.gestion_adherent.entities.cle.CleCarteSoinsCnam;
+import com.arabsoft.gestion_adherent.entities.cle.CleFamille;
 import com.arabsoft.gestion_adherent.entities.Famille;
 import com.arabsoft.gestion_adherent.exceptions.FamilleCreationException;
 import com.arabsoft.gestion_adherent.projections.FamilleProjection;
@@ -57,20 +60,47 @@ public class FamilleController {
     }
 
     @PostMapping("/saveFam")
-    public void save(@RequestBody Famille f) {
-        // Sexe Pere P : Masculin
-        if ("P".equals(f.getParente())
+    @Transactional
+
+    public void save(@RequestBody FamilleDTO dto) {
+        CleFamille cle = new CleFamille(dto.getCod_soc().trim(), dto.getMat_pers().trim(), dto.getNum_fam());
+
+        Famille f = familleRepository.findById(cle)
+                .orElseGet(() -> {
+                    Famille newFam = new Famille();
+                    newFam.setCod_soc(cle.getCod_soc());
+                    newFam.setMat_pers(cle.getMat_pers());
+                    newFam.setNum_fam(cle.getNum_fam());
+                    return newFam;
+                });
+
+        // Set non-key fields from DTO — never overwrite the key
+        f.setNom_pren(dto.getNom_pren());
+        f.setParente(dto.getParente());
+        f.setDat_naiss(dto.getDat_naiss());
+        f.setSexe(dto.getSexe());
+        f.setCod_sit(dto.getCod_sit());
+        f.setHandicap(dto.getHandicap());
+        if (f.getCod_activite() != null && f.getCod_activite().trim().isEmpty()) {
+            f.setCod_activite(null);
+        }
+        f.setDat_dece(dto.getDat_dece());
+        f.setPec(dto.getPec());
+        f.setDat_pec(dto.getDat_pec());
+        f.setDat_mar(dto.getDat_mar());
+        f.setNom_jf(dto.getNom_jf());
+        f.setNum_ass_conj(dto.getNum_ass_conj());
+        f.setMat_pers_conj(dto.getMat_pers_conj());
+        f.setPec_mut(dto.getPec_mut());
+        f.setDat_pec_mut(dto.getDat_pec_mut());
+
+        // Auto-set sexe for parents if not provided
+        if (("P".equals(f.getParente()) || "M".equals(f.getParente()))
                 && (f.getSexe() == null || f.getSexe().isEmpty())) {
-            f.setSexe("M");
+            f.setSexe("P".equals(f.getParente()) ? "M" : "F");
         }
 
-        // Sexe Mere M : Feminin
-        if ("M".equals(f.getParente())
-                && (f.getSexe() == null || f.getSexe().isEmpty())) {
-            f.setSexe("F");
-        }
-
-        this.familleRepository.save(f);
+        familleRepository.save(f);
     }
 
     @GetMapping("/getEnfants/{codSoc}/{matPers}")
@@ -93,7 +123,10 @@ public class FamilleController {
         return this.carteSoinsCnamRepository.getCarteSoinsCnam(soc, mat);
     }
 
-    /** Cartes CNAM de l'utilisateur connecté : le matricule suffit, la société n'est pas toujours renseignée sur le compte. */
+    /**
+     * Cartes CNAM de l'utilisateur connecté : le matricule suffit, la société n'est
+     * pas toujours renseignée sur le compte.
+     */
     @GetMapping("/getCarteSoinsCnamUtilisateur")
     List<CarteSoinsCnam> getCarteSoinsCnamUtilisateur(@RequestParam("mat") String mat,
             @RequestParam(value = "soc", required = false) String soc) {
@@ -124,7 +157,10 @@ public class FamilleController {
         }
     }
 
-    /** Refuse une période qui recouvre une autre carte du même adhérent (bornes incluses), hors la carte `ignoree`. */
+    /**
+     * Refuse une période qui recouvre une autre carte du même adhérent (bornes
+     * incluses), hors la carte `ignoree`.
+     */
     private void verifierPasDeChevauchement(CarteSoinsCnam c, CleCarteSoinsCnam ignoree) {
         boolean chevauche = carteSoinsCnamRepository.getCarteSoinsCnam(c.getCod_soc(), c.getMat_pers()).stream()
                 .filter(autre -> autre.getNat_cart().equals(c.getNat_cart()))
@@ -149,7 +185,10 @@ public class FamilleController {
         return carteSoinsCnamRepository.save(c);
     }
 
-    /** La date de début fait partie de la clé : si elle change, l'ancienne ligne est supprimée puis recréée. */
+    /**
+     * La date de début fait partie de la clé : si elle change, l'ancienne ligne est
+     * supprimée puis recréée.
+     */
     @PutMapping("/updateCarteSoinsCnam/{oldNat}/{oldDateDebut}")
     @Transactional
     public CarteSoinsCnam updateCarteSoinsCnam(@PathVariable("oldNat") String oldNat,

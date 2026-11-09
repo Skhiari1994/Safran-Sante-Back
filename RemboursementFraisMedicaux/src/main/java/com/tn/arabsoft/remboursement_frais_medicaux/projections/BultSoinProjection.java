@@ -69,8 +69,6 @@ public interface BultSoinProjection {
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     LocalDate getDat_vir();
 
-    String getMat_int();
-
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     LocalDate getDat_nais();
 

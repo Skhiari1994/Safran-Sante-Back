@@ -2,6 +2,7 @@ package com.arabsoft.auth.authController;
 
 import com.arabsoft.auth.model.Token;
 import com.arabsoft.auth.model.User;
+import com.arabsoft.auth.projections.SocieteProjection;
 import com.arabsoft.auth.repository.TokenRepository;
 import com.arabsoft.auth.repository.UserRepository;
 
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -69,4 +71,21 @@ public class AuthenticationController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/getSocieteByLogin/{matPers}/{cin}")
+    public List<SocieteProjection> getSocieteByLogin(
+            @PathVariable String matPers,
+            @PathVariable String cin) {
+
+        Long useId = userRepository.findUseIdByMatriculeAndCin(matPers, cin);
+        Long roleId = userRepository.findRoleByUseId(useId);
+
+        if ((roleId != null && useId != null) && (roleId == 3L || roleId == 4L || roleId == 5L)) {
+            return userRepository.findAllSocietes();
+        } else {
+            return userRepository.findSocieteByMatriculeAndCin(matPers, cin);
+        }
+
+    }
+
 }

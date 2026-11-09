@@ -1,5 +1,8 @@
 package com.arabsoft.gestion_adherent.entities;
 
+import com.arabsoft.gestion_adherent.entities.cle.ClePhotoPers;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,12 +13,16 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "photo_pers")
+@IdClass(ClePhotoPers.class)
 @SuppressWarnings({ "java:S116" })
 public class PhotoPers {
 
+    @Id
     private String cod_soc;
 
+    @Id
     private String mat_pers;
 
     private byte[] photo;
@@ -25,10 +32,5 @@ public class PhotoPers {
     private String content_type;
 
     private String path;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqPhoto")
-    @SequenceGenerator(name = "seqPhoto", sequenceName = "PHOTO_PERS_SEQ", allocationSize = 1)
-    private Long id_photo_pers;
 
 }

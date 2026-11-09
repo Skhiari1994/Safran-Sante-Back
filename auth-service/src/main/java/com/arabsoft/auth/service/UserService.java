@@ -11,7 +11,6 @@ public interface UserService {
 
     List<User> findAll();
 
-
     User findById(Long id);
 
     void deleteById(Long id);
@@ -21,4 +20,5 @@ public interface UserService {
     void changePassword(ChangePasswordRequest request, Principal connectedUser);
 
     void createPasswordResetTokenForUser(User user, String passwordResetToken);
+
 }

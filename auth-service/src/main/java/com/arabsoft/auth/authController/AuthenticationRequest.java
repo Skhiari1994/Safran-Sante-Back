@@ -1,7 +1,8 @@
 package com.arabsoft.auth.authController;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -9,11 +10,16 @@ import lombok.*;
 @Getter
 @Setter
 public class AuthenticationRequest {
-    @NotEmpty(message = "Email is mandatory")
-    @NotNull(message = "Email is mandatory")
+
+    @NotBlank(message = "Use login (matricule) is mandatory")
     private String useLogin;
-    @NotEmpty(message = "Password is mandatory")
-    @NotNull(message = "Password is mandatory")
+
+    @NotBlank(message = "Password is mandatory")
     @Size(min = 8, message = "Password should be 8 characters long minimum")
     private String password;
+
+    @NotBlank(message = "Societe (cod_soc) is mandatory")
+    @JsonProperty("cod_soc")
+    private String codSoc;
+
 }

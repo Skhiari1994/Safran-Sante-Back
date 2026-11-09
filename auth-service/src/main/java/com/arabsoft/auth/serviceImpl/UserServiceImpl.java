@@ -19,12 +19,11 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordResetTokenService passwordresetTokenService ;
+    private final PasswordResetTokenService passwordresetTokenService;
 
     @Override
     public User addUser(User user) {
         String pw = user.getPassword();
-       // user.setPassword(passwordEncoder.encode(pw));
         return userRepository.save(user);
     }
 
@@ -41,19 +40,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Long id) {
-        if(!userRepository.existsById(id)){
-          throw new IllegalArgumentException("User not found by id  " + id);
+        if (!userRepository.existsById(id)) {
+            throw new IllegalArgumentException("User not found by id  " + id);
         }
-         userRepository.deleteById(id);
+        userRepository.deleteById(id);
     }
 
     @Override
     public User update(Long id, User user) {
         User userExisting = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("USer not found by id  "  + id));
+                .orElseThrow(() -> new IllegalArgumentException("USer not found by id  " + id));
 
-       user.setUse_fname(user.getUse_fname());
-        /// implementation rest de code
+        user.setUse_fname(user.getUse_fname());
+        // implementation rest de code
         return userRepository.save(userExisting);
     }
 
@@ -62,15 +61,15 @@ public class UserServiceImpl implements UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         // check if the current password is correct
-        if(!passwordEncoder.matches(request.getCurrentPassword() , user.getPassword())){
-            throw new IllegalArgumentException("Wrong password ")   ;
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Wrong password ");
         }
-        if(!request.getNewPassword().equals(request.getConfirmationPassword())){
+        if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
             throw new IllegalArgumentException("Password are not the same ");
         }
-        // update the new  password
+        // update the new password
         user.setUse_pswd(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user) ;
+        userRepository.save(user);
 
     }
 
@@ -78,6 +77,5 @@ public class UserServiceImpl implements UserService {
     public void createPasswordResetTokenForUser(User user, String passwordResetToken) {
         passwordresetTokenService.createPasswordResetTokenForUser(user, passwordResetToken);
     }
-
 
 }

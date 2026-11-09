@@ -84,7 +84,7 @@ public class User implements UserDetails, Principal {
     private String use_updtby;
 
     @Column(name = "COD_SOC")
-    private String cod_soc;
+    private String codSoc;
 
     @Column(name = "MAT_PERS")
     private String matpers;

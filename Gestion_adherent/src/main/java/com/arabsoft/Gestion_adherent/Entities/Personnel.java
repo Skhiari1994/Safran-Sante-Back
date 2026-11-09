@@ -119,8 +119,4 @@ public class Personnel {
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     private LocalDate dat_maj;
 
-    private String mat_int;
-
-    private String pers_carte;
-
 }
