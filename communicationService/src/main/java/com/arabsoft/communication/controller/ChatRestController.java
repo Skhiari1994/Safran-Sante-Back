@@ -14,7 +14,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class ChatRestController {
 
     private final ChatService chatService;
@@ -64,7 +63,8 @@ public class ChatRestController {
         return ResponseEntity.ok(roomId);
     }
 
-    @GetMapping("/users")
+    // "/contacts" : le front ne peut pas appeler "/users", intercepté par le fake-backend du template
+    @GetMapping({"/users", "/contacts"})
     public ResponseEntity<List<UserInfoDTO>> getAllUsers() {
         return ResponseEntity.ok(chatService.getAllUsers());
     }

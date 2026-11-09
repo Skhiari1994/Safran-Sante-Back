@@ -10,8 +10,8 @@ public interface UtilisateurConsultationProjection {
 
     String getPrenom();
 
-    String getRole();
+    String getCin();
 
-    String getRoleIds();
+    String getLibSoc();
 
 }

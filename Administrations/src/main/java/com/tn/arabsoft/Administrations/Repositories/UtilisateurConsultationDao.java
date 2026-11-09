@@ -2,6 +2,7 @@ package com.tn.arabsoft.administrations.repositories;
 
 import com.tn.arabsoft.administrations.entities.Role;
 import com.tn.arabsoft.administrations.projections.UtilisateurConsultationProjection;
+import com.tn.arabsoft.administrations.projections.UtilisateurRoleProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,15 +13,27 @@ import java.util.List;
 public interface UtilisateurConsultationDao extends JpaRepository<Role, Long> {
 
     @Query(value = "select u.use_id as useId, coalesce(u.mat_pers, u.use_login) as matricule, "
-            + "u.use_lname as nom, u.use_fname as prenom, "
-            + "(select listagg(r.name, ', ') within group (order by r.name) "
-            + "from admuser_roles ur join role r on r.id = ur.roles_id "
-            + "where ur.users_use_id = u.use_id) as role, "
-            + "(select listagg(ur.roles_id, ',') within group (order by ur.roles_id) "
-            + "from admuser_roles ur where ur.users_use_id = u.use_id) as roleIds "
-            + "from admuser u order by to_number(regexp_substr(coalesce(u.mat_pers, u.use_login), '^[0-9]+$')), u.use_login",
+            + "u.use_lname as nom, u.use_fname as prenom, p.cin as cin, s.lib_soc as libSoc "
+            + "from admuser u "
+            // left join : les comptes admin n'ont ni fiche personnel (CIN) ni société
+            + "left join personnel p on p.cod_soc = u.cod_soc and p.mat_pers = coalesce(u.mat_pers, u.use_login) "
+            + "left join societe s on s.cod_soc = u.cod_soc "
+            + "where (:codSoc = '' or u.cod_soc = :codSoc) order by "
+            + "case when try_cast(coalesce(u.mat_pers, u.use_login) as bigint) is null then 1 else 0 end, "
+            + "try_cast(coalesce(u.mat_pers, u.use_login) as bigint), u.use_login",
             nativeQuery = true)
-    List<UtilisateurConsultationProjection> findUtilisateurs();
+    List<UtilisateurConsultationProjection> findUtilisateurs(@Param("codSoc") String codSoc);
+
+    /**
+     * Rôles des utilisateurs, regroupés ensuite en Java : la concaténation SQL (for xml path) était
+     * ~100x plus lente (800 ms contre quelques ms pour 4 000 utilisateurs).
+     */
+    @Query(value = "select ur.users_use_id as useId, ur.roles_id as roleId, r.name as roleName "
+            + "from admuser_roles ur join role r on r.id = ur.roles_id "
+            + "join admuser u on u.use_id = ur.users_use_id "
+            + "where (:codSoc = '' or u.cod_soc = :codSoc) order by ur.users_use_id, r.name",
+            nativeQuery = true)
+    List<UtilisateurRoleProjection> findRolesUtilisateurs(@Param("codSoc") String codSoc);
 
     @Modifying
     @Query(value = "update admuser set use_lname = :nom, use_fname = :prenom where use_id = :id", nativeQuery = true)
