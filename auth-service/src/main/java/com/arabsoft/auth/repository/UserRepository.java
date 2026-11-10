@@ -20,6 +20,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByUseloginAndCodSoc(String uselogin, String codSoc);
 
+  /**
+   * Comptes à rôle RH (3), ADMIN (4) ou 5 pour un login, toutes sociétés confondues : ces profils peuvent se
+   * connecter sur n'importe quelle société (voir getSocieteByLogin).
+   */
+  @Query("select u from User u join u.roles r where u.uselogin = :login and r.id in (3, 4, 5) order by u.use_id")
+  List<User> findPrivilegedByUselogin(@Param("login") String login);
+
   @Query(value = """
       SELECT a.use_id
       FROM PERSONNEL AS p
@@ -36,7 +43,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
       @Param("cin") String cin);
 
   @Query(value = """
-      select roles_id from ADMUSER_ROLES as a where a.users_use_id = :useId
+      select max(a.roles_id) from ADMUSER_ROLES as a where a.users_use_id = :useId
       """, nativeQuery = true)
   Long findRoleByUseId(@Param("useId") Long useId);
 

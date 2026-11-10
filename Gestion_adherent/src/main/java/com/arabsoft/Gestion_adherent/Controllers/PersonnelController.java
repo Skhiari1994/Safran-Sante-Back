@@ -7,8 +7,10 @@ import com.arabsoft.gestion_adherent.dto.ResponseProcedureCharge;
 import com.arabsoft.gestion_adherent.entities.*;
 import com.arabsoft.gestion_adherent.projections.*;
 import com.arabsoft.gestion_adherent.repositories.*;
+import com.arabsoft.gestion_adherent.security.AccesUtilisateur;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -53,6 +55,7 @@ public class PersonnelController {
     private final ChargFichierService chargFichierService;
 
     private final TrsPersRepository trsPersRepository;
+    private final AccesUtilisateur acces;
 
     @PostMapping("/addUser")
     Personnel savePersonnel(@RequestBody Personnel personnel) {
@@ -83,8 +86,12 @@ public class PersonnelController {
     }
 
     @GetMapping("/getPersonnels")
-    public List<PersonnelPrejection> getPersonnels() {
-        return this.personnelRepository.getPersonnels();
+    public List<PersonnelPrejection> getPersonnels(@RequestParam(required = false) String codSoc,
+            HttpServletRequest request) {
+        // société choisie au login ; sans paramètre, toutes les sociétés
+        // un utilisateur simple ne voit que sa propre fiche (périmètre lu dans le token)
+        var limite = acces.porteeLimitee(request);
+        return this.personnelRepository.getPersonnels(socEffective(codSoc, limite), matEffectif(limite));
 
     }
 
@@ -95,15 +102,38 @@ public class PersonnelController {
     }
 
     @GetMapping("/getPersonnellesEnInstance")
-    public List<PersonnelPrejection> getPersonnellesEnInstance() {
-        return this.personnelRepository.getPersonnelEnInstance();
+    public List<PersonnelPrejection> getPersonnellesEnInstance(@RequestParam(required = false) String codSoc,
+            HttpServletRequest request) {
+        var limite = acces.porteeLimitee(request);
+        return this.personnelRepository.getPersonnelEnInstance(socEffective(codSoc, limite), matEffectif(limite));
 
     }
 
     @GetMapping("/getPersonnelles")
-    public List<Personnel> getAllPersonelles() {
-        return this.personnelRepository.findAll();
+    public List<Personnel> getAllPersonelles(@RequestParam(required = false) String codSoc,
+            HttpServletRequest request) {
+        // société choisie au login : seul son personnel est renvoyé ; sans paramètre, tout le personnel
+        // un utilisateur simple ne voit que sa propre fiche (périmètre lu dans le token)
+        var limite = acces.porteeLimitee(request);
+        String soc = socEffective(codSoc, limite);
+        if (soc.isEmpty() && limite.isEmpty()) {
+            return this.personnelRepository.findAll();
+        }
+        return this.personnelRepository.findBySociete(soc, matEffectif(limite));
 
+    }
+
+    /** Société du token pour un utilisateur limité, sinon celle demandée par le front ('' = toutes). */
+    private String socEffective(String codSoc, java.util.Optional<AccesUtilisateur.Portee> limite) {
+        if (limite.isPresent() && !limite.get().codSoc().isBlank()) {
+            return limite.get().codSoc().trim();
+        }
+        return codSoc == null ? "" : codSoc.trim();
+    }
+
+    /** Matricule imposé pour un utilisateur limité, sinon '' (pas de restriction). */
+    private String matEffectif(java.util.Optional<AccesUtilisateur.Portee> limite) {
+        return limite.map(AccesUtilisateur.Portee::matricule).orElse("");
     }
 
     @GetMapping("/getNationalite")

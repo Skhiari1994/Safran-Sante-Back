@@ -144,8 +144,7 @@ public class AuthenticationService {
         var user = ((User) auth.getPrincipal());
 
         claims.put("fullName", user.fullName());
-        claims.put("matPers", user.getMatpers());
-        claims.put("codSoc", user.getCodSoc());
+
         var jwtToken = jwtService.generateToken(claims, user);
 
         return AuthenticationResponse.builder()

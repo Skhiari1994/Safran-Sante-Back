@@ -22,7 +22,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/files")
 @Slf4j
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class FileUploadController {
 
     private final Path fileStorageLocation;

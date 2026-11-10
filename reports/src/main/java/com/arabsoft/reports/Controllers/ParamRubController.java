@@ -2,6 +2,7 @@ package com.arabsoft.reports.controllers;
 
 import com.arabsoft.reports.entities.ParamRub;
 import com.arabsoft.reports.repositories.ParamRubDao;
+import com.arabsoft.reports.services.DatabaseService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,16 +17,18 @@ import java.util.List;
 @SuppressWarnings({ "java:S4684", "java:S1452" })
 public class ParamRubController {
 
-    private final ParamRubDao paramRubRepository;
+    private final ParamRubDao paramRubRepo;
+
+    private final DatabaseService dbService;
 
     @GetMapping
     public List<ParamRub> getAllParamRub() {
-        return paramRubRepository.findAll();
+        return paramRubRepo.findAll();
     }
 
     @GetMapping("/{idRap}")
     public ResponseEntity<ParamRub> getParamRubById(@PathVariable Long idRap) {
-        return paramRubRepository.findById(idRap)
+        return paramRubRepo.findById(idRap)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -37,37 +40,39 @@ public class ParamRubController {
             return ResponseEntity.badRequest().body("cod_param ne peut pas être null");
         }
 
+        Long idRap = dbService.isSqlServer() ? paramRubRepo.getNextSequenceValueSqlServer()
+                : paramRubRepo.getNextSequenceValueOracle();
         if (paramRub.getId_rap() == null) {
-            paramRub.setId_rap(paramRubRepository.getNextSequenceValue());
+            paramRub.setId_rap(idRap);
         }
 
-        return ResponseEntity.ok(paramRubRepository.save(paramRub));
+        return ResponseEntity.ok(paramRubRepo.save(paramRub));
     }
 
     @PutMapping("/{idRap}")
     public ResponseEntity<ParamRub> updateParamRub(@PathVariable Long idRap,
             @RequestBody ParamRub updatedParam) {
 
-        if (!paramRubRepository.existsById(idRap)) {
+        if (!paramRubRepo.existsById(idRap)) {
             return ResponseEntity.notFound().build();
         }
 
         updatedParam.setId_rap(idRap);
-        return ResponseEntity.ok(paramRubRepository.save(updatedParam));
+        return ResponseEntity.ok(paramRubRepo.save(updatedParam));
     }
 
     @DeleteMapping("/{idRap}")
     public ResponseEntity<Void> deleteParamRub(@PathVariable Long idRap) {
-        if (!paramRubRepository.existsById(idRap)) {
+        if (!paramRubRepo.existsById(idRap)) {
             return ResponseEntity.notFound().build();
         }
-        paramRubRepository.deleteById(idRap);
+        paramRubRepo.deleteById(idRap);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/GetParametreById/{codRap}")
     public ResponseEntity<List<ParamRub>> getParamByCodRap(@PathVariable Long codRap) {
-        List<ParamRub> params = paramRubRepository.getParams(codRap);
+        List<ParamRub> params = paramRubRepo.getParams(codRap);
 
         if (params.isEmpty()) {
             return ResponseEntity.noContent().build();

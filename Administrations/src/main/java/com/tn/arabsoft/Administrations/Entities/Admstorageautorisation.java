@@ -17,7 +17,7 @@ public class Admstorageautorisation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqLibre")
-    @SequenceGenerator(name = "seqLibre", sequenceName = "ADMSTORAGEAUTORISATION_SEQ", allocationSize = 1)
+    @SequenceGenerator(name = "seqLibre", sequenceName = "SEQ_ADMSTORAGEAUTORISATION", allocationSize = 1)
     private Long id_autho;
 
     @ManyToOne

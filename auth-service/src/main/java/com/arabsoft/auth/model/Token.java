@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 public class Token {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqUser")
-    @SequenceGenerator(name = "seqUser", sequenceName = "SEQ_TOKEN", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqToken")
+    @SequenceGenerator(name = "seqToken", sequenceName = "SEQ_TOKEN", allocationSize = 1)
     private Integer id;
 
     @Column(name = "token")

@@ -39,8 +39,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String useLogin = parts[0];
         String codSoc = parts[1];
 
+        // 1. compte du login dans la société choisie ; 2. à défaut, un profil RH/ADMIN peut entrer dans
+        // n'importe quelle société (la société de travail est alors celle choisie au login, mise dans le token)
         return userRepository
                 .findByUseloginAndCodSoc(useLogin, codSoc)
+                .or(() -> userRepository.findPrivilegedByUselogin(useLogin).stream().findFirst())
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found for login " + useLogin
                                 + " and company " + codSoc));

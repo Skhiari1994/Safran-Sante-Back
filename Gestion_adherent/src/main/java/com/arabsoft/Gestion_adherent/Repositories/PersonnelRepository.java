@@ -63,8 +63,10 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                        left join prm_lieu_geographique lg
                               on lg.cod_lieu_geog = p.cod_lieu_geog
                       where p.etat_act = 'I'
+                        and (:soc = '' or p.cod_soc = :soc)
+                        and (:mat = '' or p.mat_pers = :mat)
                      """, nativeQuery = true)
-       List<PersonnelPrejection> getPersonnelEnInstance();
+       List<PersonnelPrejection> getPersonnelEnInstance(@Param("soc") String soc, @Param("mat") String mat);
 
        @Query(value = """
                      select
@@ -169,10 +171,15 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                        from personnel p
                        left join prm_lieu_geographique lg
                               on lg.cod_lieu_geog = p.cod_lieu_geog
+                      where (:soc = '' or p.cod_soc = :soc)
+                        and (:mat = '' or p.mat_pers = :mat)
                       order by p.mat_pers
                      """, nativeQuery = true)
-       List<PersonnelPrejection> getPersonnels();
+       List<PersonnelPrejection> getPersonnels(@Param("soc") String soc, @Param("mat") String mat);
 
+       /** Personnel d'une société (et d'un seul matricule si mat est renseigné). */
+       @Query("select p from Personnel p where p.cod_soc = :soc and (:mat = '' or p.mat_pers = :mat)")
+       List<Personnel> findBySociete(@Param("soc") String soc, @Param("mat") String mat);
        @Query(value = "select count(*) from personnel p where p.cod_soc = :soc and p.mat_pers = :mat ", nativeQuery = true)
        Long countCodSocAndMatPers(@Param("soc") String codSoc, @Param("mat") String matPers);
 
