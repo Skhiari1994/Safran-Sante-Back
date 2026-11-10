@@ -539,4 +539,18 @@ public class BulletinSoinController {
         boolean exists = ligBultMedRepository.existsById(id);
         return ResponseEntity.ok(exists);
     }
+    @GetMapping("/consultation")
+    public ResponseEntity<List<BultSoinProjection>> getConsultationBulletins(
+            @RequestParam String codSoc,
+            @RequestParam String matPers,
+            @RequestParam(required = false) String natBult,
+            @RequestParam int annee) {
+        String soc = (codSoc != null) ? codSoc.trim() : "";
+        String mat = (matPers != null) ? matPers.trim() : "";
+        String nat = (natBult != null && !natBult.trim().isEmpty() && !"null".equalsIgnoreCase(natBult))
+                ? natBult.trim().toUpperCase() : null;
+
+        List<BultSoinProjection> list = bultSoinRepository.findBulletinsConsultation(soc, mat, nat, annee);
+        return ResponseEntity.ok(list);
+    }
 }
