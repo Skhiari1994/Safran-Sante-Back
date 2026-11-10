@@ -95,6 +95,12 @@ public class PersonnelController {
 
     }
 
+    /** Nombre de fiches portant ce matricule dans la société : l'écran refuse un matricule déjà utilisé. */
+    @GetMapping("/countMat/{soc}/{mat}")
+    public Long countMat(@PathVariable("soc") String soc, @PathVariable("mat") String mat) {
+        return this.personnelRepository.countCodSocAndMatPers(soc, mat);
+    }
+
     @GetMapping("/getPersonnelles/{soc}/{mat}")
     public List<PersonnelPrejection> getPersonelles(@PathVariable("soc") String soc, @PathVariable("mat") String mat) {
         return this.personnelRepository.getPersonnelByMat(soc, mat);

@@ -57,6 +57,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
+                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as lib_lieu
                        from personnel p
@@ -112,6 +113,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
+                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as libLieu
                        from personnel p
@@ -166,6 +168,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
+                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as libLieu
                        from personnel p

@@ -226,6 +226,22 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
        List<BultSoinProjection> getBulletinCnamCons(@Param("soc") String soc, @Param("mat") String mat,
                      @Param("num_fam") Integer num_fam, @Param("dat_soin") LocalDate dat_soin);
 
+       /** Liste légère (5 champs) des bulletins CNAM consultables, pour la fenêtre de recherche. */
+       @Query(value = """
+                     select
+                         t.cod_soc,
+                         t.mat_pers,
+                         t.num_fam,
+                         t.dat_soin,
+                         t.cod_bord
+                     from bult_soin t
+                     where t.nat_bult = 'C'
+                       and coalesce(t.envoi, 'N') = 'O'
+                       and t.cod_soc = :soc
+                     order by t.dat_saisie desc, t.dat_soin desc, t.mat_pers, t.num_fam
+                     """, nativeQuery = true)
+       List<BultSoinListeProjection> getBulletinCnamListe(@Param("soc") String soc);
+
        @Query(value = """
                      select
                          b.abrv_act,
@@ -757,10 +773,37 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                            and f.num_fam = t.num_fam
                      where t.cod_soc = :soc
                        and t.nat_bult = 'M'
+                       and (:mat = '' or t.mat_pers = :mat)
+                       and (:num_fam is null or t.num_fam = :num_fam)
+                       and (:dat_soin is null or t.dat_soin = :dat_soin)
                      order by t.dat_saisie desc,
                               t.dat_soin desc
                      """, nativeQuery = true)
-       List<BultSoinProjection> getBultMut(@Param("soc") String soc);
+       List<BultSoinProjection> getBultMutFiltre(@Param("soc") String soc, @Param("mat") String mat,
+                     @Param("num_fam") Integer num_fam, @Param("dat_soin") LocalDate dat_soin);
+
+       /** Tous les bulletins mutuelle de la société (sans filtre). num_fam est numérique : null = pas de filtre. */
+       default List<BultSoinProjection> getBultMut(String soc) {
+              return getBultMutFiltre(soc, "", null, null);
+       }
+
+       /** Liste légère (5 champs) des bulletins mutuelle, pour la fenêtre de recherche. */
+       @Query(value = """
+                     select
+                         t.cod_soc,
+                         t.mat_pers,
+                         t.num_fam,
+                         t.dat_soin,
+                         t.cod_bord
+                     from bult_soin t
+                     inner join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     where t.cod_soc = :soc
+                       and t.nat_bult = 'M'
+                     order by t.dat_saisie desc, t.dat_soin desc, t.mat_pers, t.num_fam
+                     """, nativeQuery = true)
+       List<BultSoinListeProjection> getBultMutListe(@Param("soc") String soc);
 
        @Query(value = """
                      select *

@@ -89,6 +89,8 @@ public interface PersonnelPrejection {
 
     LocalDate getDat_maj();
 
+    String getPers_carte();
+
     String getFull_name();
 
     String getLib_lieu();
