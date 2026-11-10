@@ -120,6 +120,12 @@ public class BulletinSoinController {
 
     }
 
+    /** Liste légère pour la fenêtre de recherche : la fiche complète se charge via /getBultCnamCons à la sélection. */
+    @GetMapping("/getBultCnamListe")
+    public List<BultSoinListeProjection> getBultCnamListe(@RequestParam String soc) {
+        return bultSoinRepository.getBulletinCnamListe(soc);
+    }
+
     @GetMapping("/getLigBult")
     public List<LigBult> getLigBult(@RequestParam String soc, @RequestParam String mat, @RequestParam String numFam,
             @RequestParam String datSoin) {
@@ -382,6 +388,20 @@ public class BulletinSoinController {
     @GetMapping("/getBultMut")
     List<BultSoinProjection> getBultMut(@RequestParam String soc) {
         return bultSoinRepository.getBultMut(soc);
+    }
+
+    /** Liste légère pour la fenêtre de recherche des bulletins mutuelle. */
+    @GetMapping("/getBultMutListe")
+    List<BultSoinListeProjection> getBultMutListe(@RequestParam String soc) {
+        return bultSoinRepository.getBultMutListe(soc);
+    }
+
+    /** Fiche complète d'un bulletin mutuelle choisi dans la liste légère. */
+    @GetMapping("/getBultMutFiche")
+    List<BultSoinProjection> getBultMutFiche(@RequestParam String soc, @RequestParam String mat,
+            @RequestParam String num_fam, @RequestParam String dat_soin) {
+        LocalDate localDate = LocalDate.parse(dat_soin, DateTimeFormatter.ofPattern(DATE_FORMAT));
+        return bultSoinRepository.getBultMutFiltre(soc, mat, Integer.valueOf(num_fam.trim()), localDate);
     }
 
     @GetMapping("/getBordtCnam")

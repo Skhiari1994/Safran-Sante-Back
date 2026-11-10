@@ -116,6 +116,9 @@ public class Personnel {
 
     private String cod_user;
 
+    /** Carte bancaire : O = oui, N = non (colonne PERS_CARTE). */
+    private String pers_carte;
+
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     private LocalDate dat_maj;
 
