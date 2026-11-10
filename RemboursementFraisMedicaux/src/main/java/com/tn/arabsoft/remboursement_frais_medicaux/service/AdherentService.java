@@ -29,13 +29,15 @@ public class AdherentService {
 
         return jdbcTemplate.execute((Connection connection) -> {
 
-            String call = getCallSyntax(connection, PKG_PLAFOND, "cal_plafond_mutuelle", 5);
-            System.out.println("wcodSoc: " + wcodSoc);
-            System.out.println("annee: " + annee);
-            System.out.println("matDeb: " + matDeb);
-            System.out.println("matFin: " + matFin);
-            System.out.println("connection: " + connection);
-            System.out.println("call: " + call);
+            String call = getCallSyntax(connection, PKG_PLAFOND, "cal_plafond_mutuelle", 6);
+            System.out.println("connection --> " + connection);
+            System.out.println("call --> " + call);
+            System.out.println("wcodSoc --> " + wcodSoc);
+            System.out.println("annee --> " + annee);
+            System.out.println("matDeb --> " + matDeb);
+            System.out.println("matFin --> " + matFin);
+
+            System.out.println("call --> " + call);
 
             try (CallableStatement cs = connection.prepareCall(call)) {
 
@@ -44,6 +46,7 @@ public class AdherentService {
                 cs.setString(3, matDeb);
                 cs.setString(4, matFin);
                 cs.registerOutParameter(5, Types.VARCHAR);
+                cs.registerOutParameter(6, Types.VARCHAR);
 
                 cs.execute();
 
@@ -59,13 +62,15 @@ public class AdherentService {
 
         return jdbcTemplate.execute((Connection connection) -> {
 
-            String call = getCallSyntax(connection, PKG_PLAFOND, "cal_plafond_cnam", 5);
-            System.out.println("wcodSoc: " + wcodSoc);
-            System.out.println("annee: " + annee);
-            System.out.println("matDeb: " + matDeb);
-            System.out.println("matFin: " + matFin);
-            System.out.println("connection: " + connection);
-            System.out.println("call: " + call);
+            String call = getCallSyntax(connection, PKG_PLAFOND, "cal_plafond_cnam", 6);
+
+            System.out.println("connection --> " + connection);
+            System.out.println("call --> " + call);
+            System.out.println("wcodSoc --> " + wcodSoc);
+            System.out.println("annee --> " + annee);
+            System.out.println("matDeb --> " + matDeb);
+            System.out.println("matFin --> " + matFin);
+
             try (CallableStatement cs = connection.prepareCall(call)) {
 
                 cs.setString(1, wcodSoc);
@@ -73,6 +78,7 @@ public class AdherentService {
                 cs.setString(3, matDeb);
                 cs.setString(4, matFin);
                 cs.registerOutParameter(5, Types.VARCHAR);
+                cs.registerOutParameter(6, Types.VARCHAR);
 
                 cs.execute();
 
@@ -91,7 +97,7 @@ public class AdherentService {
 
         return jdbcTemplate.execute((Connection connection) -> {
 
-            String call = getCallSyntax(connection, PKG_PLAFOND, "maj_pec_enf", 5);
+            String call = getCallSyntax(connection, PKG_PLAFOND, "maj_pec_enf", 6);
 
             try (CallableStatement cs = connection.prepareCall(call)) {
 
@@ -99,8 +105,8 @@ public class AdherentService {
                 cs.setString(2, annee);
                 cs.setString(3, matDeb);
                 cs.setString(4, matFin);
-
                 cs.registerOutParameter(5, Types.VARCHAR);
+                cs.registerOutParameter(6, Types.VARCHAR);
 
                 cs.execute();
 
