@@ -1038,12 +1038,14 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
        @Query(value = """
     SELECT b.*,
            rr.lib_remb AS lib_remb,
+           a.lib_assur AS lib_assur,
            CASE
                WHEN b.num_fam = '0' OR b.num_fam IS NULL THEN 'Adhérent'
                ELSE COALESCE(f.nom_pren, 'Adhérent')
            END AS nom_adherent
     FROM bult_soin b
     LEFT JOIN regime_remb rr ON rr.reg_remb = b.reg_remb
+    LEFT JOIN assurance a ON a.cod_assur = b.cod_assur
     LEFT JOIN famille f ON f.cod_soc = b.cod_soc
                        AND f.mat_pers = b.mat_pers
                        AND f.num_fam = b.num_fam
