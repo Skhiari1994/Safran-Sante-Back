@@ -19,4 +19,7 @@ public interface BultSoinListeProjection {
 
     String getCod_bord();
 
+    /** Sexe du bénéficiaire (famille, sinon l'adhérent) : alimente le filtre Masculin / Féminin de la fenêtre de recherche. */
+    String getSexe();
+
 }

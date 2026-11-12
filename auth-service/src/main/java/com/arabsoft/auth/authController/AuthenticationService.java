@@ -145,6 +145,21 @@ public class AuthenticationService {
 
         claims.put("fullName", user.fullName());
 
+        // matricule : celui de la fiche personnel, à défaut le login (comptes admin sans matricule)
+        String matricule = user.getMatpers() != null ? user.getMatpers() : user.getUselogin();
+        if (matricule != null) {
+            claims.put("matricule", matricule);
+        }
+        // société de travail : celle choisie au login (un RH/ADMIN peut entrer dans n'importe quelle société)
+        final String societe = request.getCodSoc() != null ? request.getCodSoc() : user.getCodSoc();
+        if (societe != null) {
+            claims.put("codSoc", societe);
+            userRepository.findAllSocietes().stream()
+                    .filter(s -> societe.equals(s.getCodSoc()))
+                    .findFirst()
+                    .ifPresent(s -> claims.put("libSoc", s.getLibSoc()));
+        }
+
         var jwtToken = jwtService.generateToken(claims, user);
 
         return AuthenticationResponse.builder()
@@ -152,7 +167,7 @@ public class AuthenticationService {
                 .roles(user.getRoles())
                 .matPers(user.getMatpers())
                 .useLogin(user.getUselogin())
-                .codSoc(user.getCodSoc())
+                .codSoc(societe)
                 .build();
     }
 

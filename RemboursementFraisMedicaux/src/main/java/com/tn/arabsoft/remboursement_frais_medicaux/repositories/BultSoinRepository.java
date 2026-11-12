@@ -236,8 +236,16 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.mat_pers,
                          t.num_fam,
                          t.dat_soin,
-                         t.cod_bord
+                         t.cod_bord,
+                         coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe
                      from bult_soin t
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     left join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
                      where t.nat_bult = 'C'
                        and coalesce(t.envoi, 'N') = 'O'
                        and t.cod_soc = :soc
@@ -799,11 +807,16 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.mat_pers,
                          t.num_fam,
                          t.dat_soin,
-                         t.cod_bord
+                         t.cod_bord,
+                         coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe
                      from bult_soin t
                      inner join personnel p
                             on p.cod_soc = t.cod_soc
                            and p.mat_pers = t.mat_pers
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
                      where t.cod_soc = :soc
                        and t.nat_bult = 'M'
                      order by t.dat_saisie desc, t.dat_soin desc, t.mat_pers, t.num_fam
