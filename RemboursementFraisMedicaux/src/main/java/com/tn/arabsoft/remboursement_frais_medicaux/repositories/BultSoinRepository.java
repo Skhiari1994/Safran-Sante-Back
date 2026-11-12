@@ -1067,4 +1067,5 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
        @Query(value = "select coalesce(max(num_soin), 0) + 1 from bult_soin", nativeQuery = true)
        Long nextNumSoin();
 
+
 }
