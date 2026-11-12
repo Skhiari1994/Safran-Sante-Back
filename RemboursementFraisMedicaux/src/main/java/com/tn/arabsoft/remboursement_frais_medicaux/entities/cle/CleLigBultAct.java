@@ -21,10 +21,12 @@ public class CleLigBultAct implements Serializable {
 
     private String abrv_act;
 
+    private LocalDate dat_act;
+
     private String cod_act;
 
     private Long num_lig;
 
-    private LocalDate dat_act;
+    private Long num_soin;
 
 }

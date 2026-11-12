@@ -21,8 +21,10 @@ public class BultSoinCle {
 
     private String mat_pers;
 
-    private String num_fam;
+    private Integer num_fam;
 
     private LocalDate dat_soin;
+
+    private Long num_soin;
 
 }

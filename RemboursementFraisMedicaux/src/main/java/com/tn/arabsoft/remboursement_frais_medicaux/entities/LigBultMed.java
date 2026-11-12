@@ -46,12 +46,19 @@ public class LigBultMed {
   private String abrv_act;
 
   @Id
+  @JsonDeserialize(using = CustomLocalDateDeserializer.class)
+  private LocalDate dat_act;
+
+  @Id
   private String cod_med;
 
   @Id
-  private Long num_lig_med;
-
   private Long num_lig;
+
+  @Id
+  private Long num_soin;
+
+  private Long num_lig_med;
 
   private Long indice;
 
@@ -62,9 +69,6 @@ public class LigBultMed {
   private BigDecimal mnt_remb;
 
   private String accord_med;
-
-  @JsonDeserialize(using = CustomLocalDateDeserializer.class)
-  private LocalDate dat_act;
 
   private String prf_typ;
 

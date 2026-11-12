@@ -45,12 +45,19 @@ public class LigBultApp {
     private String abrv_act;
 
     @Id
+    @JsonDeserialize(using = CustomLocalDateDeserializer.class)
+    private LocalDate dat_act;
+
+    @Id
     private String cod_app;
 
     @Id
-    private String num_lig_app;
-
     private Long num_lig;
+
+    @Id
+    private Long num_soin;
+
+    private String num_lig_app;
 
     private BigDecimal mnt_honor;
 
@@ -61,9 +68,6 @@ public class LigBultApp {
     private String accord_app;
 
     private Long indice;
-
-    @JsonDeserialize(using = CustomLocalDateDeserializer.class)
-    private LocalDate dat_act;
 
     private String prf_typ;
 

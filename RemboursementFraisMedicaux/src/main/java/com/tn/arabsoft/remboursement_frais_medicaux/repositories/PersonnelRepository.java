@@ -8,6 +8,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.Personnel;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.ClePersonnel;
 import com.tn.arabsoft.remboursement_frais_medicaux.projections.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @SuppressWarnings({ "java:S117" })
@@ -36,7 +37,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
   List<PersonnelBultSoinProjection> getPersonnelBultSoin(@Param("soc") String soc);
 
   @Query(value = """
-      select num_fam, nom_pren
+      select num_fam, nom_pren, dat_naiss as dat_nais
       from famille
       where cod_soc = :soc
         and mat_pers = :mat
@@ -44,7 +45,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
 
       union
 
-      select num_fam, nom_pren
+      select num_fam, nom_pren, dat_naiss as dat_nais
       from famille
       where cod_soc = :soc
         and mat_pers = :mat
@@ -52,6 +53,14 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
         and nom_pren is not null
       """, nativeQuery = true)
   List<AdherentProjection> getListAdherent(@Param("soc") String soc, @Param("mat") String mat);
+
+  @Query(value = """
+      select 0 as num_fam, concat(nom_pers, concat(' ',pren_pers)) as nom_pren, dat_nais
+      from personnel
+      where cod_soc = :soc
+        and mat_pers = :mat
+      """, nativeQuery = true)
+  AdherentProjection getAdherentLui(@Param("soc") String soc, @Param("mat") String mat);
 
   @Query(value = """
       select num_fam, nom_pren
@@ -205,9 +214,9 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
           a.lib_assur
       from personnel p
       left join assurance a on a.cod_assur = p.cod_assur
-      where p.etat_act = 'A'
+      where p.cod_soc = :soc and p.etat_act = 'A' order by cast(p.mat_pers as int)
       """, nativeQuery = true)
-  List<PersonnelProjection> getPersActif();
+  List<PersonnelProjection> getPersActif(@Param("soc") String soc);
 
   @Query(value = """
       select
@@ -232,5 +241,15 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
         and etat_act = 'A' order by cast(mat_pers as int)
       """, nativeQuery = true)
   List<PersonnelProjection> getPersBultCnamFin(@Param("soc") String soc);
+
+  @Query(value = """
+          SELECT p.dat_nais
+          FROM personnel p
+          WHERE p.cod_soc = :codSoc
+            AND p.mat_pers = :matPers
+      """, nativeQuery = true)
+  LocalDate findDatNais(
+      @Param("codSoc") String codSoc,
+      @Param("matPers") String matPers);
 
 }

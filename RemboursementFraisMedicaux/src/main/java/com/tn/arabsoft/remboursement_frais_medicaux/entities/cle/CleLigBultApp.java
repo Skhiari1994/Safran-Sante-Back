@@ -21,8 +21,12 @@ public class CleLigBultApp implements Serializable {
 
     private String abrv_act;
 
+    private LocalDate dat_act;
+
     private String cod_app;
 
-    private String num_lig_app;
+    private Long num_lig;
+
+    private Long num_soin;
 
 }

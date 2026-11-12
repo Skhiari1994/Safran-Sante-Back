@@ -21,8 +21,12 @@ public class CleLigBultMed implements Serializable {
 
     private String abrv_act;
 
+    private LocalDate dat_act;
+
     private String cod_med;
 
-    private Long num_lig_med;
+    private Long num_lig;
+
+    private Long num_soin;
 
 }

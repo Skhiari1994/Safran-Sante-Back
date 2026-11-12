@@ -19,5 +19,7 @@ public interface PlafondAssurProjection {
 
     BigDecimal getSold_assur_estim();
 
+    String getNomPrest();
+
     String getLibAssur();
 }

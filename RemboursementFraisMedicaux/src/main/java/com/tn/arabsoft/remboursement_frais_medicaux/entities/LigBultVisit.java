@@ -35,7 +35,7 @@ public class LigBultVisit {
     private String mat_pers;
 
     @Id
-    private String num_fam;
+    private Integer num_fam;
 
     @Id
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
@@ -51,7 +51,11 @@ public class LigBultVisit {
     @Id
     private String cod_visit;
 
-    private Long num_lig;
+    @Id
+    private Integer num_lig;
+
+    @Id
+    private Long num_soin;
 
     private BigDecimal mnt_honor;
 

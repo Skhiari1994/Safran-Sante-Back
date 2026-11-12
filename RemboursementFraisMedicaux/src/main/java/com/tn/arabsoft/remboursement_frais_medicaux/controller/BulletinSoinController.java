@@ -17,6 +17,8 @@ import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -120,7 +122,10 @@ public class BulletinSoinController {
 
     }
 
-    /** Liste légère pour la fenêtre de recherche : la fiche complète se charge via /getBultCnamCons à la sélection. */
+    /**
+     * Liste légère pour la fenêtre de recherche : la fiche complète se charge via
+     * /getBultCnamCons à la sélection.
+     */
     @GetMapping("/getBultCnamListe")
     public List<BultSoinListeProjection> getBultCnamListe(@RequestParam String soc) {
         return bultSoinRepository.getBulletinCnamListe(soc);
@@ -168,18 +173,27 @@ public class BulletinSoinController {
 
     @PostMapping("/addBultSoin")
     public BultSoin addBultSoin(@RequestBody BultSoin bultSoin) {
+
+        System.out.println("getCod_soc :: " + bultSoin.getCod_soc() + ", getMat_pers : " + bultSoin.getMat_pers()
+                + ",getNum_fam:: " + bultSoin.getNum_fam() + ", getNum_soin:: " + bultSoin.getNum_soin());
+        System.out.println("getDat_soin :: " + bultSoin.getDat_soin());
+
+        // New bulletin: generate the number and insert
+        if (bultSoin.getNum_soin() == null) {
+            bultSoin.setNum_soin(bultSoinRepository.nextNumSoin());
+            return bultSoinRepository.save(bultSoin);
+        }
+
+        // Existing bulletin: look it up by the full key and update
         BultSoinCle id = new BultSoinCle(
                 bultSoin.getCod_soc(),
                 bultSoin.getMat_pers(),
                 bultSoin.getNum_fam(),
-                bultSoin.getDat_soin());
-
-                System.out.println("getCod_soc :: "+bultSoin.getCod_soc()+ ", getMat_pers : "+bultSoin.getMat_pers() + ",getNum_fam:: "+bultSoin.getNum_fam());
-                System.out.println("getDat_soin :: "+bultSoin.getDat_soin());
+                bultSoin.getDat_soin(),
+                bultSoin.getNum_soin());
 
         return bultSoinRepository.findById(id)
                 .map(existingBult -> {
-                    // Mise à jour
                     existingBult.setTot_honor(bultSoin.getTot_honor());
                     existingBult.setTot_net(bultSoin.getTot_net());
                     existingBult.setObs(bultSoin.getObs());
@@ -187,6 +201,32 @@ public class BulletinSoinController {
                 })
                 .orElseGet(() -> bultSoinRepository.save(bultSoin));
     }
+
+    /*
+     * @PostMapping("/addBultSoin")
+     * public BultSoin addBultSoin(@RequestBody BultSoin bultSoin) {
+     * BultSoinCle id = new BultSoinCle(
+     * bultSoin.getCod_soc(),
+     * bultSoin.getMat_pers(),
+     * bultSoin.getNum_fam(),
+     * bultSoin.getDat_soin());
+     * 
+     * System.out.println("getCod_soc :: " + bultSoin.getCod_soc() +
+     * ", getMat_pers : " + bultSoin.getMat_pers()
+     * + ",getNum_fam:: " + bultSoin.getNum_fam());
+     * System.out.println("getDat_soin :: " + bultSoin.getDat_soin());
+     * 
+     * return bultSoinRepository.findById(id)
+     * .map(existingBult -> {
+     * // Mise à jour
+     * existingBult.setTot_honor(bultSoin.getTot_honor());
+     * existingBult.setTot_net(bultSoin.getTot_net());
+     * existingBult.setObs(bultSoin.getObs());
+     * return bultSoinRepository.save(existingBult);
+     * })
+     * .orElseGet(() -> bultSoinRepository.save(bultSoin));
+     * }
+     */
 
     @PostMapping("/addLigBult")
     List<LigBult> addLigBult(@RequestBody List<LigBult> ligBults) {
@@ -344,6 +384,24 @@ public class BulletinSoinController {
 
     @PostMapping("/addLigBultVisit")
     List<LigBultVisit> addLigBultVisit(@RequestBody List<LigBultVisit> ligBultVisit) {
+
+        // next free number per bulletin, kept in memory for the lines of this call
+        Map<String, Integer> nextByBulletin = new HashMap<>();
+
+        for (LigBultVisit l : ligBultVisit) {
+            if (l.getNum_lig() == null) {
+                String key = l.getCod_soc() + "|" + l.getMat_pers() + "|" + l.getNum_fam()
+                        + "|" + l.getDat_soin() + "|" + l.getNum_soin();
+
+                int next = nextByBulletin.computeIfAbsent(key, k -> ligBultVisitRepository.nextNumLig(
+                        l.getCod_soc(), l.getMat_pers(), l.getNum_fam(),
+                        l.getDat_soin(), l.getNum_soin()));
+
+                l.setNum_lig(next);
+                nextByBulletin.put(key, next + 1);
+            }
+        }
+
         return ligBultVisitRepository.saveAll(ligBultVisit);
     }
 
@@ -416,9 +474,9 @@ public class BulletinSoinController {
 
     @GetMapping("/getLigBultAct")
     public List<LigBultAct> getLigBultAct(@RequestParam String soc, @RequestParam String mat,
-            @RequestParam String numFam, @RequestParam String datSoin) {
+            @RequestParam Integer numFam, @RequestParam String datSoin, @RequestParam(required = false) Long numSoin) {
         LocalDate dat_soin = DateParser.parse(datSoin);
-        return ligBultActRepository.getLigBultAct(soc, mat, Long.valueOf(numFam), dat_soin);
+        return ligBultActRepository.getLigBultAct(soc, mat, numFam, dat_soin, numSoin);
     }
 
     @GetMapping("/getLigBultActCons")
@@ -430,10 +488,9 @@ public class BulletinSoinController {
 
     @GetMapping("/getLigBultVisit")
     public List<LigBultVisit> getLigBultVisit(@RequestParam String soc, @RequestParam String mat,
-            @RequestParam String numFam, @RequestParam String datSoin) {
-        Integer famInt = Integer.valueOf(numFam);
+            @RequestParam Integer numFam, @RequestParam String datSoin, @RequestParam(required = false) Long numSoin) {
         LocalDate date_soin = DateParser.parse(datSoin);
-        return ligBultVisitRepository.getLigBultVisit(soc, mat, famInt, date_soin);
+        return ligBultVisitRepository.getLigBultVisit(soc, mat, numFam, date_soin, numSoin);
     }
 
     @GetMapping("/getLigBultVisitCons")
@@ -446,10 +503,9 @@ public class BulletinSoinController {
 
     @GetMapping("/getLigBultMed")
     public List<LigBultMed> getLigBultMed(@RequestParam String soc, @RequestParam String mat,
-            @RequestParam String numFam, @RequestParam String datSoin) {
-        Integer famInt = Integer.valueOf(numFam);
+            @RequestParam Integer numFam, @RequestParam String datSoin, @RequestParam(required = false) Long numSoin) {
         LocalDate date_soin_sql = DateParser.parse(datSoin);
-        return ligBultMedRepository.getLigBultMed(soc, mat, famInt, date_soin_sql);
+        return ligBultMedRepository.getLigBultMed(soc, mat, numFam, date_soin_sql, numSoin);
     }
 
     @GetMapping("/getLigBultMedCons")
@@ -462,10 +518,9 @@ public class BulletinSoinController {
 
     @GetMapping("/getLigBultApp")
     public List<LigBultApp> getLigBultApp(@RequestParam String soc, @RequestParam String mat,
-            @RequestParam String numFam, @RequestParam String datSoin) {
-        Integer prestInt = Integer.valueOf(numFam);
+            @RequestParam Integer numFam, @RequestParam String datSoin, @RequestParam(required = false) Long numSoin) {
         LocalDate date_soin = DateParser.parse(datSoin);
-        return ligBultAppRepository.getLigBultApp(soc, mat, prestInt, date_soin);
+        return ligBultAppRepository.getLigBultApp(soc, mat, numFam, date_soin, numSoin);
     }
 
     @GetMapping("/getLigBultAppCons")
@@ -559,6 +614,7 @@ public class BulletinSoinController {
         boolean exists = ligBultMedRepository.existsById(id);
         return ResponseEntity.ok(exists);
     }
+
     @GetMapping("/consultation")
     public ResponseEntity<List<BultSoinProjection>> getConsultationBulletins(
             @RequestParam String codSoc,
@@ -568,7 +624,8 @@ public class BulletinSoinController {
         String soc = (codSoc != null) ? codSoc.trim() : "";
         String mat = (matPers != null) ? matPers.trim() : "";
         String nat = (natBult != null && !natBult.trim().isEmpty() && !"null".equalsIgnoreCase(natBult))
-                ? natBult.trim().toUpperCase() : null;
+                ? natBult.trim().toUpperCase()
+                : null;
 
         List<BultSoinProjection> list = bultSoinRepository.findBulletinsConsultation(soc, mat, nat, annee);
         return ResponseEntity.ok(list);

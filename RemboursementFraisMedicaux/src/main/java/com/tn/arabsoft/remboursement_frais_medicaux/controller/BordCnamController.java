@@ -306,7 +306,8 @@ public class BordCnamController {
                     row.getCod_soc(),
                     row.getMat_pers(),
                     row.getNum_fam(),
-                    row.getDat_soin());
+                    row.getDat_soin(),
+                    row.getNum_soin());
 
             BultSoin updatedDemande = bulletinSoinService.updateBultSoin(id, row.getEnvoi());
             updatedBultSoin.add(updatedDemande);

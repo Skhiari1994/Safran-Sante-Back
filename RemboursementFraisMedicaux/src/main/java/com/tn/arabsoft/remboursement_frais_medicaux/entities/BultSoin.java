@@ -34,7 +34,7 @@ public class BultSoin {
     private String mat_pers;
 
     @Id
-    private String num_fam;
+    private Integer num_fam;
 
     @Id
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
@@ -44,7 +44,7 @@ public class BultSoin {
 
     private String cod_assur;
 
-    private String num_soin;
+    private Long num_soin;
 
     private BigDecimal ord_bult;
 

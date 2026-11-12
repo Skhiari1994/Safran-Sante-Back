@@ -10,7 +10,9 @@ import com.tn.arabsoft.remboursement_frais_medicaux.service.AdherentService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,23 +37,26 @@ public class PersonnelController {
 
     @GetMapping("/getAdherent")
     List<AdherentProjection> getAdherent(@RequestParam String soc, @RequestParam String mat) {
-        List<AdherentProjection> list = personnelRepository.getListAdherent(soc, mat);
 
-        // Add synthetic row in Java
-        list.add(new AdherentProjection() {
+        AdherentProjection self = personnelRepository.getAdherentLui(soc, mat); // real name + birth date
+
+        List<AdherentProjection> list = new ArrayList<>(personnelRepository.getListAdherent(soc, mat));
+
+        // synthetic row: the adherent himself, always first
+        list.add(0, new AdherentProjection() {
             @Override
             public Integer getNum_fam() {
                 return 0;
             }
 
             @Override
-            public String getNOM_PREN() {
-                return "Adhérent";
+            public String getNom_pren() {
+                return self != null ? self.getNom_pren() : "Adherent";
             }
 
             @Override
-            public String getDat_nais() {
-                return null;
+            public LocalDate getDat_nais() {
+                return self != null ? self.getDat_nais() : null;
             }
         });
 
@@ -70,12 +75,12 @@ public class PersonnelController {
             }
 
             @Override
-            public String getNOM_PREN() {
+            public String getNom_pren() {
                 return "Adhérent";
             }
 
             @Override
-            public String getDat_nais() {
+            public LocalDate getDat_nais() {
                 return null;
             }
         });
@@ -156,8 +161,8 @@ public class PersonnelController {
     }
 
     @GetMapping("/getPersActif")
-    List<PersonnelProjection> getPersActif() {
-        return personnelRepository.getPersActif();
+    List<PersonnelProjection> getPersActif(@RequestParam String soc) {
+        return personnelRepository.getPersActif(soc);
     }
 
     @GetMapping("/getDossierMll")
@@ -181,8 +186,8 @@ public class PersonnelController {
     }
 
     @GetMapping("/getPlafondAssur")
-    List<PlafondAssurProjection> getPlafondAssur(@RequestParam String mat) {
-        return plafondAssurRepository.getPlafondAssur(mat);
+    List<PlafondAssurProjection> getPlafondAssur(@RequestParam String soc, @RequestParam String mat) {
+        return plafondAssurRepository.getPlafondAssur(soc, mat);
     }
 
     @GetMapping("/getPlafondCnam")

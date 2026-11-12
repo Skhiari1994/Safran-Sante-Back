@@ -53,6 +53,9 @@ public class LigBultAct {
   @Id
   private Long num_lig;
 
+  @Id
+  private Long num_soin;
+
   private String let_cod;
 
   private Long cot_act;

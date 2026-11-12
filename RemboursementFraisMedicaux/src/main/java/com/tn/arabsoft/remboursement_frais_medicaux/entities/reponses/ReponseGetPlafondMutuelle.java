@@ -11,9 +11,9 @@ public class ReponseGetPlafondMutuelle {
 
     String soldPlafondEstim;
 
-    String ageAn;
+    Integer ageAn;
 
-    String ageMois;
+    Integer ageMois;
 
     String message;
 

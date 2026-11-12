@@ -10,6 +10,10 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.BultSoin;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.BultSoinCle;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.BultSoinRepository;
+import com.tn.arabsoft.remboursement_frais_medicaux.repositories.FamilleRepository;
+import com.tn.arabsoft.remboursement_frais_medicaux.repositories.PersonnelRepository;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.AgeUtil;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.AgeUtil.Age;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -25,51 +29,79 @@ import javax.sql.DataSource;
 
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({ "java:S117", "java:S107", "java:S112" })
+@SuppressWarnings({ "java:S117", "java:S107", "java:S112", "java:S4507" })
 public class BulletinSoinService {
 
     private final JdbcTemplate jdbcTemplate;
+
     private final BultSoinRepository bultSoinRepository;
+
+    private final PersonnelRepository personnelRepository;
+
+    private final FamilleRepository familleRepository;
+
+    private static final String PK_BULLETIN_SOIN = "PK_BULLETIN_SOIN";
 
     private static final String KEY_ERROR = "error";
 
-    public ReponseDatNais getDatNais(String wcodSoc, String mat_, String numFam) {
-        return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{call PK_BULLETIN_SOIN.get_dat_nais(?, ?, ?, ?)}";
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
-                callableStatement.setString(1, wcodSoc); // IN parameter
-                callableStatement.setString(2, mat_); // IN parameter
-                callableStatement.setString(3, numFam); // IN parameter
-                callableStatement.registerOutParameter(4, Types.VARCHAR); // OUT parameter (wdat_nais_fam)
+    public ReponseDatNais getDatNais(
+            String codSoc,
+            String matPers,
+            String numFam) {
 
-                callableStatement.execute(); // Exécute la procédure stockée
-                ReponseDatNais reponseDatNais = new ReponseDatNais();
-                String datNais = callableStatement.getString(4);
-                reponseDatNais.setDat_nais(datNais);
-                return reponseDatNais; // Récupération de la date de naissance
-            }
-        });
+        ReponseDatNais response = new ReponseDatNais();
+
+        Long famLongValue = Long.valueOf(numFam);
+
+        if (famLongValue == 0L) {
+
+            LocalDate datNais = personnelRepository.findDatNais(codSoc, matPers);
+
+            response.setDat_nais(String.valueOf(datNais));
+
+        } else {
+
+            LocalDate datNais = familleRepository.findDatNais(
+                    codSoc,
+                    matPers,
+                    famLongValue);
+
+            response.setDat_nais(String.valueOf(datNais));
+
+        }
+
+        return response;
     }
 
     public ReponseGetSexe getSexe(String wcodSoc, String mat_, String numFam) {
+
         return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{call PK_BULLETIN_SOIN.get_sexe(?, ?, ?, ?,?)}";
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
-                callableStatement.setString(1, wcodSoc); // IN parameter
-                callableStatement.setString(2, mat_); // IN parameter
-                callableStatement.setString(3, numFam); // IN parameter
-                callableStatement.registerOutParameter(4, Types.VARCHAR); // OUT parameter (wdat_nais_fam)
-                callableStatement.registerOutParameter(5, Types.VARCHAR); // OUT parameter (wdat_nais_fam)
 
-                callableStatement.execute(); // Exécute la procédure stockée
-                ReponseGetSexe reponseGetSexe = new ReponseGetSexe();
-                String parente = callableStatement.getString(4);
-                String sexe = callableStatement.getString(5);
+            String call = getCallSyntax(
+                    connection,
+                    PK_BULLETIN_SOIN,
+                    "get_sexe",
+                    5);
 
-                reponseGetSexe.setParente(parente);
-                reponseGetSexe.setSexe(sexe);
+            try (CallableStatement cs = connection.prepareCall(call)) {
 
-                return reponseGetSexe; // Récupération de la date de naissance
+                // IN parameters
+                cs.setString(1, wcodSoc);
+                cs.setString(2, mat_);
+                cs.setString(3, numFam);
+
+                // OUT parameters
+                cs.registerOutParameter(4, Types.VARCHAR);
+                cs.registerOutParameter(5, Types.VARCHAR);
+
+                cs.execute();
+
+                ReponseGetSexe response = new ReponseGetSexe();
+
+                response.setParente(cs.getString(4));
+                response.setSexe(cs.getString(5));
+
+                return response;
             }
         });
     }
@@ -120,8 +152,8 @@ public class BulletinSoinService {
 
                 reponseGetPlafondMutuelle.setSoldPlafond(soldPlafond);
                 reponseGetPlafondMutuelle.setSoldPlafondEstim(soldPlafondEstim);
-                reponseGetPlafondMutuelle.setAgeAn(ageAn);
-                reponseGetPlafondMutuelle.setAgeMois(ageMois);
+                reponseGetPlafondMutuelle.setAgeAn(Integer.valueOf(ageAn));
+                reponseGetPlafondMutuelle.setAgeMois(Integer.valueOf(ageMois));
                 reponseGetPlafondMutuelle.setMessage(message);
                 return reponseGetPlafondMutuelle;
             } catch (SQLException e) {
@@ -131,40 +163,60 @@ public class BulletinSoinService {
         });
     }
 
-    public ReponseGetPlafondMutuelle getPlafondCnam(String soc, String mat, String datSoin, String datNais,
-            String codAssur, String datSaisie) {
+    public ReponseGetPlafondMutuelle getPlafondCnam(
+            String soc,
+            String mat,
+            String datSoin,
+            String datNais,
+            String codAssur,
+            String datSaisie) {
+
         return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{call PK_BULLETIN_SOIN.get_plafond_cnam(?,?,?,?,?,?,?,?,?,?,?)}";
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
-                callableStatement.setString(1, soc);
-                callableStatement.setString(2, mat);
-                callableStatement.setString(3, datSoin);
-                callableStatement.setString(4, datNais);
-                callableStatement.setString(5, codAssur);
-                callableStatement.setString(6, datSaisie);
-                callableStatement.registerOutParameter(7, Types.VARCHAR);
-                callableStatement.registerOutParameter(8, Types.VARCHAR);
-                callableStatement.registerOutParameter(9, Types.VARCHAR);
-                callableStatement.registerOutParameter(10, Types.VARCHAR);
-                callableStatement.registerOutParameter(11, Types.VARCHAR);
-                callableStatement.execute();
 
-                String soldPlafond = callableStatement.getString(7);
-                String soldPlafondEstim = callableStatement.getString(8);
-                String ageAn = callableStatement.getString(9);
-                String ageMois = callableStatement.getString(10);
-                String message = callableStatement.getString(11);
-                ReponseGetPlafondMutuelle reponseGetPlafondMutuelle = new ReponseGetPlafondMutuelle();
+            String call = getCallSyntax(
+                    connection,
+                    PK_BULLETIN_SOIN,
+                    "get_plafond_cnam",
+                    11);
 
-                reponseGetPlafondMutuelle.setSoldPlafond(soldPlafond);
-                reponseGetPlafondMutuelle.setSoldPlafondEstim(soldPlafondEstim);
-                reponseGetPlafondMutuelle.setAgeAn(ageAn);
-                reponseGetPlafondMutuelle.setAgeMois(ageMois);
-                reponseGetPlafondMutuelle.setMessage(message);
-                return reponseGetPlafondMutuelle;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
+            try (CallableStatement cs = connection.prepareCall(call)) {
+
+                cs.setString(1, soc);
+                cs.setString(2, mat);
+                setDateParameter(cs, 3, datSoin);
+                setDateParameter(cs, 4, datNais);
+                cs.setString(5, codAssur);
+                setDateParameter(cs, 6, datSaisie);
+
+                /*
+                 * OUT parameters
+                 *
+                 * 7 = wsold_plafond
+                 * 8 = wsold_plafond_estim
+                 * 9 = wage_an
+                 * 10 = wage_mois
+                 * 11 = message
+                 */
+
+                cs.registerOutParameter(7, Types.VARCHAR);
+                cs.registerOutParameter(8, Types.VARCHAR);
+                cs.registerOutParameter(9, Types.VARCHAR);
+                cs.registerOutParameter(10, Types.VARCHAR);
+                cs.registerOutParameter(11, Types.VARCHAR);
+
+                cs.execute();
+
+                ReponseGetPlafondMutuelle response = new ReponseGetPlafondMutuelle();
+
+                Age age = AgeUtil.calculateAge(datNais);
+
+                response.setSoldPlafond(cs.getString(7));
+                response.setSoldPlafondEstim(cs.getString(8));
+                response.setAgeAn(age.years());
+                response.setAgeMois(age.months());
+                response.setMessage(cs.getString(11));
+
+                return response;
             }
         });
     }
@@ -348,11 +400,11 @@ public class BulletinSoinService {
                 callableStatement.setString(1, soc);
                 callableStatement.setString(2, mat);
                 callableStatement.setString(3, numFam);
-
                 callableStatement.setDate(4, sqlDatSoin);
                 callableStatement.setBigDecimal(5, mntHnor);
                 callableStatement.setString(6, codApp);
                 callableStatement.setLong(7, mutMntNet);
+
                 callableStatement.registerOutParameter(8, Types.NUMERIC);
                 callableStatement.registerOutParameter(9, Types.VARCHAR);
                 callableStatement.execute();
@@ -384,10 +436,10 @@ public class BulletinSoinService {
                 callableStatement.setString(3, codVisit);
                 callableStatement.setBigDecimal(4, mntHnor);
                 callableStatement.setDate(5, sqlDatSoin);
-
                 callableStatement.setBigDecimal(6, prixVisit);
                 callableStatement.setBigDecimal(7, tauxRemb);
                 callableStatement.setBigDecimal(8, sauvNet);
+
                 callableStatement.registerOutParameter(9, Types.NUMERIC);
                 callableStatement.registerOutParameter(10, Types.VARCHAR);
                 callableStatement.execute();
@@ -420,11 +472,11 @@ public class BulletinSoinService {
                 callableStatement.setString(3, codAct);
                 callableStatement.setBigDecimal(4, mntHnor);
                 callableStatement.setDate(5, sqlDatSoin);
-
                 callableStatement.setBigDecimal(6, actPrix);
                 callableStatement.setBigDecimal(7, tauxAct);
                 callableStatement.setBigDecimal(8, cumul_net_);
                 callableStatement.setBigDecimal(9, sauv_net_);
+
                 callableStatement.registerOutParameter(10, Types.NUMERIC);
                 callableStatement.registerOutParameter(11, Types.VARCHAR);
                 callableStatement.execute();
@@ -457,11 +509,11 @@ public class BulletinSoinService {
                 callableStatement.setString(3, codMed);
                 callableStatement.setBigDecimal(4, mntHnor);
                 callableStatement.setDate(5, sqlDatSoin);
-
                 callableStatement.setBigDecimal(6, prixRemb);
                 callableStatement.setLong(7, indice);
                 callableStatement.setBigDecimal(8, cumul_net_);
                 callableStatement.setBigDecimal(9, sauv_net_);
+
                 callableStatement.registerOutParameter(10, Types.NUMERIC);
                 callableStatement.registerOutParameter(11, Types.VARCHAR);
                 callableStatement.execute();
@@ -923,4 +975,71 @@ public class BulletinSoinService {
             throw new RuntimeException("Erreur lors de l'appel de envoi_bord_envoi : " + e.getMessage(), e);
         }
     }
+
+    private String getCallSyntax(Connection connection, String packageName, String procedureName, int paramsCount)
+            throws SQLException {
+
+        String dbProduct = connection.getMetaData().getDatabaseProductName().toLowerCase();
+
+        String procedure;
+
+        if (dbProduct.contains("oracle")) {
+            procedure = packageName + "." + procedureName;
+        } else if (dbProduct.contains("microsoft") || dbProduct.contains("sql server")) {
+            procedure = "dbo." + procedureName;
+        } else {
+            procedure = procedureName;
+        }
+
+        StringBuilder call = new StringBuilder("{call ");
+        call.append(procedure).append("(");
+
+        for (int i = 0; i < paramsCount; i++) {
+            if (i > 0) {
+                call.append(",");
+            }
+            call.append("?");
+        }
+
+        call.append(")}");
+
+        return call.toString();
+    }
+
+    private void setDateParameter(CallableStatement cs, int index, Object value) throws SQLException {
+
+        if (value == null || value.toString().trim().isEmpty()) {
+            cs.setNull(index, Types.DATE);
+            return;
+        }
+
+        String dateString = value.toString().trim();
+
+        LocalDate date;
+
+        try {
+            if (dateString.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                // yyyy-MM-dd
+                date = LocalDate.parse(
+                        dateString,
+                        DateTimeFormatter.ISO_LOCAL_DATE);
+            } else if (dateString.matches("\\d{2}/\\d{2}/\\d{4}")) {
+                // dd/MM/yyyy
+                date = LocalDate.parse(
+                        dateString,
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } else {
+                throw new IllegalArgumentException(
+                        "Format de date non supporté : " + dateString);
+            }
+
+            cs.setDate(index, java.sql.Date.valueOf(date));
+
+        } catch (DateTimeParseException e) {
+            throw new SQLException(
+                    "Date invalide pour le paramètre " + index + " : " + dateString,
+                    e);
+        }
+    }
+
 }

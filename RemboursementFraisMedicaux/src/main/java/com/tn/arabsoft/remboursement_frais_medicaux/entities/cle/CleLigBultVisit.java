@@ -15,14 +15,17 @@ public class CleLigBultVisit implements Serializable {
 
     private String mat_pers;
 
-    private String num_fam;
+    private Integer num_fam;
 
     private LocalDate dat_soin;
 
     private String abrv_act;
 
-    private String cod_visit;
-
     private LocalDate dat_act;
 
+    private String cod_visit;
+
+    private Integer num_lig;
+
+    private Long num_soin;
 }

@@ -226,7 +226,10 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
        List<BultSoinProjection> getBulletinCnamCons(@Param("soc") String soc, @Param("mat") String mat,
                      @Param("num_fam") Integer num_fam, @Param("dat_soin") LocalDate dat_soin);
 
-       /** Liste légère (5 champs) des bulletins CNAM consultables, pour la fenêtre de recherche. */
+       /**
+        * Liste légère (5 champs) des bulletins CNAM consultables, pour la fenêtre de
+        * recherche.
+        */
        @Query(value = """
                      select
                          t.cod_soc,
@@ -661,11 +664,8 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                           on r.abrv_act = a.abrv_act
                      join bareme_remb b
                           on b.abrv_act = a.abrv_act
-                     join ref_fill_act t
-                          on t.abrv_act = a.abrv_act
                      where b.cod_fil = :codFil
                        and b.cod_assur = :codAssur
-                       and t.cod_fil = :codFil
                      """, nativeQuery = true)
        List<MedProjection> getListMedCnam(
                      @Param("codFil") String codFil,
@@ -782,12 +782,17 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
        List<BultSoinProjection> getBultMutFiltre(@Param("soc") String soc, @Param("mat") String mat,
                      @Param("num_fam") Integer num_fam, @Param("dat_soin") LocalDate dat_soin);
 
-       /** Tous les bulletins mutuelle de la société (sans filtre). num_fam est numérique : null = pas de filtre. */
+       /**
+        * Tous les bulletins mutuelle de la société (sans filtre). num_fam est
+        * numérique : null = pas de filtre.
+        */
        default List<BultSoinProjection> getBultMut(String soc) {
               return getBultMutFiltre(soc, "", null, null);
        }
 
-       /** Liste légère (5 champs) des bulletins mutuelle, pour la fenêtre de recherche. */
+       /**
+        * Liste légère (5 champs) des bulletins mutuelle, pour la fenêtre de recherche.
+        */
        @Query(value = """
                      select
                          t.cod_soc,
@@ -1036,26 +1041,30 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      @Param("dat") LocalDate dat);
 
        @Query(value = """
-    SELECT b.*,
-           rr.lib_remb AS lib_remb,
-           CASE
-               WHEN b.num_fam = '0' OR b.num_fam IS NULL THEN 'Adhérent'
-               ELSE COALESCE(f.nom_pren, 'Adhérent')
-           END AS nom_adherent
-    FROM bult_soin b
-    LEFT JOIN regime_remb rr ON rr.reg_remb = b.reg_remb
-    LEFT JOIN famille f ON f.cod_soc = b.cod_soc
-                       AND f.mat_pers = b.mat_pers
-                       AND f.num_fam = b.num_fam
-    WHERE b.cod_soc = :codSoc
-      AND b.mat_pers = :matPers
-      AND (:natBult IS NULL OR :natBult = '' OR b.nat_bult = :natBult)
-      AND YEAR(b.dat_soin) = :annee
-    ORDER BY b.dat_soin DESC
-    """, nativeQuery = true)
-List<BultSoinProjection> findBulletinsConsultation(
-        @Param("codSoc") String codSoc,
-        @Param("matPers") String matPers,
-        @Param("natBult") String natBult,
-        @Param("annee") int annee);
+                     SELECT b.*,
+                            rr.lib_remb AS lib_remb,
+                            CASE
+                                WHEN b.num_fam = '0' OR b.num_fam IS NULL THEN 'Adhérent'
+                                ELSE COALESCE(f.nom_pren, 'Adhérent')
+                            END AS nom_adherent
+                     FROM bult_soin b
+                     LEFT JOIN regime_remb rr ON rr.reg_remb = b.reg_remb
+                     LEFT JOIN famille f ON f.cod_soc = b.cod_soc
+                                        AND f.mat_pers = b.mat_pers
+                                        AND f.num_fam = b.num_fam
+                     WHERE b.cod_soc = :codSoc
+                       AND b.mat_pers = :matPers
+                       AND (:natBult IS NULL OR :natBult = '' OR b.nat_bult = :natBult)
+                       AND YEAR(b.dat_soin) = :annee
+                     ORDER BY b.dat_soin DESC
+                     """, nativeQuery = true)
+       List<BultSoinProjection> findBulletinsConsultation(
+                     @Param("codSoc") String codSoc,
+                     @Param("matPers") String matPers,
+                     @Param("natBult") String natBult,
+                     @Param("annee") int annee);
+
+       @Query(value = "select coalesce(max(num_soin), 0) + 1 from bult_soin", nativeQuery = true)
+       Long nextNumSoin();
+
 }

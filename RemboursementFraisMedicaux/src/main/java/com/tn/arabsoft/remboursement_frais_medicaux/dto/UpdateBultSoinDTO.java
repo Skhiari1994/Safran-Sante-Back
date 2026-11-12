@@ -23,10 +23,12 @@ public class UpdateBultSoinDTO {
 
     private String mat_pers;
 
-    private String num_fam;
+    private Integer num_fam;
 
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     private LocalDate dat_soin;
+
+    private Long num_soin;
 
     private String envoi;
 

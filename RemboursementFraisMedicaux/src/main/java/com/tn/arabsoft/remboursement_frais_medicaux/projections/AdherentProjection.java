@@ -1,12 +1,14 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.projections;
 
+import java.time.LocalDate;
+
 @SuppressWarnings({ "java:S100" })
 public interface AdherentProjection {
 
     Integer getNum_fam();
 
-    String getNOM_PREN();
+    String getNom_pren();
 
-    String getDat_nais();
+    LocalDate getDat_nais();
 
 }
