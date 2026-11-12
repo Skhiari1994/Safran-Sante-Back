@@ -57,7 +57,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
-                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as lib_lieu
                        from personnel p
@@ -113,7 +112,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
-                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as libLieu
                        from personnel p
@@ -168,7 +166,6 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                             p.typ_aff,
                             p.cod_user,
                             p.dat_maj,
-                            p.pers_carte,
                             concat(p.pren_pers, concat(' ', p.nom_pers)) as full_name,
                             lg.lib_lieu as libLieu
                        from personnel p
@@ -183,6 +180,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
        /** Personnel d'une société (et d'un seul matricule si mat est renseigné). */
        @Query("select p from Personnel p where p.cod_soc = :soc and (:mat = '' or p.mat_pers = :mat)")
        List<Personnel> findBySociete(@Param("soc") String soc, @Param("mat") String mat);
+
        @Query(value = "select count(*) from personnel p where p.cod_soc = :soc and p.mat_pers = :mat ", nativeQuery = true)
        Long countCodSocAndMatPers(@Param("soc") String codSoc, @Param("mat") String matPers);
 
