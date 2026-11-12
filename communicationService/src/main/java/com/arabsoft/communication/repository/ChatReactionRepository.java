@@ -18,4 +18,7 @@ public interface ChatReactionRepository extends JpaRepository<ChatReaction, Long
 
     @Transactional
     void deleteByMessageId(Long messageId);
+
+    @Transactional
+    void deleteByMessageIdIn(Collection<Long> messageIds);
 }

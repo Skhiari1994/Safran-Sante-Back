@@ -230,7 +230,8 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void markRoomAsRead(String roomId, String userId) {
 
-        messageRepository.markRoomMessagesAsRead(roomId, userId);
+        // une seule mise à jour, avec l'heure de lecture ("Vu à HH:mm") : la version sans heure marquerait
+        // les messages lus avant, et celle-ci ne trouverait plus rien à renseigner
         messageRepository.markRoomMessagesAsRead(roomId, userId, LocalDateTime.now());
 
         // Notify interlocutor of read receipt via WebSocket
@@ -251,7 +252,6 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public void markMessageAsRead(Long messageId) {
-        messageRepository.markMessageAsRead(messageId);
         messageRepository.markMessageAsRead(messageId, LocalDateTime.now());
     }
 
@@ -368,6 +368,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public void deleteRoomMessages(String roomId) {
+        // les réactions d'abord : sinon elles resteraient orphelines dans CHAT_REACTION
+        List<Long> ids = messageRepository.findByRoomIdOrderByTimestampAsc(roomId).stream().map(ChatMessage::getId).toList();
+        if (!ids.isEmpty()) {
+            reactionRepository.deleteByMessageIdIn(ids);
+        }
         messageRepository.deleteByRoomId(roomId);
         log.info("Deleted all messages for room: {}", roomId);
     }
@@ -375,6 +380,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<UserInfoDTO> getAllUsers() {
         List<UserInfoDTO> users = new ArrayList<>();
+        // présence de tout le monde en une requête (au lieu de 2 par utilisateur : ~4 000 contacts)
+        Map<String, com.arabsoft.communication.Entities.UserStatus> statuts = presenceService.loadAllStatuses();
 
         // 1. Fetch users from ADMUSER repository
         try {
@@ -392,8 +399,8 @@ public class ChatServiceImpl implements ChatService {
                         continue;
                     }
 
-                    boolean isOnline = presenceService.isUserOnline(id);
-                    LocalDateTime lastSeenDt = presenceService.getLastSeen(id);
+                    boolean isOnline = presenceService.isUserOnline(id, statuts);
+                    LocalDateTime lastSeenDt = presenceService.getLastSeen(id, statuts);
                     String lastSeenStr = (lastSeenDt != null) ? lastSeenDt.format(TIME_FORMATTER) : null;
 
                     users.add(UserInfoDTO.builder()
@@ -414,14 +421,14 @@ public class ChatServiceImpl implements ChatService {
 
         // 2. Fallback: query PERSONNEL if ADMUSER is not populated
         try {
-            String sql = "SELECT MAT_PERS, NOM_PERS, PREN_PERS FROM PERSONNEL WHERE ROWNUM <= 200";
+            String sql = "SELECT TOP 200 MAT_PERS, NOM_PERS, PREN_PERS FROM PERSONNEL";
             users = jdbcTemplate.query(sql, (rs, rowNum) -> {
                 String mat = rs.getString("MAT_PERS");
                 String nom = rs.getString("NOM_PERS");
                 String pren = rs.getString("PREN_PERS");
 
-                boolean isOnline = presenceService.isUserOnline(mat);
-                LocalDateTime lastSeenDt = presenceService.getLastSeen(mat);
+                boolean isOnline = presenceService.isUserOnline(mat, statuts);
+                LocalDateTime lastSeenDt = presenceService.getLastSeen(mat, statuts);
                 String lastSeenStr = (lastSeenDt != null) ? lastSeenDt.format(TIME_FORMATTER) : null;
 
                 return UserInfoDTO.builder()

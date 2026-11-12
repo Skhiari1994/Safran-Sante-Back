@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -116,6 +117,38 @@ public class PresenceServiceImpl implements PresenceService {
         return userStatusRepository.findById(userId)
                 .map(status -> Boolean.TRUE.equals(status.getIsOnline()))
                 .orElse(false);
+    }
+
+    @Override
+    public Map<String, UserStatus> loadAllStatuses() {
+        Map<String, UserStatus> all = new HashMap<>();
+        userStatusRepository.findAll().forEach(s -> all.put(s.getUserId(), s));
+        return all;
+    }
+
+    @Override
+    public boolean isUserOnline(String userId, Map<String, UserStatus> statuses) {
+        if (userId == null) {
+            return false;
+        }
+        if (userSessionCount.containsKey(userId)) {
+            return true;
+        }
+        UserStatus status = statuses.get(userId);
+        return status != null && Boolean.TRUE.equals(status.getIsOnline());
+    }
+
+    @Override
+    public LocalDateTime getLastSeen(String userId, Map<String, UserStatus> statuses) {
+        if (userId == null) {
+            return null;
+        }
+        LocalDateTime inMemory = userLastSeen.get(userId);
+        if (inMemory != null) {
+            return inMemory;
+        }
+        UserStatus status = statuses.get(userId);
+        return status != null ? status.getLastSeen() : null;
     }
 
     @Override
