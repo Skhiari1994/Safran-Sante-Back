@@ -85,7 +85,8 @@ public interface BordEnvoiRepository extends JpaRepository<BordEnvoi, BordEnvoiC
                         from bord_envoi b
                         left join assurance a
                                on a.cod_assur = b.cod_assur
-                        where b.typ_bord = 'C'
+                        where b.cod_soc = :soc
+                          and b.typ_bord = 'C'
                           and coalesce(b.envoi_bord, 'N') = 'N'
                         order by b.dat_bord desc
                         """, nativeQuery = true)

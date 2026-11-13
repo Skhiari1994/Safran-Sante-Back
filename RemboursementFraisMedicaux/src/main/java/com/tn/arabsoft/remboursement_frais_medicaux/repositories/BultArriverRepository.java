@@ -203,7 +203,7 @@ public interface BultArriverRepository extends JpaRepository<BultArriver, BultAr
                                 from plafond_cnam
                                 where cod_soc = ba.cod_soc
                                   and mat_pers = ba.mat_pers
-                                  and annee_cnam = extract(year from ba.dat_soin)
+                                  and annee_cnam = year(ba.dat_soin)
                             ) as solde
 
                         from bult_arriver ba
@@ -297,7 +297,7 @@ public interface BultArriverRepository extends JpaRepository<BultArriver, BultAr
                              from plafond_cnam
                              where cod_soc = ba.cod_soc
                                and mat_pers = ba.mat_pers
-                               and annee_cnam = extract(year from ba.dat_soin)) as solde,
+                               and annee_cnam = year(ba.dat_soin)) as solde,
 
                             ba.reclam as reclamation,
                             ba.mod_pay as mod_pay,
@@ -424,7 +424,7 @@ public interface BultArriverRepository extends JpaRepository<BultArriver, BultAr
                              from plafond_cnam
                              where cod_soc = ba.cod_soc
                                and mat_pers = ba.mat_pers
-                               and annee_cnam = extract(year from ba.dat_soin)) as solde,
+                               and annee_cnam = year(ba.dat_soin)) as solde,
                             ba.reclam as reclamation,
                             ba.mod_pay,
                             ba.dat_vir

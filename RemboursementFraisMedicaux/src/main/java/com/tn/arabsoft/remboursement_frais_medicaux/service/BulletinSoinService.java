@@ -73,37 +73,46 @@ public class BulletinSoinService {
         return response;
     }
 
+    /**
+     * Parenté et sexe du bénéficiaire d'un soin.
+     * num_fam = 0 : l'adhérent lui-même (parenté « A », sexe du personnel).
+     * Sinon : parenté et sexe de la ligne de la famille.
+     */
     public ReponseGetSexe getSexe(String wcodSoc, String mat_, String numFam) {
 
-        return jdbcTemplate.execute((Connection connection) -> {
+        ReponseGetSexe response = new ReponseGetSexe();
 
-            String call = getCallSyntax(
-                    connection,
-                    PK_BULLETIN_SOIN,
-                    "get_sexe",
-                    5);
+        long fam;
+        try {
+            fam = Long.parseLong(numFam == null ? "0" : numFam.trim());
+        } catch (NumberFormatException e) {
+            fam = 0L;
+        }
 
-            try (CallableStatement cs = connection.prepareCall(call)) {
+        if (fam == 0L) {
+            response.setParente("A");
+            response.setSexe(trimOrNull(jdbcTemplate.query(
+                    "select sexe from personnel where cod_soc = ? and mat_pers = ?",
+                    rs -> rs.next() ? rs.getString(1) : null,
+                    wcodSoc, mat_)));
+        } else {
+            jdbcTemplate.query(
+                    "select parente, sexe from famille where cod_soc = ? and mat_pers = ? and num_fam = ?",
+                    rs -> {
+                        if (rs.next()) {
+                            response.setParente(trimOrNull(rs.getString(1)));
+                            response.setSexe(trimOrNull(rs.getString(2)));
+                        }
+                        return null;
+                    },
+                    wcodSoc, mat_, fam);
+        }
 
-                // IN parameters
-                cs.setString(1, wcodSoc);
-                cs.setString(2, mat_);
-                cs.setString(3, numFam);
+        return response;
+    }
 
-                // OUT parameters
-                cs.registerOutParameter(4, Types.VARCHAR);
-                cs.registerOutParameter(5, Types.VARCHAR);
-
-                cs.execute();
-
-                ReponseGetSexe response = new ReponseGetSexe();
-
-                response.setParente(cs.getString(4));
-                response.setSexe(cs.getString(5));
-
-                return response;
-            }
-        });
+    private static String trimOrNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     public ResponseProcedure getDureeBulletin(String wdat_soin, String wCOD_ASSUR) {

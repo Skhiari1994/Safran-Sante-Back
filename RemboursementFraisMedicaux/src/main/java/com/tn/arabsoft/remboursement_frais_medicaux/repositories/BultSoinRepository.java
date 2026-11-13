@@ -464,12 +464,17 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                            and f.cod_soc = t.cod_soc
                      where t.cod_soc = :codSoc
                        and t.cod_assur = :codAssur
-                       and t.cod_bord = :codBord
-                       and t.nat_bult = 'M'
+                       and t.cod_bord_assur = :codBord
                      order by t.dat_saisie desc,
                               t.mat_pers,
                               t.num_fam
                      """, nativeQuery = true)
+       /**
+        * Bulletins d'un bordereau mutuelle. Dans la base SQL Server, le rattachement au bordereau mutuelle est porté par
+        * COD_BORD_ASSUR (COD_BORD est vide pour les bulletins mutuelle et ne contient que le bordereau CNAM) ; un
+        * bordereau mutuelle regroupe les bulletins de toute nature d'une même société (le nombre et les totaux de
+        * BORD_ENVOI correspondent à ce regroupement).
+        */
        List<BultSoinProjection> getBulletinSoinEnvoiMut(
                      @Param("codSoc") String codSoc,
                      @Param("codBord") String codBord,
@@ -559,7 +564,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      left join plafond_cnam pc
                           on pc.cod_soc = t.cod_soc
                          and pc.mat_pers = t.mat_pers
-                         and pc.annee_cnam = extract(year from t.dat_soin)
+                         and pc.annee_cnam = year(t.dat_soin)
                      where t.cod_soc = :cod_soc
                        and t.nat_bult = 'C'
                        and e.cod_bord = :cod_bord
@@ -596,7 +601,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        from bult_soin t
                        join bord_envoi e
                          on t.cod_soc = e.cod_soc
-                        and t.cod_bord = e.cod_bord
+                        and t.cod_bord_assur = e.cod_bord
                        join personnel p
                          on p.cod_soc = t.cod_soc
                         and p.mat_pers = t.mat_pers
@@ -607,10 +612,9 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        left join plafond_cnam pc
                          on pc.cod_soc = t.cod_soc
                         and pc.mat_pers = t.mat_pers
-                        and pc.annee_cnam = extract(year from t.dat_soin)
+                        and pc.annee_cnam = year(t.dat_soin)
                       where t.cod_soc = :cod_soc
                         and e.cod_bord = :cod_bord
-                        and t.nat_bult = 'M'
                      """, nativeQuery = true)
        List<ControleBordCnamProjection> getControleBordMutuelle(
                      @Param("cod_soc") String cod_soc,
@@ -738,7 +742,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                             t.mat_pers,
                             t.num_fam,
                             t.dat_soin,
-                            t.cod_bord,
+                            coalesce(nullif(trim(t.cod_bord_assur), ''), t.cod_bord) as cod_bord,
                             t.cod_assur,
                             t.num_soin,
                             t.ord_bult,
@@ -807,7 +811,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.mat_pers,
                          t.num_fam,
                          t.dat_soin,
-                         t.cod_bord,
+                         coalesce(nullif(trim(t.cod_bord_assur), ''), t.cod_bord) as cod_bord,
                          coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe
                      from bult_soin t
                      inner join personnel p
@@ -873,7 +877,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      left join plafond_cnam pc
                           on pc.cod_soc = t.cod_soc
                          and pc.mat_pers = t.mat_pers
-                         and pc.annee_cnam = extract(year from t.dat_soin)
+                         and pc.annee_cnam = year(t.dat_soin)
                      where t.cod_soc = :codSoc
                        and e.cod_bord = :codBord
                      """, nativeQuery = true)
@@ -897,7 +901,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        from bult_soin t
                        join bord_envoi e
                          on t.cod_soc = e.cod_soc
-                        and t.cod_bord = e.cod_bord
+                        and t.cod_bord_assur = e.cod_bord
                        join personnel p
                          on p.cod_soc = t.cod_soc
                         and p.mat_pers = t.mat_pers
@@ -908,7 +912,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        left join plafond_cnam pc
                          on pc.cod_soc = t.cod_soc
                         and pc.mat_pers = t.mat_pers
-                        and pc.annee_cnam = extract(year from t.dat_soin)
+                        and pc.annee_cnam = year(t.dat_soin)
                       where t.cod_soc = :cod_soc
                         and e.cod_bord = :cod_bord
                         and t.mod_pay = 'E'
@@ -938,7 +942,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        from bult_soin t
                        join bord_envoi e
                          on t.cod_soc = e.cod_soc
-                        and t.cod_bord = e.cod_bord
+                        and t.cod_bord_assur = e.cod_bord
                        join personnel p
                          on p.cod_soc = t.cod_soc
                         and p.mat_pers = t.mat_pers
@@ -949,7 +953,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        left join plafond_cnam pc
                          on pc.cod_soc = t.cod_soc
                         and pc.mat_pers = t.mat_pers
-                        and pc.annee_cnam = extract(year from t.dat_soin)
+                        and pc.annee_cnam = year(t.dat_soin)
                       where t.cod_soc = :cod_soc
                         and e.cod_bord = :cod_bord
                      """, nativeQuery = true)
@@ -977,7 +981,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                       from bult_soin t
                       join bord_envoi e
                       on t.cod_soc = e.cod_soc
-                      and t.cod_bord = e.cod_bord
+                      and t.cod_bord_assur = e.cod_bord
                       join personnel p
                       on p.cod_soc = t.cod_soc
                       and p.mat_pers = t.mat_pers
@@ -988,7 +992,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                       left join plafond_cnam pc
                       on pc.cod_soc = t.cod_soc
                       and pc.mat_pers = t.mat_pers
-                      and pc.annee_cnam = extract(year from t.dat_soin)
+                      and pc.annee_cnam = year(t.dat_soin)
                       where t.cod_soc = :cod_soc
                       and e.cod_bord = :cod_bord
                       and t.mod_pay = 'V'
@@ -1023,7 +1027,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                            from bult_soin t
                            join bord_envoi e
                              on t.cod_soc = e.cod_soc
-                            and t.cod_bord = e.cod_bord
+                            and t.cod_bord_assur = e.cod_bord
                            join personnel p
                              on p.cod_soc = t.cod_soc
                             and p.mat_pers = t.mat_pers
@@ -1034,7 +1038,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                            left join plafond_cnam pc
                              on pc.cod_soc = t.cod_soc
                             and pc.mat_pers = t.mat_pers
-                            and pc.annee_cnam = extract(year from t.dat_soin)
+                            and pc.annee_cnam = year(t.dat_soin)
                           where t.cod_soc = :cod_soc
                             and e.cod_bord = :cod_bord
                             and t.mod_pay = 'C'

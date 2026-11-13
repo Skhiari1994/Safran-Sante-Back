@@ -85,6 +85,22 @@ public class PersonnelController {
         return adrPersRepository.save(adresse);
     }
 
+    /** Supprime une adresse de l'adhérent (clé : société, matricule, numéro d'adresse). */
+    @DeleteMapping("/deleteAdresse")
+    public ResponseEntity<String> deleteAdresse(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
+            @RequestParam("num") Long num) {
+        com.arabsoft.gestion_adherent.entities.cle.CleAdrPers cle = new com.arabsoft.gestion_adherent.entities.cle.CleAdrPers();
+        cle.setCod_soc(soc);
+        cle.setMat_pers(mat);
+        cle.setNum_adr(num);
+        if (!adrPersRepository.existsById(cle)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                    .body("Cette adresse n'existe pas.");
+        }
+        adrPersRepository.deleteById(cle);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/getPersonnels")
     public List<PersonnelPrejection> getPersonnels(@RequestParam(required = false) String codSoc,
             HttpServletRequest request) {

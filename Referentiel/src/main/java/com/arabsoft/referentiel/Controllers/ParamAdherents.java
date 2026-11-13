@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class ParamAdherents {
     private final AffectationRepository affectationRepository;
     private final TypeDepartRepository typeDepartRepository;
     private final ActiviteFamilleRepository activiteFamilleRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @GetMapping("getNationalite")
     List<Nationalite> getNationalites() {
@@ -143,6 +145,53 @@ public class ParamAdherents {
     @GetMapping("/getSociete")
     List<Societe> getSociete() {
         return societeRepository.findAll();
+    }
+
+    /**
+     * Supprime une société uniquement si son code n'est utilisé nulle part ailleurs.
+     * Le contrôle parcourt toutes les tables qui possèdent une colonne COD_SOC
+     * (personnel, bulletins, bordereaux, utilisateurs...), sans dépendre d'une liste figée.
+     */
+    @DeleteMapping("/deleteSociete/{codSoc}")
+    public ResponseEntity<String> deleteSociete(@PathVariable String codSoc) {
+        if (!societeRepository.existsById(codSoc)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cette société n'existe pas.");
+        }
+        List<String> tablesLiees = tablesUtilisantSociete(codSoc);
+        if (!tablesLiees.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    "Impossible de supprimer la société " + codSoc
+                            + " : son code est utilisé par d'autres données ("
+                            + String.join(", ", tablesLiees.stream().limit(5).toList())
+                            + (tablesLiees.size() > 5 ? "…" : "") + ").");
+        }
+        try {
+            societeRepository.deleteById(codSoc);
+            return ResponseEntity.ok().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cette société est utilisée ailleurs et ne peut pas être supprimée.");
+        }
+    }
+
+    /** Tables (autres que SOCIETE) contenant au moins une ligne pour ce code société. */
+    private List<String> tablesUtilisantSociete(String codSoc) {
+        List<String[]> colonnes = jdbcTemplate.query(
+                "select c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME "
+                        + "from INFORMATION_SCHEMA.COLUMNS c "
+                        + "join INFORMATION_SCHEMA.TABLES t on t.TABLE_SCHEMA = c.TABLE_SCHEMA "
+                        + "and t.TABLE_NAME = c.TABLE_NAME and t.TABLE_TYPE = 'BASE TABLE' "
+                        + "where upper(c.COLUMN_NAME) = 'COD_SOC' and upper(c.TABLE_NAME) <> 'SOCIETE' "
+                        + "order by c.TABLE_NAME",
+                (rs, i) -> new String[] { rs.getString(1), rs.getString(2), rs.getString(3) });
+        return colonnes.stream()
+                .filter(t -> {
+                    // les noms viennent du catalogue de la base, jamais de l'utilisateur
+                    String sql = "select top 1 1 from [" + t[0] + "].[" + t[1] + "] where [" + t[2] + "] = ?";
+                    return !jdbcTemplate.queryForList(sql, codSoc).isEmpty();
+                })
+                .map(t -> t[1])
+                .toList();
     }
 
     @PostMapping("/addDepartement")

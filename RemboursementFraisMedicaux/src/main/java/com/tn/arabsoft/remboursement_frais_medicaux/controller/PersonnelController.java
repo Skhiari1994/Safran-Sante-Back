@@ -146,8 +146,8 @@ public class PersonnelController {
     }
 
     @GetMapping("/getRefFilliere")
-    List<RefFiliere> getPersAffil() {
-        return refFiliereRepository.findAll();
+    List<FiliereProjection> getRefFilliere() {
+        return refFiliereRepository.getListFiliere();
     }
 
     @PostMapping("/addPersAffil")
