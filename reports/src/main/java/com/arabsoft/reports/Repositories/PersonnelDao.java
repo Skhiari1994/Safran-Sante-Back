@@ -14,83 +14,96 @@ import java.util.List;
 public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
 
         @Query(value = """
-                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
-                        from personnel
-                        where cod_soc = :soc
-                        and etat_act = 'A'
-                        and to_number(mat_pers) <= nvl(:mat_pers, to_number(mat_pers))
-                        order by to_number(mat_pers)
-                        """, nativeQuery = true)
+                        SELECT mat_pers,
+                               dat_nais,
+                               num_retr,
+                               CONCAT(CONCAT(COALESCE(nom_pers, ''), ' '), COALESCE(pren_pers, '')) AS nom
+                        FROM   personnel
+                        WHERE  cod_soc = :soc
+                          AND  etat_act = 'A'
+                          AND  (CAST(:mat_pers AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(:mat_pers AS DECIMAL(18,0)))
+                        ORDER BY CAST(mat_pers AS DECIMAL(18,0))
+                                                """, nativeQuery = true)
         List<PersonnelProjection> getPersonnel(@Param("soc") String soc, @Param("mat_pers") String mat_pers);
 
         @Query(value = """
-                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
-                        from personnel
-                        where cod_soc = :soc
-                        and mat_pers in (select mat_pers from bult_soin
-                                         where cod_soc = :soc and ANN_PLAF_IMP = :annee)
-                        or mat_pers in (select mat_pers from bult_arriver
-                                         where cod_soc = :soc and ANN_PLAF_IMP = :annee)
+                        SELECT mat_pers, dat_nais, num_retr,
+                               CONCAT(CONCAT(COALESCE(nom_pers, ''), ' '), COALESCE(pren_pers, '')) AS nom
+                        FROM   personnel
+                        WHERE  cod_soc = :soc
+                          AND  (mat_pers IN (SELECT mat_pers FROM bult_soin
+                                             WHERE cod_soc = :soc AND ANN_PLAF_IMP = :annee)
+                                OR mat_pers IN (SELECT mat_pers FROM bult_arriver
+                                                WHERE cod_soc = :soc AND ANN_PLAF_IMP = :annee))
                         """, nativeQuery = true)
         List<PersonnelProjection> getPersRecap(@Param("soc") String soc, @Param("annee") String annee);
 
         @Query(value = """
-                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
-                        from personnel
-                        where cod_soc = :soc
-                        and etat_act = 'A'
-                        and to_number(mat_pers) <= nvl(to_number(:mat_fin), to_number(mat_pers))
-                        and mat_pers in (select mat_pers from bult_soin
-                                         where cod_soc = :soc
-                                         and nat_bult = 'M'
-                                         and cod_bord is null
-                                         and nvl(envoi, 'N') = 'N')
-                        order by to_number(mat_pers)
+                        SELECT mat_pers, dat_nais, num_retr,
+                               CONCAT(CONCAT(COALESCE(nom_pers, ''), ' '), COALESCE(pren_pers, '')) AS nom
+                        FROM   personnel
+                        WHERE  cod_soc = :soc
+                          AND  etat_act = 'A'
+                          AND  (CAST(:mat_fin AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(:mat_fin AS DECIMAL(18,0)))
+                          AND  mat_pers IN (SELECT mat_pers FROM bult_soin
+                                            WHERE cod_soc = :soc
+                                              AND nat_bult = 'M'
+                                              AND cod_bord IS NULL
+                                              AND COALESCE(envoi, 'N') = 'N')
+                        ORDER BY CAST(mat_pers AS DECIMAL(18,0))
                         """, nativeQuery = true)
         List<PersonnelProjection> getPersBultMutDeb(@Param("soc") String soc, @Param("mat_fin") String mat_fin);
 
         @Query(value = """
-                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
-                        from personnel
-                        where cod_soc = :soc
-                        and etat_act = 'A'
-                        and to_number(mat_pers) >= nvl(to_number(:mat_deb), to_number(mat_pers))
-                        and mat_pers in (select mat_pers from bult_soin
-                                         where cod_soc = :soc
-                                         and nat_bult = 'M'
-                                         and cod_bord is null
-                                         and nvl(envoi, 'N') = 'N')
-                        order by to_number(mat_pers)
+                        SELECT mat_pers, dat_nais, num_retr,
+                               CONCAT(CONCAT(COALESCE(nom_pers, ''), ' '), COALESCE(pren_pers, '')) AS nom
+                        FROM   personnel
+                        WHERE  cod_soc = :soc
+                          AND  etat_act = 'A'
+                          AND  (CAST(:mat_deb AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) >= CAST(:mat_deb AS DECIMAL(18,0)))
+                          AND  mat_pers IN (SELECT mat_pers FROM bult_soin
+                                            WHERE cod_soc = :soc
+                                              AND nat_bult = 'M'
+                                              AND cod_bord IS NULL
+                                              AND COALESCE(envoi, 'N') = 'N')
+                        ORDER BY CAST(mat_pers AS DECIMAL(18,0))
                         """, nativeQuery = true)
         List<PersonnelProjection> getPersBultMutFin(@Param("soc") String soc, @Param("mat_deb") String mat_fin);
 
         @Query(value = """
-                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
-                        from personnel
-                        where cod_soc = :soc
-                        and etat_act = 'A'
-                        and to_number(mat_pers) <= nvl(to_number(:mat_fin), to_number(mat_pers))
-                        and mat_pers in (select mat_pers from bult_soin
-                                         where cod_soc = :soc
-                                         and nat_bult = 'C'
-                                         and cod_bord is null
-                                         and nvl(envoi, 'N') = 'N')
-                        order by to_number(mat_pers)
+                        SELECT mat_pers, dat_nais, num_retr,
+                               CONCAT(CONCAT(COALESCE(nom_pers, ''), ' '), COALESCE(pren_pers, '')) AS nom
+                        FROM   personnel
+                        WHERE  cod_soc = :soc
+                          AND  etat_act = 'A'
+                          AND  (CAST(:mat_fin AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(:mat_fin AS DECIMAL(18,0)))
+                          AND  mat_pers IN (SELECT mat_pers FROM bult_soin
+                                            WHERE cod_soc = :soc
+                                              AND nat_bult = 'C'
+                                              AND cod_bord IS NULL
+                                              AND COALESCE(envoi, 'N') = 'N')
+                        ORDER BY CAST(mat_pers AS DECIMAL(18,0))
                         """, nativeQuery = true)
         List<PersonnelProjection> getPersBultCnamDeb(@Param("soc") String soc, @Param("mat_fin") String mat_fin);
 
         @Query(value = """
-                        select mat_pers, dat_nais, num_retr, nom_pers || ' ' || pren_pers as nom
-                        from personnel
-                        where cod_soc = :soc
-                        and etat_act = 'A'
-                        and to_number(mat_pers) >= nvl(to_number(:mat_deb), to_number(mat_pers))
-                        and mat_pers in (select mat_pers from bult_soin
-                                         where cod_soc = :soc
-                                         and nat_bult = 'C'
-                                         and cod_bord is null
-                                         and nvl(envoi, 'N') = 'N')
-                        order by to_number(mat_pers)
+                        SELECT mat_pers, dat_nais, num_retr,
+                               CONCAT(CONCAT(COALESCE(nom_pers, ''), ' '), COALESCE(pren_pers, '')) AS nom
+                        FROM   personnel
+                        WHERE  cod_soc = :soc
+                          AND  etat_act = 'A'
+                          AND  (CAST(:mat_deb AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) >= CAST(:mat_deb AS DECIMAL(18,0)))
+                          AND  mat_pers IN (SELECT mat_pers FROM bult_soin
+                                            WHERE cod_soc = :soc
+                                              AND nat_bult = 'C'
+                                              AND cod_bord IS NULL
+                                              AND COALESCE(envoi, 'N') = 'N')
+                        ORDER BY CAST(mat_pers AS DECIMAL(18,0))
                         """, nativeQuery = true)
         List<PersonnelProjection> getPersBultCnamFin(@Param("soc") String soc, @Param("mat_deb") String mat_fin);
 
