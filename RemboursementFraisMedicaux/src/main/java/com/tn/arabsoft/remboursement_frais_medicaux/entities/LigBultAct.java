@@ -34,7 +34,7 @@ public class LigBultAct {
   private String mat_pers;
 
   @Id
-  private Long num_fam;
+  private Integer num_fam;
 
   @Id
   @JsonDeserialize(using = CustomLocalDateDeserializer.class)
@@ -51,7 +51,7 @@ public class LigBultAct {
   private String cod_act;
 
   @Id
-  private Long num_lig;
+  private Integer num_lig;
 
   @Id
   private Long num_soin;

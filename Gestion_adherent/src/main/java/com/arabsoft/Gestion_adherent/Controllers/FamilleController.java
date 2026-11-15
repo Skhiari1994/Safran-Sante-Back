@@ -1,6 +1,5 @@
 package com.arabsoft.gestion_adherent.controllers;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -40,7 +39,6 @@ public class FamilleController {
 
     @GetMapping("/getFamille/{codSoc}/{matPers}")
     List<Famille> getFamille(@PathVariable String codSoc, @PathVariable String matPers) {
-        System.out.println("getFamille @@@@@@@@@@@@@@@");
         return this.familleRepository.getFamille(codSoc, matPers);
     }
 

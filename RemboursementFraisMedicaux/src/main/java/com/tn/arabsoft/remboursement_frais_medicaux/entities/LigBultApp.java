@@ -35,7 +35,7 @@ public class LigBultApp {
     private String mat_pers;
 
     @Id
-    private Long num_fam;
+    private Integer num_fam;
 
     @Id
     @JsonDeserialize(using = CustomLocalDateDeserializer.class)
@@ -52,7 +52,7 @@ public class LigBultApp {
     private String cod_app;
 
     @Id
-    private Long num_lig;
+    private Integer num_lig;
 
     @Id
     private Long num_soin;

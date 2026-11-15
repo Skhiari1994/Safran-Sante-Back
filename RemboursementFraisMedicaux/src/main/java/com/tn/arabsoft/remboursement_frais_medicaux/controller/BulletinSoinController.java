@@ -173,11 +173,6 @@ public class BulletinSoinController {
 
     @PostMapping("/addBultSoin")
     public BultSoin addBultSoin(@RequestBody BultSoin bultSoin) {
-
-        System.out.println("getCod_soc :: " + bultSoin.getCod_soc() + ", getMat_pers : " + bultSoin.getMat_pers()
-                + ",getNum_fam:: " + bultSoin.getNum_fam() + ", getNum_soin:: " + bultSoin.getNum_soin());
-        System.out.println("getDat_soin :: " + bultSoin.getDat_soin());
-
         // New bulletin: generate the number and insert
         if (bultSoin.getNum_soin() == null) {
             bultSoin.setNum_soin(bultSoinRepository.nextNumSoin());
@@ -407,16 +402,70 @@ public class BulletinSoinController {
 
     @PostMapping("/addLigBultAct")
     List<LigBultAct> addLigBultAct(@RequestBody List<LigBultAct> ligBultActs) {
+
+        // next free number per bulletin, kept in memory for the lines of this call
+        Map<String, Integer> nextByBulletin = new HashMap<>();
+
+        for (LigBultAct l : ligBultActs) {
+            if (l.getNum_lig() == null) {
+                String key = l.getCod_soc() + "|" + l.getMat_pers() + "|" + l.getNum_fam()
+                        + "|" + l.getDat_soin() + "|" + l.getNum_soin();
+
+                int next = nextByBulletin.computeIfAbsent(key, k -> ligBultActRepository.nextNumLig(
+                        l.getCod_soc(), l.getMat_pers(), l.getNum_fam(),
+                        l.getDat_soin(), l.getNum_soin()));
+
+                l.setNum_lig(next);
+                nextByBulletin.put(key, next + 1);
+            }
+        }
+
         return ligBultActRepository.saveAll(ligBultActs);
     }
 
     @PostMapping("/addLigBultMed")
     List<LigBultMed> addLigBultMed(@RequestBody List<LigBultMed> ligBultMeds) {
+
+        // next free number per bulletin, kept in memory for the lines of this call
+        Map<String, Integer> nextByBulletin = new HashMap<>();
+
+        for (LigBultMed l : ligBultMeds) {
+            if (l.getNum_lig() == null) {
+                String key = l.getCod_soc() + "|" + l.getMat_pers() + "|" + l.getNum_fam()
+                        + "|" + l.getDat_soin() + "|" + l.getNum_soin();
+
+                int next = nextByBulletin.computeIfAbsent(key, k -> ligBultMedRepository.nextNumLig(
+                        l.getCod_soc(), l.getMat_pers(), l.getNum_fam(),
+                        l.getDat_soin(), l.getNum_soin()));
+
+                l.setNum_lig(next);
+                nextByBulletin.put(key, next + 1);
+            }
+        }
+
         return ligBultMedRepository.saveAll(ligBultMeds);
     }
 
     @PostMapping("/addLigBultApp")
     List<LigBultApp> addLigBultApp(@RequestBody List<LigBultApp> ligBultApps) {
+
+        // next free number per bulletin, kept in memory for the lines of this call
+        Map<String, Integer> nextByBulletin = new HashMap<>();
+
+        for (LigBultApp l : ligBultApps) {
+            if (l.getNum_lig() == null) {
+                String key = l.getCod_soc() + "|" + l.getMat_pers() + "|" + l.getNum_fam()
+                        + "|" + l.getDat_soin() + "|" + l.getNum_soin();
+
+                int next = nextByBulletin.computeIfAbsent(key, k -> ligBultAppRepository.nextNumLig(
+                        l.getCod_soc(), l.getMat_pers(), l.getNum_fam(),
+                        l.getDat_soin(), l.getNum_soin()));
+
+                l.setNum_lig(next);
+                nextByBulletin.put(key, next + 1);
+            }
+        }
+
         return ligBultAppRepository.saveAll(ligBultApps);
     }
 

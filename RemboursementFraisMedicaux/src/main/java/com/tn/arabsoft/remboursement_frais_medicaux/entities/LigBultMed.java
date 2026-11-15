@@ -36,7 +36,7 @@ public class LigBultMed {
   private String mat_pers;
 
   @Id
-  private String num_fam;
+  private Integer num_fam;
 
   @Id
   @JsonDeserialize(using = CustomLocalDateDeserializer.class)
@@ -53,7 +53,7 @@ public class LigBultMed {
   private String cod_med;
 
   @Id
-  private Long num_lig;
+  private Integer num_lig;
 
   @Id
   private Long num_soin;

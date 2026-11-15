@@ -2,7 +2,6 @@ package com.arabsoft.reports.controllers;
 
 import com.arabsoft.reports.entities.*;
 import com.arabsoft.reports.projections.PersonnelProjection;
-import com.arabsoft.reports.projections.PretProjection;
 import com.arabsoft.reports.repositories.*;
 import com.arabsoft.reports.services.PrintReportsService;
 
@@ -25,17 +24,7 @@ public class EditionController {
 
     private final PersonnelDao personnelDao;
 
-    private final NatureDonRepository natureDonRepository;
-
     private final PrmLieuGeogRepository prmLieuGeogRepository;
-
-    private final OffConvRepository offConvRepository;
-
-    private final PretPersRepository pretPersRepository;
-
-    private final GroupePretRepository groupePretRepository;
-
-    private final TypePretRepository typePretRepository;
 
     private final PrintReportsService printService;
 
@@ -51,34 +40,9 @@ public class EditionController {
         return personnelDao.getPersonnel(soc, mat_pers);
     }
 
-    @GetMapping("/getNatDon")
-    List<NatureDon> getNatDon() {
-        return this.natureDonRepository.getNatureDon();
-    }
-
     @GetMapping("/getAllLieu")
     List<PrmLieuGeographique> getAllLieu() {
         return this.prmLieuGeogRepository.findAll();
-    }
-
-    @GetMapping("/getOffConv")
-    List<OffConv> getOffConv() {
-        return this.offConvRepository.findAll();
-    }
-
-    @GetMapping("/getPretPers")
-    List<PretProjection> getPretPers(@RequestParam String mat) {
-        return this.pretPersRepository.getPretPers(mat);
-    }
-
-    @GetMapping("/getGroupePret")
-    List<GroupePret> getGroupePret() {
-        return this.groupePretRepository.getGroupePret();
-    }
-
-    @GetMapping("/getTypePret")
-    List<TypePret> getTypePret() {
-        return this.typePretRepository.getTypePret();
     }
 
     @GetMapping("/genererFich")

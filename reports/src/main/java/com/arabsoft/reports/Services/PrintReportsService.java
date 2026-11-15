@@ -44,12 +44,9 @@ public class PrintReportsService {
 	private final JdbcTemplate jdbcTemplate;
 
 	public byte[] genererRapportPDF(Long numRap, Map<String, String> params) throws JRException, IOException {
-		System.out.println("numRap ::  " + numRap);
-		System.out.println("params ::  " + params);
 		JasperPrint jasperPrint = prepareJasperPrint(numRap, params);
-		System.out.println("jasperPrint ::  " + jasperPrint);
 		if (jasperPrint == null)
-			return null;
+			return new byte[0];
 
 		try {
 			byte[] rapportPDF = JasperExportManager.exportReportToPdf(jasperPrint);
@@ -68,14 +65,14 @@ public class PrintReportsService {
 			return rapportPDF;
 		} catch (JRException e) {
 			e.printStackTrace();
-			return null;
+			return new byte[0];
 		}
 	}
 
 	public byte[] genererRapportExcel(Long numRap, Map<String, String> params) throws JRException, IOException {
 		JasperPrint jasperPrint = prepareJasperPrint(numRap, params);
 		if (jasperPrint == null)
-			return null;
+			return new byte[0];
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			JRXlsxExporter exporter = new JRXlsxExporter();
@@ -103,7 +100,6 @@ public class PrintReportsService {
 				try (FileOutputStream fos = new FileOutputStream(path + "\\" + nom + ".xlsx")) {
 					fos.write(bytes);
 				}
-				System.out.println("Excel sauvegardé sur : " + path + "\\" + nom + ".xlsx");
 			} catch (Exception outEx) {
 				System.err.println("Erreur sauvegarde disque : " + outEx.getMessage());
 			}
@@ -111,7 +107,7 @@ public class PrintReportsService {
 			return bytes;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return new byte[0];
 		}
 	}
 
@@ -145,7 +141,6 @@ public class PrintReportsService {
 			conn = bdReport.bdReport();
 			return JasperFillManager.fillReport(jasperReport, parameters, conn);
 		} catch (Exception ex) {
-			System.err.println("Erreur lors de la préparation du rapport : " + ex.getMessage());
 			ex.printStackTrace();
 			return null;
 		} finally {
@@ -221,7 +216,6 @@ public class PrintReportsService {
 		String mm = re.getMois_envoi();
 		String ann = re.getAnnee_envoi();
 		String cron = ss + " " + min + " " + hh + " " + jj + " " + mm + " " + ann;
-		System.out.println("cron" + cron);
 		return cron;
 	}
 

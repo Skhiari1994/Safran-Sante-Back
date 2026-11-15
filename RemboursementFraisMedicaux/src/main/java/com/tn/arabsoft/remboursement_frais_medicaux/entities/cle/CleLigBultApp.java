@@ -15,7 +15,7 @@ public class CleLigBultApp implements Serializable {
 
     private String mat_pers;
 
-    private Long num_fam;
+    private Integer num_fam;
 
     private LocalDate dat_soin;
 
@@ -25,7 +25,7 @@ public class CleLigBultApp implements Serializable {
 
     private String cod_app;
 
-    private Long num_lig;
+    private Integer num_lig;
 
     private Long num_soin;
 

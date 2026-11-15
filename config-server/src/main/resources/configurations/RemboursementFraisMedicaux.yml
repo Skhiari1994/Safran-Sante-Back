@@ -4,9 +4,9 @@ spring:
 
   datasource:
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    url: jdbc:sqlserver://localhost:1433;databaseName=ramidb;encrypt=false;trustServerCertificate=true
-    username: sa
-    password: Managerv2
+    url: jdbc:sqlserver://${SANTE_DB_HOST}:${SANTE_DB_PORT_NUMBER};databaseName=${SANTE_DB_NAME};encrypt=false;trustServerCertificate=true
+    username: ${SANTE_DB_USER_NAME}
+    password: ${SANTE_DB_PASSWORD}
 
   jpa:
     hibernate:
