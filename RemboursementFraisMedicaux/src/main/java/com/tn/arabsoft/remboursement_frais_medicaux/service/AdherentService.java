@@ -30,14 +30,6 @@ public class AdherentService {
         return jdbcTemplate.execute((Connection connection) -> {
 
             String call = getCallSyntax(connection, PKG_PLAFOND, "cal_plafond_mutuelle", 6);
-            System.out.println("connection --> " + connection);
-            System.out.println("call --> " + call);
-            System.out.println("wcodSoc --> " + wcodSoc);
-            System.out.println("annee --> " + annee);
-            System.out.println("matDeb --> " + matDeb);
-            System.out.println("matFin --> " + matFin);
-
-            System.out.println("call --> " + call);
 
             try (CallableStatement cs = connection.prepareCall(call)) {
 
@@ -63,13 +55,6 @@ public class AdherentService {
         return jdbcTemplate.execute((Connection connection) -> {
 
             String call = getCallSyntax(connection, PKG_PLAFOND, "cal_plafond_cnam", 6);
-
-            System.out.println("connection --> " + connection);
-            System.out.println("call --> " + call);
-            System.out.println("wcodSoc --> " + wcodSoc);
-            System.out.println("annee --> " + annee);
-            System.out.println("matDeb --> " + matDeb);
-            System.out.println("matFin --> " + matFin);
 
             try (CallableStatement cs = connection.prepareCall(call)) {
 

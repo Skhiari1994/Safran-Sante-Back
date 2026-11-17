@@ -384,15 +384,15 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.mod_pay,
                          t.dat_vir,
 
-                         concat(p.nom_pers, concat(' ', p.pren_pers)) as nom_complet_pers,
+                         concat(coalesce(p.nom_pers, ''), concat(' ', coalesce(p.pren_pers, ''))) as nom_complet_pers,
 
                          a.lib_assur as lib_assur,
 
-                         f.nom_pren as nom_adherent
+                         coalesce(f.nom_pren, 'Adhérent') as nom_adherent
 
                      from bult_soin t
 
-                     left join personnel p
+                     join personnel p
                             on p.mat_pers = t.mat_pers
                            and p.cod_soc = t.cod_soc
 
@@ -470,9 +470,12 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                               t.num_fam
                      """, nativeQuery = true)
        /**
-        * Bulletins d'un bordereau mutuelle. Dans la base SQL Server, le rattachement au bordereau mutuelle est porté par
-        * COD_BORD_ASSUR (COD_BORD est vide pour les bulletins mutuelle et ne contient que le bordereau CNAM) ; un
-        * bordereau mutuelle regroupe les bulletins de toute nature d'une même société (le nombre et les totaux de
+        * Bulletins d'un bordereau mutuelle. Dans la base SQL Server, le rattachement
+        * au bordereau mutuelle est porté par
+        * COD_BORD_ASSUR (COD_BORD est vide pour les bulletins mutuelle et ne contient
+        * que le bordereau CNAM) ; un
+        * bordereau mutuelle regroupe les bulletins de toute nature d'une même société
+        * (le nombre et les totaux de
         * BORD_ENVOI correspondent à ce regroupement).
         */
        List<BultSoinProjection> getBulletinSoinEnvoiMut(
@@ -736,6 +739,51 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                               t.dat_soin desc
                      """, nativeQuery = true)
        List<BultSoinProjection> getBultCnam(@Param("soc") String soc);
+
+       @Query(value = """
+                     select
+                         ba.cod_soc,
+                         ba.mat_pers,
+                         ba.num_fam,
+                         ba.dat_soin,
+                         ba.num_soin,
+                         ba.dat_saisie,
+                         ba.cod_fil,
+                         ba.cod_bord,
+                         ba.cod_assur,
+                         p.num_retr,
+                         concat(p.nom_pers, concat(' ', p.pren_pers)) as nom_complet_pers,
+                         coalesce(f.nom_pren, 'Adhérent') as nom_adherent,
+                         case
+                             when ba.num_fam = 0 then 'Adhérent'
+                             when ba.num_fam = 99 then 'Conjoint'
+                             when ba.num_fam between 1 and 10 then 'Enfant'
+                             else 'Autre'
+                         end as statut_famille,
+                        rr.lib_remb as lib_remb,
+                         ba.tot_honor,
+                         ba.tot_net,
+                         ba.tot_remb
+                     from bult_soin ba
+                     join personnel p
+                         on ba.mat_pers = p.mat_pers
+                        and ba.cod_soc = p.cod_soc
+                     left join famille f
+                         on ba.num_fam = f.num_fam
+                        and ba.mat_pers = f.mat_pers
+                        and ba.cod_soc = f.cod_soc
+                     left join regime_remb rr
+                     on ba.reg_remb = rr.reg_remb
+                     where ba.cod_soc = :codSoc
+                       and ba.cod_assur = :codAssur
+                       and ba.cod_bord = :codBord
+                     order by ba.dat_saisie desc,
+                              ba.mat_pers,
+                              ba.num_fam
+                     """, nativeQuery = true)
+       List<BultSoinProjection> findBultEnvoiBySocAssurBord(@Param("codSoc") String codSoc,
+                     @Param("codAssur") String codAssur,
+                     @Param("codBord") String codBord);
 
        @Query(value = """
                      select t.cod_soc,
@@ -1083,6 +1131,5 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
 
        @Query(value = "select coalesce(max(num_soin), 0) + 1 from bult_soin", nativeQuery = true)
        Long nextNumSoin();
-
 
 }

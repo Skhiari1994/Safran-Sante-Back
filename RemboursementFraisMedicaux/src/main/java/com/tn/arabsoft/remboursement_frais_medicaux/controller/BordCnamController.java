@@ -1,6 +1,7 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.tn.arabsoft.remboursement_frais_medicaux.dto.TotauxCnamDto;
 import com.tn.arabsoft.remboursement_frais_medicaux.dto.UpdateBultSoinDTO;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.BultSoin;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.CnamFileGen;
@@ -18,6 +20,8 @@ import com.tn.arabsoft.remboursement_frais_medicaux.repositories.BordEnvoiReposi
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.BultSoinRepository;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.BulletinSoinService;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.CnamFileGenService;
+import com.tn.arabsoft.remboursement_frais_medicaux.service.TotauxCnamService;
+import com.tn.arabsoft.remboursement_frais_medicaux.service.BordEnvoiService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/BordEnvoi")
@@ -36,6 +41,8 @@ public class BordCnamController {
     private final BultSoinRepository bultSoinRepository;
     private final BulletinSoinService bulletinSoinService;
     private final CnamFileGenService fileGenService;
+    private final TotauxCnamService totauxCnamService;
+    private final BordEnvoiService bordEnvoiService;
 
     private static final String DATE_FORMAT = "dd/MM/yyyy";
 
@@ -125,14 +132,9 @@ public class BordCnamController {
             return ResponseEntity.badRequest().body("Format date invalide. Utilisez dd/MM/yyyy");
         }
 
-        String codBord = bulletinSoinService.callGenerateBordCode(
-                codAssur,
-                codSoc,
-                localDatDeb,
-                localDatFin,
-                nbrBult,
-                totHonor,
+        String codBord = bordEnvoiService.genererBord(codAssur, codSoc, localDatDeb, localDatFin, nbrBult, totHonor,
                 totNet);
+
         return ResponseEntity.ok(codBord);
     }
 
@@ -175,18 +177,19 @@ public class BordCnamController {
 
     @PostMapping("/updateBultSoinCnam")
     public ResponseEntity<String> createBordBult(
-            @RequestParam String codBord,
-            @RequestParam String matPers,
             @RequestParam String codSoc,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datSoin,
+            @RequestParam String matPers,
             @RequestParam int numFam,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datSoin,
+            @RequestParam Long numSoin,
+            @RequestParam String codBord,
             @RequestParam int ordBult,
             @RequestParam BigDecimal totHonor,
             @RequestParam BigDecimal totNet) {
         try {
             // Appel du service
-            String message = bulletinSoinService.callCreateBordBultAll(
-                    codBord, matPers, codSoc, datSoin, numFam, ordBult, totHonor, totNet);
+            String message = bulletinSoinService.updateBultSoinCnam(codSoc, matPers, numFam, datSoin, numSoin,
+                    codBord, ordBult, totHonor, totNet);
 
             return ResponseEntity.ok(message);
 
@@ -203,13 +206,14 @@ public class BordCnamController {
             @RequestParam String codSoc,
             @RequestParam String codBord) {
         try {
-            String resultMessage = bulletinSoinService.callDeletBord(codSoc, codBord);
+            String resultMessage = bulletinSoinService.supprimerBordereau(codSoc, codBord);
 
             Map<String, String> response = new HashMap<>();
             response.put(KEY_MESSAGE, resultMessage);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Échec de la suppression du bordereau {} / {}", codSoc, codBord, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap(KEY_ERROR, "Une erreur est survenue lors de la suppression."));
         }
@@ -260,17 +264,20 @@ public class BordCnamController {
     }
 
     @PostMapping("/totauCnam")
-    public ResponseEntity<Map<String, Object>> createBord(
+    public ResponseEntity<TotauxCnamDto> createBord(
             @RequestParam String pCodSoc,
             @RequestParam String pMatPers,
-            @RequestParam Long pNumFam,
-            @RequestParam LocalDate pDatSoin) {
+            @RequestParam Integer pNumFam,
+            @RequestParam LocalDate pDatSoin,
+            @RequestParam Long pNumSoin) {
 
         // Call the service method to invoke the stored procedure
-        Map<String, Object> result = bulletinSoinService.callCalculateTotalHonor(pCodSoc, pMatPers, pNumFam, pDatSoin);
+        // Map<String, Object> result =
+        // bulletinSoinService.callCalculateTotalHonor(pCodSoc, pMatPers, pNumFam,
+        // pDatSoin);
 
         // Return the result (empty map or custom response)
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(totauxCnamService.calculateTotalHonor(pCodSoc, pMatPers, pNumFam, pDatSoin, pNumSoin));
     }
 
     @PostMapping("/deletBultin")

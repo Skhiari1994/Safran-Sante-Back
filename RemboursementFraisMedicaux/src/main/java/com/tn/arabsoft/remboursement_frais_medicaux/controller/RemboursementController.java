@@ -81,13 +81,14 @@ public class RemboursementController {
         return ResponseEntity.ok(bultArrivers);
     }
 
-    @GetMapping("/BultArriverByCodBord3")
-    public ResponseEntity<List<BultArriverProjection>> findBultEnvoiByCodBord(@RequestParam String cod_bord) {
-        List<BultArriverProjection> bultArrivers = bultArriverRepository.findBultEnvoiByCodBord(cod_bord);
-        if (bultArrivers.isEmpty()) {
+    @GetMapping("/BultEnvoiSocAssurBord")
+    public ResponseEntity<List<BultSoinProjection>> findBultEnvoiBySocAssurBord(@RequestParam String codSoc,
+            @RequestParam String codAssur, @RequestParam String codBord) {
+        List<BultSoinProjection> bultSoin = bultSoinRepository.findBultEnvoiBySocAssurBord(codSoc, codAssur, codBord);
+        if (bultSoin.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(bultArrivers);
+        return ResponseEntity.ok(bultSoin);
     }
 
     @PostMapping("/BordArriver")

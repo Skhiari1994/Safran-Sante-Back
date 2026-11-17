@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.BultSoin;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.BultSoinCle;
@@ -16,6 +17,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.util.AgeUtil;
 import com.tn.arabsoft.remboursement_frais_medicaux.util.AgeUtil.Age;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -662,11 +664,12 @@ public class BulletinSoinService {
     }
 
     public String callCreateBordBultAll(
-            String codBord,
-            String matPers,
             String codSoc,
-            LocalDate datSoin,
+            String matPers,
             int numFam,
+            LocalDate datSoin,
+            Long numSoin,
+            String codBord,
             int ordBult,
             BigDecimal totHonor,
             BigDecimal totNet) {
@@ -675,20 +678,21 @@ public class BulletinSoinService {
             String sql = "{ call PK_ENVOI.create_bord_bult_all(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
             try (CallableStatement stmt = connection.prepareCall(sql)) {
 
-                stmt.setString(1, codBord);
+                stmt.setString(1, codSoc);
                 stmt.setString(2, matPers);
-                stmt.setString(3, codSoc);
+                stmt.setInt(3, numFam);
                 stmt.setDate(4, datSoin != null ? java.sql.Date.valueOf(datSoin) : null);
-                stmt.setInt(5, numFam);
-                stmt.setInt(6, ordBult);
-                stmt.setBigDecimal(7, totHonor);
-                stmt.setBigDecimal(8, totNet);
+                stmt.setLong(5, numSoin);
+                stmt.setString(6, codBord);
+                stmt.setLong(7, ordBult);
+                stmt.setBigDecimal(8, totHonor);
+                stmt.setBigDecimal(9, totNet);
 
-                stmt.registerOutParameter(9, Types.VARCHAR);
+                stmt.registerOutParameter(10, Types.VARCHAR);
 
                 stmt.execute();
 
-                messageOut[0] = stmt.getString(9);
+                messageOut[0] = stmt.getString(10);
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -698,6 +702,44 @@ public class BulletinSoinService {
         });
 
         return messageOut[0];
+    }
+
+    @Transactional
+    public String updateBultSoinCnam(String codSoc, String matPers, int numFam, LocalDate datSoin,
+            Long numSoin, String codBord, int ordBult,
+            BigDecimal totHonor, BigDecimal totNet) {
+
+        int rows = jdbcTemplate.update("""
+                update bult_soin
+                   set cod_bord  = ?,
+                       envoi     = 'O',
+                       ord_bult  = ?,
+                       tot_honor = ?,
+                       tot_net   = ?
+                 where cod_soc  = ?
+                   and mat_pers = ?
+                   and num_fam  = ?
+                   and dat_soin = ?
+                   and num_soin = ?
+                """,
+                codBord, ordBult, totHonor, totNet,
+                codSoc, matPers, numFam, datSoin, numSoin);
+
+        if (rows == 0) {
+            return "Aucun bulletin trouvé à mettre à jour.";
+        }
+
+        return "Bulletin mis à jour avec succès. Total bulletins : " + rows
+                + ", Total Honoraires : " + format3(totHonor)
+                + ", Total Net : " + format3(totNet);
+    }
+
+    /**
+     * Équivalent de TO_CHAR(x, 'FM9999990.000') : 3 décimales, point comme
+     * séparateur.
+     */
+    private static String format3(BigDecimal value) {
+        return value.setScale(3, RoundingMode.HALF_UP).toPlainString();
     }
 
     public void callCreateBordBult(
@@ -885,24 +927,37 @@ public class BulletinSoinService {
         return bultSoinRepository.save(existing);
     }
 
-    public String callDeletBord(String pCodSoc, String pCodBord) {
-        return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{ call PK_ENVOI.supp_bord(?, ?) }"; // Call procedure
+    @Transactional
+    public String supprimerBordereau(String codSoc, String codBord) {
 
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
+        // 1) Détacher les bulletins du bordereau
+        int bulletins = jdbcTemplate.update("""
+                update bult_soin
+                   set cod_bord = null,
+                       ord_bult = null,
+                       envoi    = null
+                 where cod_soc  = ?
+                   and cod_bord = ?
+                """, codSoc, codBord);
 
-                // Set input parameters
-                callableStatement.setString(1, pCodSoc);
-                callableStatement.setString(2, pCodBord);
+        // 2) Supprimer le bordereau CNAM
+        int bordereaux = jdbcTemplate.update("""
+                delete from bord_envoi
+                 where cod_soc  = ?
+                   and cod_bord = ?
+                   and typ_bord = 'C'
+                """, codSoc, codBord);
 
-                // Execute the procedure
-                callableStatement.execute();
-                return "Suppression réussie.";
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return "Erreur: " + e.getMessage();
-            }
-        });
+        if (bordereaux == 0) {
+            // RuntimeException : Spring annule aussi l'étape 1
+            throw new IllegalStateException("Bordereau CNAM introuvable : " + codBord);
+        }
+
+        if (bulletins == 0) {
+            throw new IllegalStateException("Bulletins introuvables.");
+        }
+
+        return "Suppression réussie. Bulletins libérés : " + bulletins + ".";
     }
 
     public String callUpdateBultSoin(String codSoc, String matPers, int numFam, LocalDate datSoin, double mntHonor,
