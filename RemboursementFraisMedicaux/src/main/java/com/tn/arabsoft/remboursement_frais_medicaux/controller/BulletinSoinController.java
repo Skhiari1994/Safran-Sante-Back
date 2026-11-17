@@ -12,6 +12,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.projections.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.BulletinSoinService;
+import com.tn.arabsoft.remboursement_frais_medicaux.service.BulletinSoinCnamService;
 import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
 
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ import java.util.List;
 public class BulletinSoinController {
 
     private final BulletinSoinService bulletinSoinService;
+    private final BulletinSoinCnamService bulletinCnamService;
     private final BultSoinRepository bultSoinRepository;
     private final LigBultRepository ligBultRepository;
     private final RefEtablisRepository refEtablisRepository;
@@ -262,19 +264,19 @@ public class BulletinSoinController {
     @GetMapping("/verif_indice")
     ResponseProcedure verifIndice(@RequestParam String abrv_act_, @RequestParam String cod_fil_,
             @RequestParam String cod_assur_, @RequestParam String indice) {
-        return bulletinSoinService.verifIndice(abrv_act_, cod_fil_, cod_assur_, indice);
+        return bulletinCnamService.verifIndice(abrv_act_, cod_fil_, cod_assur_, indice);
     }
 
     @GetMapping("/verif_vign")
     ResponseProcedure verifVign(@RequestParam String abrv_act_, @RequestParam String cod_fil_,
             @RequestParam String cod_assur_, @RequestParam BigDecimal mnt_honor_, @RequestParam String nbr_vign_) {
-        return bulletinSoinService.verifVign(abrv_act_, cod_fil_, cod_assur_, mnt_honor_, nbr_vign_);
+        return bulletinCnamService.verifVign(abrv_act_, cod_fil_, cod_assur_, mnt_honor_, nbr_vign_);
     }
 
     @GetMapping("/verif_piece")
     ResponseProcedure verifPiece(@RequestParam String abrv_act_, @RequestParam String cod_fil_,
             @RequestParam String cod_assur_, @RequestParam BigDecimal mnt_honor_, @RequestParam String nbr_piece_) {
-        return bulletinSoinService.verifPiece(abrv_act_, cod_fil_, cod_assur_, mnt_honor_, nbr_piece_);
+        return bulletinCnamService.verifPiece(abrv_act_, cod_fil_, cod_assur_, mnt_honor_, nbr_piece_);
     }
 
     @DeleteMapping("/deleteLigBult")
@@ -325,40 +327,44 @@ public class BulletinSoinController {
         return refVisitRepository.getAppareil(codFil, codAssur);
     }
 
-    @GetMapping("/calculer_montant_net_app")
-    ReponseCalculMntNet calculerMontantNetApp(@RequestParam String soc, @RequestParam String mat,
-            @RequestParam String numFam, @RequestParam String datSoin,
-            @RequestParam BigDecimal mntHnor, @RequestParam String codApp, Long MutMntNet) {
-        return bulletinSoinService.calculerMontantNetApp(soc, mat, numFam, datSoin, mntHnor, codApp, MutMntNet);
-    }
-
+    // calcul mnt_net visite
     @GetMapping("/calculer_montant_net_visit")
     ReponseCalculMntNet calculerMontantNetVisit(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String codVisit,
             @RequestParam BigDecimal mntHnor, @RequestParam String datSoin, @RequestParam BigDecimal prixVisit,
             @RequestParam BigDecimal tauxRemb, @RequestParam(required = false) BigDecimal sauvNet) {
-        return bulletinSoinService.calculerMontantNetVisit(soc, mat, codVisit, mntHnor, datSoin, prixVisit, tauxRemb,
+        return bulletinCnamService.calculerMontantNetVisit(soc, mat, codVisit, mntHnor, datSoin, prixVisit, tauxRemb,
                 sauvNet);
     }
 
-    @GetMapping("/calculer_montant_net_act")
-    ReponseCalculMntNet calculerMontantNetAct(@RequestParam String soc, @RequestParam String mat,
-            @RequestParam String codAct,
-            @RequestParam BigDecimal mntHnor, @RequestParam String datSoin, @RequestParam BigDecimal actPrix,
-            @RequestParam BigDecimal tauxAct, @RequestParam(required = false) BigDecimal cumulNet,
-            @RequestParam(required = false) BigDecimal sauvNet) {
-        return bulletinSoinService.calculerMontantNetAct(soc, mat, codAct, mntHnor, datSoin, actPrix, tauxAct,
-                cumulNet, sauvNet);
-    }
-
+    // calcul mnt_net médicaments
     @GetMapping("/calculer_montant_net_med")
     ReponseCalculMntNet calculerMontantNetMed(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String codMed,
             @RequestParam BigDecimal mntHnor, @RequestParam String datSoin, @RequestParam BigDecimal prixRemb,
             @RequestParam Long indice, @RequestParam(required = false) BigDecimal cumulNet,
             @RequestParam(required = false) BigDecimal sauvNet) {
-        return bulletinSoinService.calculerMontantNetMed(soc, mat, codMed, mntHnor, datSoin, prixRemb, indice,
+        return bulletinCnamService.calculerMontantNetMed(soc, mat, codMed, mntHnor, datSoin, prixRemb, indice,
                 cumulNet, sauvNet);
+    }
+
+    // calcul mnt_net acte
+    @GetMapping("/calculer_montant_net_act")
+    ReponseCalculMntNet calculerMontantNetAct(@RequestParam String soc, @RequestParam String mat,
+            @RequestParam String codAct,
+            @RequestParam BigDecimal mntHnor, @RequestParam String datSoin, @RequestParam BigDecimal actPrix,
+            @RequestParam BigDecimal tauxAct, @RequestParam(required = false) BigDecimal cumulNet,
+            @RequestParam(required = false) BigDecimal sauvNet) {
+        return bulletinCnamService.calculerMontantNetAct(soc, mat, codAct, mntHnor, datSoin, actPrix, tauxAct,
+                cumulNet, sauvNet);
+    }
+
+    // // calcul mnt_net appareil
+    @GetMapping("/calculer_montant_net_app")
+    ReponseCalculMntNet calculerMontantNetApp(@RequestParam String soc, @RequestParam String mat,
+            @RequestParam String numFam, @RequestParam String datSoin,
+            @RequestParam BigDecimal mntHnor, @RequestParam String codApp, Long MutMntNet) {
+        return bulletinCnamService.calculerMontantNetApp(soc, mat, numFam, datSoin, mntHnor, codApp, MutMntNet);
     }
 
     @GetMapping("/getActes")
