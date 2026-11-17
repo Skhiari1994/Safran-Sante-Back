@@ -119,6 +119,24 @@ public class AuthenticationController {
         return reponse(HttpStatus.OK, "Mot de passe modifié avec succès.");
     }
 
+    /**
+     * Renouvelle le jeton d'un utilisateur actif. Le jeton est court (voir application.security.jwt.expiration) : le
+     * front l'appelle tant que l'utilisateur travaille, et plus du tout quand il est inactif, ce qui met fin à la
+     * session côté serveur. Un jeton déjà expiré, invalide, ou d'un compte désactivé est refusé (401).
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+
+        User user = utilisateurDuToken(authorization);
+        if (user == null || !user.isEnabled() || !user.isAccountNonLocked()) {
+            return reponse(HttpStatus.UNAUTHORIZED, "Session expirée. Reconnectez-vous.");
+        }
+        String ancien = authorization.substring(7);
+        String nouveau = jwtService.generateToken(jwtService.claimsMetier(ancien), user);
+        return ResponseEntity.ok(Map.of("token", nouveau));
+    }
+
     /** Compte correspondant au token (login + société de travail) ; null si le token est absent, invalide ou expiré. */
     private User utilisateurDuToken(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {

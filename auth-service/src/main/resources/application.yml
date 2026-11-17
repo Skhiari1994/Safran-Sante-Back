@@ -22,7 +22,9 @@ application:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY}
-      expiration: 86400000 # a day
+      # Jeton court, renouvelé par le front (POST /api/auth/refresh) tant que l'utilisateur est actif :
+      # 3 min d'inactivité + 2 min d'avertissement + 2 min de marge. Sans renouvellement, la session est morte côté serveur.
+      expiration: 420000 # 7 minutes
       refresh-token:
         expiration: 604800000 # 7 days
   mailing:
