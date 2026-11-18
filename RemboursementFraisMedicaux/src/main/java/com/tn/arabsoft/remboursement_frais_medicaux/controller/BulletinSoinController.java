@@ -55,8 +55,9 @@ public class BulletinSoinController {
     }
 
     @GetMapping("/get_duree_bulletin")
-    ResponseProcedure getDureeBulletin(@RequestParam String wdat_soin, @RequestParam String wCOD_ASSUR) {
-        return bulletinSoinService.getDureeBulletin(wdat_soin, wCOD_ASSUR);
+    ResponseProcedure getDureeBulletin(@RequestParam("datSoin") String datSoin,
+            @RequestParam("codAssur") String codAssur) {
+        return bulletinSoinService.getDureeBulletin(datSoin, codAssur);
     }
 
     @GetMapping("/get_plafond_mutuelle")
@@ -305,10 +306,15 @@ public class BulletinSoinController {
     }
 
     @GetMapping("/vetif_mod_remb")
-    ReponseVetifModRemb vetifModRemb(@RequestParam String soc, @RequestParam String mat, @RequestParam String numFam,
-            @RequestParam String datSoin,
-            @RequestParam String reg_remb_, @RequestParam String parente, @RequestParam String sexe) {
-        return bulletinSoinService.vetifModRemb(soc, mat, numFam, datSoin, reg_remb_, parente, sexe);
+    ReponseVetifModRemb vetifModRemb(@RequestParam("codSoc") String codSoc,
+            @RequestParam("matPers") String matPers,
+            @RequestParam("numFam") String numFam,
+            @RequestParam("datSoin") String datSoin,
+            @RequestParam("regRemb") String regRemb,
+            @RequestParam("parente") String parente,
+            @RequestParam("sexe") String sexe) {
+        return bulletinSoinService.vetifModRemb(codSoc, matPers, Integer.valueOf(numFam), datSoin, regRemb, parente,
+                sexe);
     }
 
     @GetMapping("/getVisit")

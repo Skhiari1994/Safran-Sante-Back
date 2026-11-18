@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.BultSoin;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.BultSoinCle;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.reponses.*;
+import com.tn.arabsoft.remboursement_frais_medicaux.repositories.AssuranceRepository;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.BultSoinRepository;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.FamilleRepository;
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.PersonnelRepository;
@@ -22,7 +23,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,8 @@ import javax.sql.DataSource;
 public class BulletinSoinService {
 
     private final JdbcTemplate jdbcTemplate;
+
+    private final AssuranceRepository assuranceRepository;
 
     private final BultSoinRepository bultSoinRepository;
 
@@ -117,24 +120,39 @@ public class BulletinSoinService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
-    public ResponseProcedure getDureeBulletin(String wdat_soin, String wCOD_ASSUR) {
-        return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{call PK_BULLETIN_SOIN.get_duree_bulletin(?, ?, ?)}";
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
-                callableStatement.setString(1, wdat_soin);
-                callableStatement.setString(2, wCOD_ASSUR);
-                callableStatement.registerOutParameter(3, Types.VARCHAR);
-                callableStatement.execute();
-                String message = callableStatement.getString(3);
-                ResponseProcedure responseProcedure = new ResponseProcedure();
-                responseProcedure.setReponse(message);
-                return responseProcedure;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+    public ResponseProcedure getDureeBulletin(
+            String paramDatSoin,
+            String paramCodAssur) {
 
+        ResponseProcedure response = new ResponseProcedure();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        LocalDate datSoin;
+
+        try {
+            datSoin = LocalDate.parse(paramDatSoin, formatter);
+        } catch (DateTimeParseException e) {
+            response.setReponse("Date de soin invalide");
+            return response;
+        }
+
+        LocalDate today = LocalDate.now();
+
+        long diff = ChronoUnit.DAYS.between(datSoin, today);
+
+        Integer dureeBulletin = assuranceRepository.getDureeBulletin(paramCodAssur);
+
+        if (diff > dureeBulletin) {
+            response.setReponse("Durée de vie du bulletin epuisée");
+        } else if (diff < 0) {
+            response.setReponse("Date de soin invalide");
+        } else {
+            // La procédure Oracle ne met aucun message
+            response.setReponse(null);
+        }
+
+        return response;
     }
 
     public ReponseGetPlafondMutuelle getPlafondMutuelle(String soc, String mat, String datSoin, String datNais,
@@ -272,39 +290,44 @@ public class BulletinSoinService {
 
     }
 
-    public ReponseVetifModRemb vetifModRemb(String soc, String mat, String numFam, String datSoin, String reg_remb_,
+    public ReponseVetifModRemb vetifModRemb(String codSoc, String matPers, Integer numFam, String datSoin,
+            String regimeRemb,
             String parente, String sexe) {
 
         Date sqlDatSoin = (datSoin != null && !datSoin.isEmpty()) ? convertToSqlDate(datSoin) : null;
 
         return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{call PK_BULLETIN_SOIN.vetif_mod_remb(?,?,?,?,?,?,?,?,?,?,?)}";
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
-                callableStatement.setString(1, soc);
-                callableStatement.setString(2, mat);
-                callableStatement.setString(3, numFam);
+            String call = getCallSyntax(
+                    connection,
+                    PK_BULLETIN_SOIN,
+                    "vetif_mod_remb",
+                    11);
 
-                callableStatement.setDate(4, sqlDatSoin);
-                callableStatement.setString(5, reg_remb_);
-                callableStatement.setString(6, parente);
-                callableStatement.setString(7, sexe);
-                callableStatement.registerOutParameter(8, Types.VARCHAR);
-                callableStatement.registerOutParameter(9, Types.VARCHAR);
-                callableStatement.registerOutParameter(10, Types.VARCHAR);
-                callableStatement.registerOutParameter(11, Types.VARCHAR);
-                callableStatement.execute();
+            try (CallableStatement cs = connection.prepareCall(call)) {
+                cs.setString(1, codSoc);
+                cs.setString(2, matPers);
+                cs.setInt(3, numFam);
+                cs.setDate(4, sqlDatSoin);
+                cs.setString(5, regimeRemb);
+                cs.setString(6, parente);
+                cs.setString(7, sexe);
+                cs.registerOutParameter(8, Types.VARCHAR);
+                cs.registerOutParameter(9, Types.VARCHAR);
+                cs.registerOutParameter(10, Types.VARCHAR);
+                cs.registerOutParameter(11, Types.VARCHAR);
+                cs.execute();
 
-                String msg_dat_accouch = callableStatement.getString(8);
-                String msg_malad = callableStatement.getString(9);
-                String msg_prise_charge = callableStatement.getString(10);
-                String message = callableStatement.getString(11);
+                String msg_dat_accouch = cs.getString(8);
+                String msg_malad = cs.getString(9);
+                String msg_prise_charge = cs.getString(10);
+                String message = cs.getString(11);
                 ReponseVetifModRemb reponse = new ReponseVetifModRemb();
 
                 reponse.setMsg_dat_accouch(msg_dat_accouch);
-
                 reponse.setMsg_malad(msg_malad);
                 reponse.setMsg_prise_charge(msg_prise_charge);
                 reponse.setMessage(message);
+
                 return reponse;
             } catch (SQLException e) {
                 e.printStackTrace();

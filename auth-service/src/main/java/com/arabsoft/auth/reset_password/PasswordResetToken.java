@@ -19,8 +19,8 @@ import lombok.ToString;
 public class PasswordResetToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqUser")
-    @SequenceGenerator(name = "seqUser", sequenceName = "SEQ_PASSWORDRESETTOKEN", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqPasswordResetToken")
+    @SequenceGenerator(name = "seqPasswordResetToken", sequenceName = "SEQ_PASSWORDRESETTOKEN", allocationSize = 1)
     private Integer token_id;
     private String token;
     private Date expirationTime;
