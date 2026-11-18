@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -59,6 +60,16 @@ public class JwtService {
                 .claim("authorities", authorities)
                 .signWith(getSignInKey())
                 .compact();
+    }
+
+    /**
+     * Claims métier du jeton (fullName, matricule, codSoc, libSoc…) à reporter dans un jeton renouvelé :
+     * tout sauf les claims standards, qui sont recalculés (sujet, dates, autorités).
+     */
+    public Map<String, Object> claimsMetier(String token) {
+        Map<String, Object> claims = new HashMap<>(extractAllClaims(token));
+        claims.keySet().removeAll(List.of("sub", "iat", "exp", "nbf", "jti", "authorities"));
+        return claims;
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
