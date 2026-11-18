@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fiche_syntese_adherent_sub_affi" language="groovy" pageWidth="555" pageHeight="842" columnWidth="526" leftMargin="0" rightMargin="29" topMargin="0" bottomMargin="0">
+	<parameter name="cod_soc" class="java.lang.String"/>
+	<parameter name="mat_deb" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT pa.annee_aff,
+       pa.cod_fil,
+       f.lib_fill,
+       CASE pa.courant WHEN 'O' THEN 'Oui' WHEN 'N' THEN 'Non' ELSE NULL END AS courant
+  FROM pers_affil pa
+  LEFT JOIN ref_filliere f
+    ON f.cod_fil = pa.cod_fil
+ WHERE pa.cod_soc = $P{cod_soc}
+   AND pa.mat_pers = $P{mat_deb}
+ ORDER BY pa.annee_aff, pa.cod_fil]]>
+	</queryString>
+	<field name="ANNEE_AFF" class="java.math.BigDecimal"/>
+	<field name="COD_FIL" class="java.lang.String"/>
+	<field name="LIB_FILL" class="java.lang.String"/>
+	<field name="COURANT" class="java.lang.String"/>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#BFE1FF"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<text><![CDATA[Année]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="60" y="0" width="250" height="20" backcolor="#BFE1FF"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<text><![CDATA[Filière]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="310" y="0" width="60" height="20" backcolor="#BFE1FF"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8" isBold="true"/></textElement>
+				<text><![CDATA[En cours]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField pattern="#0" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="60" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{ANNEE_AFF}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="60" y="0" width="250" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{LIB_FILL} != null ? $F{LIB_FILL} : $F{COD_FIL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="310" y="0" width="60" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{COURANT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

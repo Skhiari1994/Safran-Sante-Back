@@ -17,7 +17,13 @@ spring:
   mvc:
     format:
       date: dd/MM/yyyy
-      
+
+  servlet:
+    multipart:
+      # logo d'une société : 5 Mo au plus (LogoSociete.TAILLE_MAX) ; la valeur par défaut de Spring est 1 Mo
+      max-file-size: 5MB
+      max-request-size: 6MB
+
 eureka:
   instance:
     hostname: localhost

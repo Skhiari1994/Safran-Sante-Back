@@ -66,10 +66,10 @@ public interface MenuGestionDao extends JpaRepository<Admeventtype, Long> {
         Long nextModuleIdSqlServer();
 
         @Modifying
-        @Query(value = "insert into admsubmodule (sum_id, sum_name, sum_rank, mod_id, sum_status, sum_rout) "
-                        + "values (:id, :name, :rank, 1, :status, :rout)", nativeQuery = true)
+        @Query(value = "insert into admsubmodule (sum_id, sum_name, sum_rank, mod_id, sum_status, sum_rout, mdl_icon1) "
+                        + "values (:id, :name, :rank, 1, :status, :rout, :icone)", nativeQuery = true)
         int insertModule(@Param("id") Long id, @Param("name") String name, @Param("rank") Long rank,
-                        @Param("status") String status, @Param("rout") String rout);
+                        @Param("status") String status, @Param("rout") String rout, @Param("icone") String icone);
 
         @Modifying
         @Query(value = "update admsubmodule set sum_rank = :rank where sum_id = :id", nativeQuery = true)
