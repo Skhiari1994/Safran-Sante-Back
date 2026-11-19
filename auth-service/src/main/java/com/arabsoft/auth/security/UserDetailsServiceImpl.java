@@ -36,16 +36,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("Invalid authentication username");
         }
 
-        String useLogin = parts[0];
-        String codSoc = parts[1];
+        String identifiant = parts[0].trim();
+        String codSoc = parts[1].trim();
 
-        // 1. compte du login dans la société choisie ; 2. à défaut, un profil RH/ADMIN peut entrer dans
-        // n'importe quelle société (la société de travail est alors celle choisie au login, mise dans le token)
-        return userRepository
-                .findByUseloginAndCodSoc(useLogin, codSoc)
-                .or(() -> userRepository.findPrivilegedByUselogin(useLogin).stream().findFirst())
+        // 1. Recherche par CIN et société choisie
+        // 2. Recherche classique par useLogin et société
+        // 3. Cas compte privilégié RH/ADMIN par CIN (peut entrer dans n'importe quelle société)
+        // 4. Cas compte privilégié RH/ADMIN par useLogin
+        return userRepository.findUserByCinAndCodSoc(identifiant, codSoc)
+                .or(() -> userRepository.findByUseloginAndCodSoc(identifiant, codSoc))
+                .or(() -> userRepository.findPrivilegedByCin(identifiant).stream().findFirst())
+                .or(() -> userRepository.findPrivilegedByUselogin(identifiant).stream().findFirst())
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found for login " + useLogin
+                        "User not found for identifier " + identifiant
                                 + " and company " + codSoc));
     }
 

@@ -164,6 +164,22 @@ public class AuthenticationController {
         return ResponseEntity.status(status).body(Map.of("message", message));
     }
 
+    @GetMapping("/getSocieteByCin/{cin}")
+    public List<SocieteProjection> getSocieteByCin(@PathVariable String cin) {
+        List<Long> useIds = userRepository.findUseIdsByCin(cin);
+
+        boolean estPrivilegie = useIds != null && useIds.stream().anyMatch(useId -> {
+            Long roleId = userRepository.findRoleByUseId(useId);
+            return roleId != null && (roleId == 3L || roleId == 4L || roleId == 5L);
+        });
+
+        if (estPrivilegie) {
+            return userRepository.findAllSocietes();
+        } else {
+            return userRepository.findSocieteByCin(cin);
+        }
+    }
+
     @GetMapping("/getSocieteByLogin/{matPers}/{cin}")
     public List<SocieteProjection> getSocieteByLogin(
             @PathVariable String matPers,

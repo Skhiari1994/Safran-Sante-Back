@@ -113,9 +113,10 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
+        String identifiant = request.getIdentifiant();
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUseLogin() + "|" + request.getCodSoc(),
+                        identifiant + "|" + request.getCodSoc(),
                         request.getPassword()));
 
         var claims = new HashMap<String, Object>();
@@ -123,6 +124,9 @@ public class AuthenticationService {
         var user = ((User) auth.getPrincipal());
 
         claims.put("fullName", user.fullName());
+        if (request.getCin() != null && !request.getCin().isBlank()) {
+            claims.put("cin", request.getCin().trim());
+        }
 
         // matricule : celui de la fiche personnel, à défaut le login (comptes admin
         // sans matricule)
