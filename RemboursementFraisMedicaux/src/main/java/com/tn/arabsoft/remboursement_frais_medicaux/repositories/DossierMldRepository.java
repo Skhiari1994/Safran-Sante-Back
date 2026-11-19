@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.DossierMld;
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.CleDossierMld;
+import com.tn.arabsoft.remboursement_frais_medicaux.projections.DossierMaladieProjection;
 import com.tn.arabsoft.remboursement_frais_medicaux.projections.DossierMldProjection;
 
 import java.util.List;
@@ -39,6 +40,21 @@ public interface DossierMldRepository extends JpaRepository<DossierMld, CleDossi
       order by t.dat_doss_mld desc
       """, nativeQuery = true)
   List<DossierMldProjection> getDossierMll(@Param("soc") String soc, @Param("mat") String mat);
+
+  /** Maladies des dossiers maladie d'un adhérent ou d'un membre de sa famille (liste « Code maladie » du bulletin CNAM). */
+  @Query(value = """
+      select t.cod_malad as cod_malad,
+             m.lib_malad as lib_malad,
+             t.num_dos_mld as num_dos_mld
+      from dossier_mld t
+      inner join maladie m on t.cod_malad = m.cod_malad
+      where t.cod_soc = :soc
+        and t.mat_pers = :mat
+        and t.num_fam = :numFam
+      order by t.cod_malad, t.num_dos_mld
+      """, nativeQuery = true)
+  List<DossierMaladieProjection> getDossiersMaladie(@Param("soc") String soc, @Param("mat") String mat,
+      @Param("numFam") String numFam);
 
   @Query(value = """
       select coalesce(max(num_dos_mld), 0) + 1

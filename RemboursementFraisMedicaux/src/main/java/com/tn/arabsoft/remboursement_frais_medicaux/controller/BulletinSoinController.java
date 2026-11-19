@@ -31,6 +31,7 @@ public class BulletinSoinController {
     private final BulletinSoinService bulletinSoinService;
     private final BulletinSoinCnamService bulletinCnamService;
     private final BultSoinRepository bultSoinRepository;
+    private final DossierMldRepository dossierMldRepository;
     private final LigBultRepository ligBultRepository;
     private final RefEtablisRepository refEtablisRepository;
     private final LigPharRepository ligPharRepository;
@@ -389,6 +390,12 @@ public class BulletinSoinController {
         return bultSoinRepository.getListMedCnam(codFil, codAssur);
     }
 
+    @GetMapping("/getDossiersMaladie")
+    List<DossierMaladieProjection> getDossiersMaladie(@RequestParam String soc, @RequestParam String mat,
+            @RequestParam String numFam) {
+        return dossierMldRepository.getDossiersMaladie(soc, mat, numFam);
+    }
+
     @PostMapping("/addLigBultVisit")
     List<LigBultVisit> addLigBultVisit(@RequestBody List<LigBultVisit> ligBultVisit) {
 
@@ -597,6 +604,10 @@ public class BulletinSoinController {
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig, @RequestParam("datAct") String datAct,
             @RequestParam("codAct") String codAct) {
+        // ligne jamais enregistrée (clé vide) : rien à supprimer en base
+        if (fam == null || fam.isBlank() || numLig == null || numLig.isBlank()) {
+            return;
+        }
         LocalDate date_soin = DateParser.parse(datSoin);
         LocalDate date_acte = DateParser.parse(datAct);
         Long num_prest = Long.valueOf(fam);
@@ -608,6 +619,10 @@ public class BulletinSoinController {
     void deleteLigBultApp(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig, @RequestParam("codApp") String codApp) {
+        // ligne jamais enregistrée (clé vide) : rien à supprimer en base
+        if (fam == null || fam.isBlank() || numLig == null || numLig.isBlank()) {
+            return;
+        }
         Integer prestInt = Integer.valueOf(fam);
         LocalDate date_soin = DateParser.parse(datSoin);
         Long numero_ligne = Long.valueOf(numLig);
@@ -617,17 +632,34 @@ public class BulletinSoinController {
     @DeleteMapping("/deleteLigBultVisit")
     void deleteLigBultVisit(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
-            @RequestParam("datAct") String datAct, @RequestParam("codVisit") String codVisit) {
+            @RequestParam("datAct") String datAct, @RequestParam("codVisit") String codVisit,
+            @RequestParam(value = "numLig", required = false) String numLig,
+            @RequestParam(value = "numSoin", required = false) String numSoin) {
+        // ligne jamais enregistrée (clé vide) : rien à supprimer en base
+        if (fam == null || fam.isBlank()) {
+            return;
+        }
         Integer famInt = Integer.valueOf(fam);
         LocalDate date_soin = DateParser.parse(datSoin);
         LocalDate date_acte = DateParser.parse(datAct);
-        ligBultVisitRepository.deleteLigBultVisit(soc, mat, famInt, date_soin, abrv, date_acte, codVisit);
+        boolean avecBulletin = numLig != null && !numLig.isBlank() && numSoin != null && !numSoin.isBlank();
+        if (avecBulletin) {
+            // clé complète : seule la visite de ce bulletin est supprimée (pas celle d'un autre bulletin de même date)
+            ligBultVisitRepository.deleteLigBultVisitBulletin(soc, mat, famInt, date_soin, abrv, date_acte, codVisit,
+                    Integer.valueOf(numLig.trim()), Long.valueOf(numSoin.trim()));
+        } else {
+            ligBultVisitRepository.deleteLigBultVisit(soc, mat, famInt, date_soin, abrv, date_acte, codVisit);
+        }
     }
 
     @DeleteMapping("/deleteLigBultMed")
     void deleteLigBultMed(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("fam") String fam, @RequestParam("datSoin") String datSoin, @RequestParam("abrv") String abrv,
             @RequestParam("numLig") String numLig, @RequestParam("codMed") String codMed) {
+        // ligne jamais enregistrée (clé vide) : rien à supprimer en base
+        if (fam == null || fam.isBlank() || numLig == null || numLig.isBlank()) {
+            return;
+        }
         Integer famInt = Integer.valueOf(fam);
         LocalDate date_soin_sql = DateParser.parse(datSoin);
         Long numero_ligne = Long.valueOf(numLig);

@@ -90,6 +90,32 @@ public interface LigBultVisitRepository extends JpaRepository<LigBultVisit, CleL
             @Param("datAct") LocalDate datAct,
             @Param("codVisit") String codVisit);
 
+    /** Suppression d'une visite d'un bulletin précis : la clé complète inclut le numéro de ligne et le numéro de soin. */
+    @Modifying
+    @Transactional
+    @Query(value = """
+            delete from lig_bult_visit
+             where cod_soc = :soc
+               and mat_pers = :mat
+               and num_fam = :fam
+               and dat_soin = :datSoin
+               and abrv_act = :abrv
+               and dat_act = :datAct
+               and cod_visit = :codVisit
+               and num_lig = :numLig
+               and num_soin = :numSoin
+            """, nativeQuery = true)
+    void deleteLigBultVisitBulletin(
+            @Param("soc") String soc,
+            @Param("mat") String mat,
+            @Param("fam") Integer fam,
+            @Param("datSoin") LocalDate datSoin,
+            @Param("abrv") String abrv,
+            @Param("datAct") LocalDate datAct,
+            @Param("codVisit") String codVisit,
+            @Param("numLig") Integer numLig,
+            @Param("numSoin") Long numSoin);
+
     @Query(value = """
             select coalesce(max(num_lig), 0) + 1
             from lig_bult_visit

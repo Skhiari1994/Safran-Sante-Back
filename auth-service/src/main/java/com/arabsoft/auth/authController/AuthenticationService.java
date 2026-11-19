@@ -128,9 +128,9 @@ public class AuthenticationService {
             claims.put("cin", request.getCin().trim());
         }
 
-        // matricule : celui de la fiche personnel, à défaut le login (comptes admin
-        // sans matricule)
-        String matricule = user.getMatpers() != null ? user.getMatpers() : user.getUselogin();
+        // matricule : USE_MATRICULE (le login est maintenant le CIN), à défaut MAT_PERS,
+        // puis le login (comptes admin sans matricule)
+        String matricule = premierNonVide(user.getUsematricule(), user.getMatpers(), user.getUselogin());
         if (matricule != null) {
             claims.put("matricule", matricule);
         }
@@ -150,10 +150,19 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .roles(user.getRoles())
-                .matPers(user.getMatpers())
+                .matPers(premierNonVide(user.getUsematricule(), user.getMatpers()))
                 .useLogin(user.getUselogin())
                 .codSoc(societe)
                 .build();
+    }
+
+    private static String premierNonVide(String... valeurs) {
+        for (String v : valeurs) {
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
+        }
+        return null;
     }
 
     @Transactional
