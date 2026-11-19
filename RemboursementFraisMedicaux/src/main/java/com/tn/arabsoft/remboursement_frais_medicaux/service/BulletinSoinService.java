@@ -16,6 +16,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.repositories.FamilleReposito
 import com.tn.arabsoft.remboursement_frais_medicaux.repositories.PersonnelRepository;
 import com.tn.arabsoft.remboursement_frais_medicaux.util.AgeUtil;
 import com.tn.arabsoft.remboursement_frais_medicaux.util.AgeUtil.Age;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.PlafondMutuelleRegles;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -156,40 +157,61 @@ public class BulletinSoinService {
     }
 
     public ReponseGetPlafondMutuelle getPlafondMutuelle(String soc, String mat, String datSoin, String datNais,
-            String datSaisie) {
-        return jdbcTemplate.execute((Connection connection) -> {
-            String procedureCall = "{call PK_BULLETIN_SOIN.get_plafond_mutuelle(?,?,?,?,?,?,?,?,?,?)}";
-            try (CallableStatement callableStatement = connection.prepareCall(procedureCall)) {
-                callableStatement.setString(1, soc);
-                callableStatement.setString(2, mat);
-                callableStatement.setString(3, datSoin);
-                callableStatement.setString(4, datNais);
-                callableStatement.setString(5, datSaisie);
-                callableStatement.registerOutParameter(6, Types.VARCHAR);
-                callableStatement.registerOutParameter(7, Types.VARCHAR);
-                callableStatement.registerOutParameter(8, Types.VARCHAR);
-                callableStatement.registerOutParameter(9, Types.VARCHAR);
-                callableStatement.registerOutParameter(10, Types.VARCHAR);
-                callableStatement.execute();
+            String datSaisie, String numFam) {
+        ReponseGetPlafondMutuelle response = new ReponseGetPlafondMutuelle();
+        response.setSoldPlafond(montant(0));
+        response.setSoldPlafondEstim(montant(0));
+        response.setAgeAn(0);
+        response.setAgeMois(0);
 
-                String soldPlafond = callableStatement.getString(6);
-                String soldPlafondEstim = callableStatement.getString(7);
-                String ageAn = callableStatement.getString(8);
-                String ageMois = callableStatement.getString(9);
-                String message = callableStatement.getString(10);
-                ReponseGetPlafondMutuelle reponseGetPlafondMutuelle = new ReponseGetPlafondMutuelle();
+        LocalDate soin = lireDate(datSoin);
+        LocalDate naissance = lireDate(datNais);
+        LocalDate saisie = lireDate(datSaisie);
 
-                reponseGetPlafondMutuelle.setSoldPlafond(soldPlafond);
-                reponseGetPlafondMutuelle.setSoldPlafondEstim(soldPlafondEstim);
-                reponseGetPlafondMutuelle.setAgeAn(Integer.valueOf(ageAn));
-                reponseGetPlafondMutuelle.setAgeMois(Integer.valueOf(ageMois));
-                reponseGetPlafondMutuelle.setMessage(message);
-                return reponseGetPlafondMutuelle;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
+        Double duree = jdbcTemplate.queryForList(
+                "select a.duree_bult_mut from assurance a join personnel p on p.cod_assur = a.cod_assur "
+                        + "where p.cod_soc = ? and p.mat_pers = ?",
+                Double.class, soc, mat).stream().findFirst().orElse(null);
+
+        // le message de validité est renvoyé tel quel, mais l'âge et les soldes restent calculés : l'écran de
+        // consultation affiche aussi des bulletins anciens dont la durée de vie est dépassée
+        String message = PlafondMutuelleRegles.controleDateSoin(soin, naissance, saisie, LocalDate.now(), duree);
+        response.setMessage(message);
+
+        Age age = PlafondMutuelleRegles.ageALaDateDeSoin(naissance, soin);
+        response.setAgeAn(age.years());
+        response.setAgeMois(age.months());
+
+        if (soin != null && numFam != null && !numFam.isBlank()) {
+            java.sql.Date dateSoin = java.sql.Date.valueOf(soin);
+            String fam = numFam.trim();
+            double[] soldes = jdbcTemplate.query(
+                    "select dbo.getSoldePlafond(?, ?, ?, ?), dbo.getSoldePlafondEstim(?, ?, ?, ?)",
+                    (rs, i) -> new double[] { rs.getDouble(1), rs.getDouble(2) },
+                    mat, soc, dateSoin, fam, mat, soc, dateSoin, fam).stream().findFirst()
+                    .orElse(new double[] { -1, 0 });
+            if (soldes[0] < 0) {
+                if (message == null) {
+                    response.setMessage(PlafondMutuelleRegles.MSG_PLAFOND_NON_INITIALISE);
+                }
+            } else {
+                response.setSoldPlafond(montant(soldes[0]));
+                response.setSoldPlafondEstim(montant(soldes[1]));
             }
-        });
+        }
+        return response;
+    }
+
+    private static LocalDate lireDate(String valeur) {
+        try {
+            return AgeUtil.parseDate(valeur);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private static String montant(double valeur) {
+        return BigDecimal.valueOf(valeur).setScale(3, RoundingMode.HALF_UP).toPlainString();
     }
 
     public ReponseGetPlafondMutuelle getPlafondCnam(

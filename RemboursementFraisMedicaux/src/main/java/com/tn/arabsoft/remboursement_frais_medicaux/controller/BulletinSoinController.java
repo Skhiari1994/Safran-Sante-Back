@@ -64,8 +64,9 @@ public class BulletinSoinController {
     @GetMapping("/get_plafond_mutuelle")
     ReponseGetPlafondMutuelle getPlafondMutuelle(@RequestParam String soc, @RequestParam String mat,
             @RequestParam String wdat_soin,
-            @RequestParam String datNais, @RequestParam String datSaisie) {
-        return bulletinSoinService.getPlafondMutuelle(soc, mat, wdat_soin, datNais, datSaisie);
+            @RequestParam String datNais, @RequestParam String datSaisie,
+            @RequestParam(required = false) String numFam) {
+        return bulletinSoinService.getPlafondMutuelle(soc, mat, wdat_soin, datNais, datSaisie, numFam);
     }
 
     @GetMapping("/get_plafond_cnam")

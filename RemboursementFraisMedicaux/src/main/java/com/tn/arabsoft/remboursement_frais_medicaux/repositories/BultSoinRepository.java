@@ -88,10 +88,11 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.mod_pay,
                          t.dat_vir,
                          p.dat_nais,
-                         concat(p.nom_pers, concat(' ', p.pren_pers)) as nomCompletPers,
-                         a.lib_assur as libAssur,
-                         r.lib_fill as libFill,
-                         f.nom_pren as nomAdherent
+                         concat(p.nom_pers, concat(' ', p.pren_pers)) as nom_complet_pers,
+                         a.lib_assur as lib_assur,
+                         p.num_retr as num_retr,
+                         r.lib_fill as lib_fill,
+                         f.nom_pren as nom_adherent
                      from bult_soin t
                      left join personnel p
                             on p.mat_pers = t.mat_pers
@@ -140,6 +141,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.dat_vir,
                          concat(p.nom_pers, concat(' ', p.pren_pers)) as nom_complet_pers,
                          a.lib_assur as lib_assur,
+                         p.num_retr as num_retr,
                          r.lib_fill as lib_fill,
                          f.nom_pren as nom_adherent
                      from bult_soin t
@@ -196,6 +198,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          t.dat_vir,
                          concat(p.nom_pers, concat(' ', p.pren_pers)) as nom_complet_pers,
                          a.lib_assur as lib_assur,
+                         p.num_retr as num_retr,
                          r.lib_fill as lib_fill,
                          f.nom_pren as nom_adherent
                      from bult_soin t
@@ -716,10 +719,11 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                             t.mod_pay,
                             t.dat_vir,
                             p.dat_nais,
-                            concat(concat(p.nom_pers, ' '), p.pren_pers) as nomCompletPers,
-                            a.lib_assur as libAssur,
-                            r.lib_fill as libFill,
-                            f.nom_pren as nomAdherent
+                            concat(concat(p.nom_pers, ' '), p.pren_pers) as nom_complet_pers,
+                            a.lib_assur as lib_assur,
+                            p.num_retr as num_retr,
+                            r.lib_fill as lib_fill,
+                            f.nom_pren as nom_adherent
                      from bult_soin t
                      inner join personnel p
                             on p.cod_soc = t.cod_soc
@@ -815,10 +819,11 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                             t.mod_pay,
                             t.dat_vir,
                             p.dat_nais,
-                            concat(concat(p.nom_pers, ' '), p.pren_pers) as nomCompletPers,
-                            a.lib_assur as libAssur,
-                            r.lib_fill as libFill,
-                            f.nom_pren as nomAdherent
+                            concat(concat(p.nom_pers, ' '), p.pren_pers) as nom_complet_pers,
+                            a.lib_assur as lib_assur,
+                            p.num_retr as num_retr,
+                            r.lib_fill as lib_fill,
+                            f.nom_pren as nom_adherent
                      from bult_soin t
                      inner join personnel p
                             on p.cod_soc = t.cod_soc
