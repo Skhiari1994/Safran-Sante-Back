@@ -36,6 +36,42 @@ public class MenuService {
 		return jsonResponses;
 	}
 
+	/**
+	 * Ajoute aux pages autorisées leurs groupes parents. Le menu est construit en imbriquant chaque entrée sous son
+	 * parent : une page autorisée dont le groupe n'a pas sa propre autorisation (cas d'un profil où l'on n'a coché que
+	 * les pages) était écartée et ne s'affichait pas. Seuls les groupes actifs et sans page propre (sans action) sont
+	 * ajoutés : un parent inactif, ou qui est lui-même une page, n'est jamais rendu visible par ce biais.
+	 *
+	 * @param autorises entrées actives autorisées pour le profil
+	 * @param actifs    toutes les entrées actives
+	 */
+	public List<Admeventtype> avecGroupesParents(List<Admeventtype> autorises, List<Admeventtype> actifs) {
+		Map<Long, Admeventtype> actifsParId = new HashMap<>();
+		for (Admeventtype e : actifs) {
+			actifsParId.put(e.getEvt_id(), e);
+		}
+		Map<Long, Admeventtype> resultat = new java.util.LinkedHashMap<>();
+		for (Admeventtype e : autorises) {
+			resultat.put(e.getEvt_id(), e);
+		}
+		for (Admeventtype e : autorises) {
+			Long parentId = e.getEvt_evt_id();
+			while (parentId != null && !resultat.containsKey(parentId)) {
+				Admeventtype parent = actifsParId.get(parentId);
+				if (parent == null || (parent.getEvt_action() != null && !parent.getEvt_action().isBlank())) {
+					break;
+				}
+				resultat.put(parentId, parent);
+				parentId = parent.getEvt_evt_id();
+			}
+		}
+		List<Admeventtype> liste = new ArrayList<>(resultat.values());
+		liste.sort(java.util.Comparator
+				.comparing(Admeventtype::getEvt_rank, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder()))
+				.thenComparing(Admeventtype::getEvt_id));
+		return liste;
+	}
+
 	public List<JsonResponse> convertAdmEntities(List<Admsubmodule> admSubmodules, List<Admeventtype> admEventTypes) {
 		List<JsonResponse> jsonResponses = new ArrayList<>();
 		Map<Long, List<Admeventtype>> eventTypeMap = new HashMap<>();
@@ -116,7 +152,7 @@ public class MenuService {
 		JsonResponse child = new JsonResponse();
 		child.setId(eventType.getEvt_id());
 		child.setLabel(eventType.getEvt_name());
-		child.setIcon("");
+		child.setIcon(eventType.getEvt_icon() != null ? eventType.getEvt_icon() : "");
 		child.setLink(eventType.getEvt_action() != null ? eventType.getEvt_action() : "");
 		child.setParentId(eventType.getEvt_evt_id());
 
@@ -192,7 +228,7 @@ public class MenuService {
 		JsonResponse child = new JsonResponse();
 		child.setId(eventType.getEvt_id());
 		child.setLabel(eventType.getEvt_name());
-		child.setIcon("");
+		child.setIcon(eventType.getEvt_icon() != null ? eventType.getEvt_icon() : "");
 
 		// Construire le lien uniquement si submoduleRoute et evt_action ne sont pas
 		// null

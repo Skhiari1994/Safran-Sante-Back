@@ -17,7 +17,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       a.sum_id,
 			       a.evt_action,
 			       a.evt_rank,
-			       a.evt_maint
+			       a.evt_maint,
+			       a.evt_icon
 			from admeventtype a
 			where a.sum_id = :sumId
 			""", nativeQuery = true)
@@ -30,7 +31,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       a.sum_id,
 			       a.evt_action,
 			       a.evt_rank,
-			       a.evt_maint
+			       a.evt_maint,
+			       a.evt_icon
 			from admeventtype a
 			where a.evt_maint = 'O'
 			order by a.evt_rank asc
@@ -44,7 +46,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       a.sum_id,
 			       a.evt_action,
 			       a.evt_rank,
-			       a.evt_maint
+			       a.evt_maint,
+			       a.evt_icon
 			from admeventtype a
 			where a.evt_id in (
 			    select distinct evt_id
@@ -63,7 +66,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       sum_id,
 			       evt_action,
 			       evt_rank,
-			       evt_maint
+			       evt_maint,
+			       evt_icon
 			FROM Admeventtype
 			WHERE sum_id = :sum
 			  AND evt_evt_id IS NULL
@@ -78,7 +82,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       sum_id,
 			       evt_action,
 			       evt_rank,
-			       evt_maint
+			       evt_maint,
+			       evt_icon
 			FROM Admeventtype
 			WHERE evt_evt_id IS NULL
 			  AND evt_id = :evt
@@ -93,7 +98,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       sum_id,
 			       evt_action,
 			       evt_rank,
-			       evt_maint
+			       evt_maint,
+			       evt_icon
 			FROM Admeventtype
 			WHERE evt_evt_id = :evt
 			ORDER BY EVT_RANK ASC
@@ -114,7 +120,8 @@ public interface AdmeventtypeDAO extends JpaRepository<Admeventtype, Long> {
 			       a.evt_maint,
 			       a.evt_name,
 			       a.evt_rank,
-			       a.sum_id
+			       a.sum_id,
+			       a.evt_icon
 			FROM admeventtype a,
 			     admsubmodule b,
 			     admstorageautorisation c

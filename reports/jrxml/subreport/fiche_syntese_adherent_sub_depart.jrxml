@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fiche_syntese_adherent_sub_depart" language="groovy" pageWidth="555" pageHeight="842" columnWidth="526" leftMargin="0" rightMargin="29" topMargin="0" bottomMargin="0">
+	<parameter name="cod_soc" class="java.lang.String"/>
+	<parameter name="mat_deb" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT t.lib_typ_depart,
+       p.dat_depart,
+       CASE WHEN p.dat_dece IS NOT NULL
+            THEN CONCAT('Décès le ', CONVERT(varchar(10), p.dat_dece, 103))
+            ELSE NULL END AS observations
+  FROM personnel p
+  JOIN type_depart t
+    ON t.cod_typ_depart = p.cod_typ_depart
+ WHERE p.cod_soc = $P{cod_soc}
+   AND p.mat_pers = $P{mat_deb}]]>
+	</queryString>
+	<field name="LIB_TYP_DEPART" class="java.lang.String"/>
+	<field name="DAT_DEPART" class="java.sql.Timestamp"/>
+	<field name="OBSERVATIONS" class="java.lang.String"/>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="100" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{LIB_TYP_DEPART}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="100" y="0" width="60" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{DAT_DEPART}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="160" y="0" width="180" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{OBSERVATIONS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -41,16 +41,8 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
       from famille
       where cod_soc = :soc
         and mat_pers = :mat
-        and coalesce(pec, 'N') = 'O'
-
-      union
-
-      select num_fam, nom_pren, dat_naiss as dat_nais
-      from famille
-      where cod_soc = :soc
-        and mat_pers = :mat
-        and coalesce(pec_mut, 'N') = 'O'
-        and nom_pren is not null
+        and (coalesce(pec, 'N') = 'O' or coalesce(pec_mut, 'N') = 'O')
+      order by num_fam
       """, nativeQuery = true)
   List<AdherentProjection> getListAdherent(@Param("soc") String soc, @Param("mat") String mat);
 
@@ -67,7 +59,8 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
       from famille
       where cod_soc = :soc
         and mat_pers = :mat
-        and coalesce(pec, 'N') = 'O'
+        and (coalesce(pec, 'N') = 'O' or coalesce(pec_mut, 'N') = 'O')
+      order by num_fam
       """, nativeQuery = true)
   List<AdherentProjection> getListAdherentDossMld(@Param("soc") String soc, @Param("mat") String mat);
 
@@ -77,7 +70,8 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
       where cod_soc = :soc
         and mat_pers = :mat
         and num_fam = :fam
-        and coalesce(pec, 'N') = 'O'
+        and (coalesce(pec, 'N') = 'O' or coalesce(pec_mut, 'N') = 'O')
+      order by num_fam
       """, nativeQuery = true)
   List<AdherentProjection> getListAdherentFamille(@Param("soc") String soc,
       @Param("mat") String mat,

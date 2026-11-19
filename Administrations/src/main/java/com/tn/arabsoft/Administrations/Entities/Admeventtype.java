@@ -25,5 +25,7 @@ public class Admeventtype {
 	private String evt_action;
 	private Long evt_rank;
 	private String evt_maint;
+	/** Icône (nom de classe) affichée dans le menu latéral pour les entrées de niveau 1 ; vide = icône par défaut. */
+	private String evt_icon;
 
 }

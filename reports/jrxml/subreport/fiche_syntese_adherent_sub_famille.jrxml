@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fiche_syntese_adherent_sub_famille" language="groovy" pageWidth="555" pageHeight="842" columnWidth="526" leftMargin="0" rightMargin="29" topMargin="0" bottomMargin="0">
+	<parameter name="cod_soc" class="java.lang.String"/>
+	<parameter name="mat_deb" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT f.nom_pren,
+       CASE f.parente
+            WHEN 'C' THEN 'Conjoint'
+            WHEN 'E' THEN 'Enfant'
+            WHEN 'P' THEN 'Père'
+            WHEN 'M' THEN 'Mère'
+            ELSE f.parente END AS parente,
+       f.sexe,
+       f.dat_naiss,
+       CASE f.handicap WHEN 'O' THEN 'Oui' WHEN 'N' THEN 'Non' ELSE NULL END AS handicap,
+       CASE f.pec WHEN 'O' THEN 'Oui' WHEN 'N' THEN 'Non' ELSE NULL END AS pec,
+       f.dat_pec,
+       a.lib_activite
+  FROM famille f
+  LEFT JOIN activite_famille a
+    ON a.cod_activite = f.cod_activite
+ WHERE f.cod_soc = $P{cod_soc}
+   AND f.mat_pers = $P{mat_deb}
+ ORDER BY f.num_fam]]>
+	</queryString>
+	<field name="NOM_PREN" class="java.lang.String"/>
+	<field name="PARENTE" class="java.lang.String"/>
+	<field name="SEXE" class="java.lang.String"/>
+	<field name="DAT_NAISS" class="java.sql.Timestamp"/>
+	<field name="HANDICAP" class="java.lang.String"/>
+	<field name="PEC" class="java.lang.String"/>
+	<field name="DAT_PEC" class="java.sql.Timestamp"/>
+	<field name="LIB_ACTIVITE" class="java.lang.String"/>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="101" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{NOM_PREN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="101" y="0" width="50" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{PARENTE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="151" y="0" width="40" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{SEXE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="191" y="0" width="60" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{DAT_NAISS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="251" y="0" width="65" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{HANDICAP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="316" y="0" width="30" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{PEC}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="346" y="0" width="60" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{DAT_PEC}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="406" y="0" width="120" height="16"/>
+				<box leftPadding="2"><pen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font fontName="Arial" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{LIB_ACTIVITE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

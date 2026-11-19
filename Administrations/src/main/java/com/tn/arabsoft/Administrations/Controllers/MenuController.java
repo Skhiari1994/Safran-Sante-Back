@@ -5,7 +5,9 @@ import com.tn.arabsoft.administrations.repositories.AdmeventtypeDAO;
 import com.tn.arabsoft.administrations.repositories.AdmstorageautorisationDAO;
 import com.tn.arabsoft.administrations.repositories.AdmsubmoduleDAO;
 import com.tn.arabsoft.administrations.repositories.RoleDao;
+import com.tn.arabsoft.administrations.services.IconeMenu;
 import com.tn.arabsoft.administrations.services.MenuService;
+import com.tn.arabsoft.administrations.services.TexteMenu;
 import com.tn.arabsoft.administrations.entities.Admeventtype;
 import com.tn.arabsoft.administrations.entities.Admstorageautorisation;
 import com.tn.arabsoft.administrations.entities.Admsubmodule;
@@ -40,7 +42,10 @@ public class MenuController {
     public ResponseEntity<List<JsonResponse>> getMenuForRole(@PathVariable Long roleId) {
 
         List<Admsubmodule> submodules = submoduleRepository.getListSubmoduleByRole(roleId);
-        List<Admeventtype> eventTypes = eventTypeRepository.getListAdmeventtypeByRole(roleId);
+        // les groupes parents des pages autorisées sont ajoutés : sinon ces pages ne s'affichent pas dans le menu
+        List<Admeventtype> eventTypes = jsonConverter.avecGroupesParents(
+                eventTypeRepository.getListAdmeventtypeByRole(roleId),
+                eventTypeRepository.getListAdmeventtype());
 
         // Generate menu based on role
         List<JsonResponse> menu = jsonConverter.convertAdmEntities(submodules, eventTypes);
@@ -83,6 +88,8 @@ public class MenuController {
     @PostMapping("/addSubModule")
     public Admsubmodule saveSubModule(@RequestBody Admsubmodule adm) {
         adm.setMod_id(1L);
+        adm.setMdl_icon1(IconeMenu.normaliser(adm.getMdl_icon1()));
+        adm.setSum_rout(TexteMenu.videEnNull(adm.getSum_rout()));
         return submoduleRepository.save(adm);
     }
 
@@ -98,6 +105,8 @@ public class MenuController {
 
     @PostMapping("/addEvntType1")
     public Admeventtype saveAddEvntType(@RequestBody Admeventtype adm) {
+        adm.setEvt_icon(IconeMenu.normaliser(adm.getEvt_icon()));
+        adm.setEvt_action(TexteMenu.videEnNull(adm.getEvt_action()));
         return eventTypeRepository.save(adm);
     }
 

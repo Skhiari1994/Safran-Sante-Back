@@ -19,8 +19,8 @@ import java.time.LocalDate;
 public class Admuserprofil {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqUser")
-  @SequenceGenerator(name = "seqUser", sequenceName = "SEQ_ADMUSERPROFIL", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqAdmuserProfil")
+  @SequenceGenerator(name = "seqAdmuserProfil", sequenceName = "SEQ_ADMUSERPROFIL", allocationSize = 1)
   private Long use_id;
 
   private Long pru_id;

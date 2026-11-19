@@ -6,6 +6,8 @@ import com.tn.arabsoft.administrations.repositories.AdmeventtypeDAO;
 import com.tn.arabsoft.administrations.repositories.AdmsubmoduleDAO;
 import com.tn.arabsoft.administrations.repositories.MenuGestionDao;
 import com.tn.arabsoft.administrations.services.DatabaseService;
+import com.tn.arabsoft.administrations.services.IconeMenu;
+import com.tn.arabsoft.administrations.services.TexteMenu;
 
 import jakarta.transaction.Transactional;
 
@@ -118,9 +120,10 @@ public class MenuGestionController {
         while (submoduleRepository.existsById(id)) {
             id = databaseService.isSqlServer() ? dao.nextModuleIdSqlServer() : dao.nextModuleIdOracle();
         }
+        String icone = IconeMenu.normaliser(body.get("mdl_icon1") == null ? null : String.valueOf(body.get("mdl_icon1")));
         dao.insertModule(id, String.valueOf(body.getOrDefault("sum_name", "")),
                 toLong(body.get("sum_rank")), String.valueOf(body.getOrDefault("sum_status", "O")),
-                body.get("sum_rout") == null ? null : String.valueOf(body.get("sum_rout")));
+                TexteMenu.videEnNull(body.get("sum_rout") == null ? null : String.valueOf(body.get("sum_rout"))), icone);
         return Map.of("sum_id", id);
     }
 

@@ -8,11 +8,17 @@ import com.arabsoft.referentiel.repositories.*;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.arabsoft.referentiel.services.LogoSociete;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Comparator;
 
@@ -145,6 +151,46 @@ public class ParamAdherents {
     @GetMapping("/getSociete")
     List<Societe> getSociete() {
         return societeRepository.findAll();
+    }
+
+    /** Enregistre ou remplace le logo d'une société (PNG, JPEG ou WebP, 5 Mo au plus). */
+    @PutMapping(value = "/societe/{codSoc}/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> setLogoSociete(@PathVariable String codSoc,
+            @RequestParam("fichier") MultipartFile fichier) throws IOException {
+        if (!societeRepository.existsById(codSoc)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cette société n'existe pas.");
+        }
+        byte[] octets = fichier.getBytes();
+        String erreur = LogoSociete.erreur(octets);
+        if (erreur != null) {
+            return ResponseEntity.badRequest().body(erreur);
+        }
+        societeRepository.updateLogo(codSoc, octets);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Image du logo d'une société ; 404 si elle n'en a pas. */
+    @GetMapping("/societe/{codSoc}/logo")
+    public ResponseEntity<byte[]> getLogoSociete(@PathVariable String codSoc) {
+        byte[] logo = societeRepository.findLogo(codSoc);
+        String type = LogoSociete.typeMime(logo);
+        if (type == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(type))
+                .cacheControl(CacheControl.noCache())
+                .header("X-Content-Type-Options", "nosniff")
+                .body(logo);
+    }
+
+    @DeleteMapping("/societe/{codSoc}/logo")
+    public ResponseEntity<Void> supprimerLogoSociete(@PathVariable String codSoc) {
+        if (!societeRepository.existsById(codSoc)) {
+            return ResponseEntity.notFound().build();
+        }
+        societeRepository.supprimerLogo(codSoc);
+        return ResponseEntity.noContent().build();
     }
 
     /**

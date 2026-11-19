@@ -15,4 +15,7 @@ public interface AssuranceRepository extends JpaRepository<Assurance, String> {
     @Query(value = "select cod_assur, lib_assur from assurance", nativeQuery = true)
     List<ListAssurProjection> getListAssurance();
 
+    @Query(value = "select coalesce(duree_bult_mut, 0) from assurance where cod_assur = ?", nativeQuery = true)
+    Integer getDureeBulletin(String codAssur);
+
 }

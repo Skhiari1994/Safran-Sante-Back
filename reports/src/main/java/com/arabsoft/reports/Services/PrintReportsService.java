@@ -111,6 +111,18 @@ public class PrintReportsService {
 		}
 	}
 
+	/** Logo de la société (colonne LOGO_SOC), ou null : un rapport s'imprime sans logo plutôt que d'échouer. */
+	private java.awt.Image chargerLogoSociete(String codSoc) {
+		try {
+			List<byte[]> logos = jdbcTemplate.query("select logo_soc from societe where cod_soc = ?",
+					(rs, i) -> rs.getBytes(1), codSoc);
+			return logos.isEmpty() ? null : LogoSocieteRapport.decoder(logos.get(0));
+		} catch (Exception e) {
+			System.err.println("Logo de la société " + codSoc + " indisponible : " + e.getMessage());
+			return null;
+		}
+	}
+
 	private JasperPrint prepareJasperPrint(Long numRap, Map<String, String> params) throws JRException, IOException {
 		Connection conn = null;
 		try {
@@ -136,6 +148,13 @@ public class PrintReportsService {
 			}
 			if (rapport.getTitre() != null) {
 				parameters.put("titre", rapport.getTitre());
+			}
+			// logo de la société du rapport, disponible dans l'état sous le paramètre LOGO_SOC (java.awt.Image)
+			if (!parameters.containsKey(LogoSocieteRapport.PARAMETRE)) {
+				String codSoc = LogoSocieteRapport.codeSociete(params);
+				if (codSoc != null) {
+					parameters.put(LogoSocieteRapport.PARAMETRE, chargerLogoSociete(codSoc));
+				}
 			}
 
 			conn = bdReport.bdReport();

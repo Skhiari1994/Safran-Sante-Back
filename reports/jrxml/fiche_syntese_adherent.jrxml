@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fiche_syntese_adherent" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="0.826446280991736"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="cod_soc" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="mat_deb" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="mat_fin" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Presidence_Rapport\\subreport\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="titre" class="java.lang.String"/>
+	<parameter name="LOGO_SOC" class="java.awt.Image"/>
+	<queryString>
+		<![CDATA[SELECT DISTINCT p.mat_pers,
+       CAST(ISNULL(REPLACE(p.mat_pers, ' ', ''), '0') AS DECIMAL(18,0)) AS mat_num,
+       CASE p.cod_sit
+            WHEN 'M' THEN 'Marié(e)'
+            WHEN 'C' THEN 'Célibataire'
+            WHEN 'V' THEN 'Veuf(ve)'
+            ELSE 'Autre' END AS situation_familiale,
+       p.etat_act,
+       CONCAT(p.nom_pers, ' ', p.pren_pers) AS nom_complet,
+       p.dat_nais,
+       p.cin,
+       p.sexe,
+       CASE p.sexe
+            WHEN 'M' THEN 'Masculin'
+            WHEN 'F' THEN 'Féminin'
+            ELSE 'Non disponible' END AS lib_sexe,
+       p.dat_emb,
+       p.num_retr,
+       p.corps,
+       c.lib_corps,
+       p.cod_retr,
+       p.cod_soc,
+       p.cod_affect,
+       p.lieu_nais,
+       p.nbr_enf
+  FROM personnel p
+  LEFT JOIN corps c
+    ON p.corps = c.cod_corps
+ WHERE p.cod_soc = $P{cod_soc}
+   AND CAST(ISNULL(REPLACE(p.mat_pers, ' ', ''), '0') AS DECIMAL(18,0))
+       BETWEEN ISNULL(CAST(NULLIF($P{mat_deb}, '') AS DECIMAL(18,0)),
+                      CAST(ISNULL(REPLACE(p.mat_pers, ' ', ''), '0') AS DECIMAL(18,0)))
+           AND ISNULL(CAST(NULLIF($P{mat_fin}, '') AS DECIMAL(18,0)),
+                      CAST(ISNULL(REPLACE(p.mat_pers, ' ', ''), '0') AS DECIMAL(18,0)))
+ ORDER BY mat_num]]>
+	</queryString>
+	<field name="MAT_PERS" class="java.lang.String"/>
+	<field name="MAT_NUM" class="java.math.BigDecimal"/>
+	<field name="SITUATION_FAMILIALE" class="java.lang.String"/>
+	<field name="ETAT_ACT" class="java.lang.String"/>
+	<field name="NOM_COMPLET" class="java.lang.String"/>
+	<field name="DAT_NAIS" class="java.sql.Timestamp"/>
+	<field name="CIN" class="java.lang.String"/>
+	<field name="SEXE" class="java.lang.String"/>
+	<field name="LIB_SEXE" class="java.lang.String"/>
+	<field name="DAT_EMB" class="java.sql.Timestamp"/>
+	<field name="NUM_RETR" class="java.lang.String"/>
+	<field name="CORPS" class="java.lang.String"/>
+	<field name="LIB_CORPS" class="java.lang.String"/>
+	<field name="COD_RETR" class="java.lang.String"/>
+	<field name="COD_SOC" class="java.lang.String"/>
+	<field name="COD_AFFECT" class="java.lang.String"/>
+	<field name="LIEU_NAIS" class="java.lang.String"/>
+	<field name="NBR_ENF" class="java.math.BigDecimal"/>
+	<group name="G1" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{MAT_PERS}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="50"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="61" splitType="Stretch">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="61"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="titre">
+					<subreportParameterExpression><![CDATA[$P{titre}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="LOGO_SOC">
+					<subreportParameterExpression><![CDATA[$P{LOGO_SOC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "presidence_header.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<detail>
+		<band height="206" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="213" y="135" width="129" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SITUATION_FAMILIALE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="13" y="135" width="200" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Situation Familiale et Nombre d'Enfant : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="113" y="75" width="169" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NOM_COMPLET}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="352" y="135" width="30" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NBR_ENF}==null?'0':$F{NBR_ENF}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="13" y="115" width="84" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Numéro CIN : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="242" y="95" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{LIEU_NAIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="353" y="75" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{MAT_PERS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="13" y="155" width="122" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date de Recrutement : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="372" y="135" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Enfant(s)"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="382" y="175" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{LIB_CORPS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="43" width="319" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["I - ETAT CIVIL ET RENSEIGNEMENT GENEREAUX :"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="13" y="75" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Nom et Prénom : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="332" y="175" width="50" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Corps : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="282" y="75" width="70" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Matricule : "]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="156" y="95" width="68" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DAT_NAIS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="224" y="95" width="26" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["à"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="97" y="115" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CIN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="13" y="95" width="143" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date et Lieu de Naissance : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="13" y="175" width="111" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["N° Sécurite Sociale : "]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="132" y="155" width="118" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DAT_EMB}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="124" y="175" width="100" height="20"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NUM_RETR}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="86">
+			<subreport>
+				<reportElement x="13" y="51" width="555" height="35"/>
+				<subreportParameter name="cod_soc">
+					<subreportParameterExpression><![CDATA[$P{cod_soc}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="mat_deb">
+					<subreportParameterExpression><![CDATA[$F{MAT_PERS}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "fiche_syntese_adherent_sub_famille.jasper"]]></subreportExpression>
+			</subreport>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="319" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["II - LES ADHESIONS : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="204" y="31" width="60" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date de Naissance"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="114" y="31" width="50" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Parenté"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="164" y="31" width="40" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Sexe"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="264" y="31" width="65" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Handicapé(e)"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="13" y="31" width="101" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Nom et Prénom"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="329" y="31" width="30" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["PEC"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="359" y="31" width="60" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="419" y="31" width="120" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Activité"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="94">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="4" width="319" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["III - AFFILATION : "]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="13" y="30" width="555" height="38"/>
+				<subreportParameter name="cod_soc">
+					<subreportParameterExpression><![CDATA[$P{cod_soc}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="mat_deb">
+					<subreportParameterExpression><![CDATA[$F{MAT_PERS}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "fiche_syntese_adherent_sub_affi.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="116">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="319" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["IV - LES DEPARTS :"]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="13" y="50" width="516" height="40"/>
+				<subreportParameter name="cod_soc">
+					<subreportParameterExpression><![CDATA[$P{cod_soc}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="mat_deb">
+					<subreportParameterExpression><![CDATA[$F{MAT_PERS}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "fiche_syntese_adherent_sub_depart.jasper"]]></subreportExpression>
+			</subreport>
+			<textField>
+				<reportElement mode="Opaque" x="173" y="30" width="180" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Observations"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="113" y="30" width="60" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Date "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="13" y="30" width="100" height="20" backcolor="#BFE1FF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Libellé"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
