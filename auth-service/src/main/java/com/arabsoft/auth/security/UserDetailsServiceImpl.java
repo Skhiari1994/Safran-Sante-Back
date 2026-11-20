@@ -11,19 +11,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    /*
-     * private final UserRepository userRepository ;
-     * 
-     * @Override
-     * public UserDetails loadUserByUsername(String userEmail) throws
-     * UsernameNotFoundException {
-     * return this.userRepository.findByUselogin(userEmail)
-     * .orElseThrow(() -> new UsernameNotFoundException("User Not Found by email  "
-     * + userEmail))
-     * ;
-     * }
-     */
-
     // new logic
     private final UserRepository userRepository;
 
@@ -41,7 +28,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         // 1. Recherche par CIN et société choisie
         // 2. Recherche classique par useLogin et société
-        // 3. Cas compte privilégié RH/ADMIN par CIN (peut entrer dans n'importe quelle société)
+        // 3. Cas compte privilégié RH/ADMIN par CIN (peut entrer dans n'importe quelle
+        // société)
         // 4. Cas compte privilégié RH/ADMIN par useLogin
         return userRepository.findUserByCinAndCodSoc(identifiant, codSoc)
                 .or(() -> userRepository.findByUseloginAndCodSoc(identifiant, codSoc))
