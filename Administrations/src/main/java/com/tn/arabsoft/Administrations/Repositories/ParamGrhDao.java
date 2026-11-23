@@ -12,6 +12,7 @@ public interface ParamGrhDao extends JpaRepository<ParamGrh, Integer> {
 
     Optional<ParamGrh> findByLibParam(String libParam);
 
-    @Query("SELECT COALESCE(MAX(p.idParam), 0) + 1 FROM ParamGrh p")
+    @Query("select coalesce(max(p.idParam), 0) + 1 from ParamGrh p")
     Integer getNextId();
+
 }

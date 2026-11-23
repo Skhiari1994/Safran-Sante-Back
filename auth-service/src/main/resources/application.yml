@@ -24,7 +24,7 @@ application:
       secret-key: ${JWT_SECRET_KEY}
       # Jeton court, renouvelé par le front (POST /api/auth/refresh) tant que l'utilisateur est actif :
       # 3 min d'inactivité + 2 min d'avertissement + 2 min de marge. Sans renouvellement, la session est morte côté serveur.
-      expiration: 420000 # 7 minutes
+      expiration: 600000 # 10 minutes
       refresh-token:
         expiration: 604800000 # 7 days
   mailing:

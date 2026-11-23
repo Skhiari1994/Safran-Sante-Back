@@ -69,7 +69,8 @@ public class ParamGrhService {
     }
 
     /**
-     * Contrôle de conformité des valeurs (valeur1, valeur2, valeur3) par rapport au type sélectionné.
+     * Contrôle de conformité des valeurs (valeur1, valeur2, valeur3) par rapport au
+     * type sélectionné.
      */
     private void verifierTypeEtValeur(ParamGrh param) {
         if (param.getType() == null) {
@@ -99,25 +100,29 @@ public class ParamGrhService {
         switch (type) {
             case 1: // 1 - Nombre entier
                 if (!val.matches("^-?\\d+$")) {
-                    throw new IllegalArgumentException("Pour un type 'Nombre entier', la " + nomChamp + " doit contenir uniquement des chiffres sans virgule (ex: 120).");
+                    throw new IllegalArgumentException("Pour un type 'Nombre entier', la " + nomChamp
+                            + " doit contenir uniquement des chiffres sans virgule (ex: 120).");
                 }
                 break;
 
             case 2: // 2 - Montant / Décimal
                 if (!val.matches("^-?\\d+(\\.\\d+)?$")) {
-                    throw new IllegalArgumentException("Pour un type 'Montant / Décimal', la " + nomChamp + " doit être un nombre valide (ex: 150.500).");
+                    throw new IllegalArgumentException("Pour un type 'Montant / Décimal', la " + nomChamp
+                            + " doit être un nombre valide (ex: 150.500).");
                 }
                 break;
 
             case 4: // 4 - Booléen
                 if (!val.equals("1") && !val.equals("0")) {
-                    throw new IllegalArgumentException("Pour un type 'Booléen', la " + nomChamp + " doit obligatoirement valoir 1 (Oui) ou 0 (Non).");
+                    throw new IllegalArgumentException("Pour un type 'Booléen', la " + nomChamp
+                            + " doit obligatoirement valoir 1 (Oui) ou 0 (Non).");
                 }
                 break;
 
             case 5: // 5 - Date (AAAA-MM-JJ)
                 if (!val.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
-                    throw new IllegalArgumentException("Pour un type 'Date', la " + nomChamp + " doit respecter le format AAAA-MM-JJ (ex: 2026-12-31).");
+                    throw new IllegalArgumentException("Pour un type 'Date', la " + nomChamp
+                            + " doit respecter le format AAAA-MM-JJ (ex: 2026-12-31).");
                 }
                 break;
 
@@ -126,4 +131,5 @@ public class ParamGrhService {
                 break;
         }
     }
+
 }
