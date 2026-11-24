@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 @Service
@@ -20,7 +21,6 @@ public class ParamOrganismeService {
     private static final int LONGUEUR_ABREVIATION = 20;
     private static final int LONGUEUR_LIBELLE = 100;
     private static final int LONGUEUR_ADRESSE = 100;
-    private static final int LONGUEUR_NATURE = 10;
     private static final int LONGUEUR_FAX = 20;
     private static final int LONGUEUR_TEL = 40;
     private static final int LONGUEUR_EMAIL = 40;
@@ -28,6 +28,9 @@ public class ParamOrganismeService {
     private static final int LONGUEUR_GSM = 20;
     /** COD_ORG est un tinyint : 255 au maximum. */
     private static final int CODE_MAX = 255;
+
+    /** Natures possibles d'un organisme : ASSUREUR (assureur), PRETEUR (prêteur), FORMATEUR (enseignement). */
+    private static final Set<String> NATURES = Set.of("ASSUREUR", "PRETEUR", "FORMATEUR");
 
     private static final Pattern TELEPHONE = Pattern.compile("^[0-9 +()./,-]+$");
     private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
@@ -94,7 +97,8 @@ public class ParamOrganismeService {
         cible.setAbrvOrg(abreviation == null ? null : abreviation.toUpperCase(Locale.ROOT));
         cible.setLibOrg(texte(source.getLibOrg()));
         cible.setAdrOrg(texte(source.getAdrOrg()));
-        cible.setNatOrg(texte(source.getNatOrg()));
+        String nature = texte(source.getNatOrg());
+        cible.setNatOrg(nature == null ? null : nature.toUpperCase(Locale.ROOT));
         cible.setFaxOrg(texte(source.getFaxOrg()));
         cible.setTelOrg(texte(source.getTelOrg()));
         cible.setEmailOrg(texte(source.getEmailOrg()));
@@ -110,7 +114,9 @@ public class ParamOrganismeService {
         longueur(o.getLibOrg(), LONGUEUR_LIBELLE, "Le libellé");
         longueur(o.getAbrvOrg(), LONGUEUR_ABREVIATION, "L'abréviation");
         longueur(o.getAdrOrg(), LONGUEUR_ADRESSE, "L'adresse");
-        longueur(o.getNatOrg(), LONGUEUR_NATURE, "La nature");
+        if (o.getNatOrg() == null || !NATURES.contains(o.getNatOrg())) {
+            throw new IllegalArgumentException("La nature doit être ASSUREUR, PRETEUR ou FORMATEUR.");
+        }
         longueur(o.getIdentFsc(), LONGUEUR_IDENT_FISCALE, "L'identifiant fiscal");
         telephone(o.getTelOrg(), LONGUEUR_TEL, "Le téléphone");
         telephone(o.getFaxOrg(), LONGUEUR_FAX, "Le fax");
