@@ -5,6 +5,7 @@ import com.arabsoft.auth.model.User;
 import com.arabsoft.auth.repository.TokenRepository;
 import com.arabsoft.auth.repository.UserRepository;
 import com.arabsoft.auth.security.JwtService;
+import com.arabsoft.auth.service.ParamGrhService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -58,7 +59,7 @@ class RefreshTokenTest {
                 "1001".equals(inv.getArgument(0)) && "01".equals(inv.getArgument(1)) ? Optional.of(utilisateur) : Optional.empty());
 
         var controller = new AuthenticationController(mock(PasswordEncoder.class), mock(AuthenticationService.class),
-                userRepository, mock(TokenRepository.class), jwtService);
+                userRepository, mock(TokenRepository.class), jwtService, mock(ParamGrhService.class));
         mvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
