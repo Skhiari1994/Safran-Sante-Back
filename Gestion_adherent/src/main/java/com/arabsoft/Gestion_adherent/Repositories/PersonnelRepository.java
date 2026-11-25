@@ -65,6 +65,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                       where p.etat_act = 'I'
                         and (:soc = '' or p.cod_soc = :soc)
                         and (:mat = '' or p.mat_pers = :mat)
+                      order by cast(p.mat_pers as numeric)
                      """, nativeQuery = true)
        List<PersonnelPrejection> getPersonnelEnInstance(@Param("soc") String soc, @Param("mat") String mat);
 
@@ -119,6 +120,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                               on lg.cod_lieu_geog = p.cod_lieu_geog
                       where p.cod_soc = :soc
                         and p.mat_pers = :mat
+                      order by cast(p.mat_pers as numeric)
                      """, nativeQuery = true)
        List<PersonnelPrejection> getPersonnelByMat(@Param("soc") String mat, @Param("mat") String soc);
 
@@ -173,7 +175,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                               on lg.cod_lieu_geog = p.cod_lieu_geog
                       where (:soc = '' or p.cod_soc = :soc)
                         and (:mat = '' or p.mat_pers = :mat)
-                      order by p.mat_pers
+                      order by cast(p.mat_pers as numeric)
                      """, nativeQuery = true)
        List<PersonnelPrejection> getPersonnels(@Param("soc") String soc, @Param("mat") String mat);
 
@@ -188,7 +190,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
                      select p.mat_pers matPers,
                             concat(p.nom_pers, concat(' ', p.pren_pers)) nomPren
                        from personnel p
-                      order by p.cod_soc, p.mat_pers
+                      order by p.cod_soc, cast(p.mat_pers as numeric)
                      """, nativeQuery = true)
        List<MatIntProjection> getMatInt();
 
