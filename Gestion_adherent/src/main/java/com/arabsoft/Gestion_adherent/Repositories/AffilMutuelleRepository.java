@@ -34,7 +34,7 @@ public interface AffilMutuelleRepository extends JpaRepository<AffilMutuelle, Cl
         from personnel
        where cod_soc = :soc
          and coalesce(typ_aff, 'S') = 'A'
-       order by mat_pers
+       order by cast(mat_pers as numeric)
       """, nativeQuery = true)
   List<AffilPersProjection> getAffilPers(@Param("soc") String soc);
 
@@ -52,7 +52,7 @@ public interface AffilMutuelleRepository extends JpaRepository<AffilMutuelle, Cl
         from personnel
        where cod_soc = :soc
          and coalesce(typ_aff, 'S') = 'S'
-       order by mat_pers
+       order by cast(mat_pers as numeric)
       """, nativeQuery = true)
   List<AffilPersProjection> getAffilPersMut(@Param("soc") String soc);
 
@@ -73,7 +73,7 @@ public interface AffilMutuelleRepository extends JpaRepository<AffilMutuelle, Cl
        where cod_soc = :soc
          and mat_pers = :mat
          and coalesce(typ_aff, 'S') = 'A'
-       order by mat_pers
+       order by cast(mat_pers as numeric)
       """, nativeQuery = true)
   AffilPersProjection getAffilPersByMat(@Param("soc") String soc,
       @Param("mat") String mat);
@@ -84,16 +84,13 @@ public interface AffilMutuelleRepository extends JpaRepository<AffilMutuelle, Cl
        where cod_soc = :soc
          and typ_aff = 'A'
          and etat_aff = 'I'
-       order by mat_pers, dat_ass
+       order by cast(mat_pers as numeric), dat_ass
       """, nativeQuery = true)
   List<AffilMutuelle> getAffilPersRenouvAdhesion(@Param("soc") String soc);
 
   @Query(value = """
       select t.cod_soc,
-             (select concat(p.nom_pers, concat(' ', p.pren_pers))
-                from personnel p
-               where p.cod_soc = t.cod_soc
-                 and p.mat_pers = t.mat_pers) as nompren,
+             concat(p.nom_pers, concat(' ', p.pren_pers)) as nompren,
              t.mat_pers,
              t.dat_ass,
              t.num_assur,
@@ -106,9 +103,12 @@ public interface AffilMutuelleRepository extends JpaRepository<AffilMutuelle, Cl
              t.cod_typ_depart,
              t.cod_affect
         from affil_mutuelle t
+        join personnel p on
+        t.cod_soc = p.cod_soc
+        and t.mat_pers = p.mat_pers
        where t.cod_soc = :soc
          and coalesce(t.etat_aff, 'I') = 'I'
-       order by t.mat_pers, t.dat_ass
+       order by cast(t.mat_pers as numeric), t.dat_ass
       """, nativeQuery = true)
   List<AffilPersValid> getAffilPersEnInstance(@Param("soc") String soc);
 
@@ -130,7 +130,7 @@ public interface AffilMutuelleRepository extends JpaRepository<AffilMutuelle, Cl
         and coalesce(etat_aff, 'I') = 'I'
         and mat_pers = :mat
         and dat_ass = :dat_ass
-      order by mat_pers, dat_ass
+      order by cast(t.mat_pers as numeric), dat_ass
       """, nativeQuery = true)
   AffilMutuelle getAffilPersAffiliation(
       @Param("soc") String soc,
