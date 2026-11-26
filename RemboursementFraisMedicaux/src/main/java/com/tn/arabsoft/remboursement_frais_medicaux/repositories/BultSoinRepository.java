@@ -253,7 +253,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      where t.nat_bult = 'C'
                        and coalesce(t.envoi, 'N') = 'O'
                        and t.cod_soc = :soc
-                     order by t.dat_saisie desc, t.dat_soin desc, t.mat_pers, t.num_fam
+                     order by t.cod_bord, cast(t.mat_pers as numeric), t.dat_saisie desc, t.dat_soin desc, t.num_fam
                      """, nativeQuery = true)
        List<BultSoinListeProjection> getBulletinCnamListe(@Param("soc") String soc);
 

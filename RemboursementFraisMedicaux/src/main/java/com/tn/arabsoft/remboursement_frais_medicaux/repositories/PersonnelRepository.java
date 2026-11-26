@@ -239,13 +239,22 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
   List<PersonnelProjection> getPersBultCnamFin(@Param("soc") String soc);
 
   @Query(value = """
-          SELECT p.dat_nais
-          FROM personnel p
-          WHERE p.cod_soc = :codSoc
-            AND p.mat_pers = :matPers
+          select p.dat_nais
+          from personnel p
+          where p.cod_soc = :codSoc
+            and p.mat_pers = :matPers
       """, nativeQuery = true)
   LocalDate findDatNais(
       @Param("codSoc") String codSoc,
       @Param("matPers") String matPers);
+
+  @Query(value = """
+      select *
+      from personnel p
+      where p.cod_soc = :soc
+        and p.etat_act = 'A'
+      order by cast(p.mat_pers as int)
+      """, nativeQuery = true)
+  List<Personnel> getPersActifBySoc(@Param("soc") String soc);
 
 }

@@ -136,8 +136,8 @@ public class PersonnelController {
     }
 
     @GetMapping("/GetAllPers")
-    List<Personnel> getAllPers() {
-        return personnelRepository.findAll();
+    List<Personnel> getAllPers(@RequestParam("soc") String soc) {
+        return personnelRepository.getPersActifBySoc(soc);
     }
 
     @GetMapping("/getPersAffil")
