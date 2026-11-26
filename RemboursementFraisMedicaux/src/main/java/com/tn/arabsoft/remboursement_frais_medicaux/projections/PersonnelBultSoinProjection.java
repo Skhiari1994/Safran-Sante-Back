@@ -5,6 +5,8 @@ public interface PersonnelBultSoinProjection {
 
     String getNum_retr();
 
+    String getCod_retr();
+
     String getMat_pers();
 
     String getDat_nais();

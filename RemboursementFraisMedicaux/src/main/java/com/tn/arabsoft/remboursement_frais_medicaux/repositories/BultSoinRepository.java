@@ -199,6 +199,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                          concat(p.nom_pers, concat(' ', p.pren_pers)) as nom_complet_pers,
                          a.lib_assur as lib_assur,
                          p.num_retr as num_retr,
+                         p.cod_retr as cod_retr,
                          r.lib_fill as lib_fill,
                          f.nom_pren as nom_adherent
                      from bult_soin t
@@ -822,6 +823,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                             concat(concat(p.nom_pers, ' '), p.pren_pers) as nom_complet_pers,
                             a.lib_assur as lib_assur,
                             p.num_retr as num_retr,
+                            p.cod_retr as cod_retr,
                             r.lib_fill as lib_fill,
                             f.nom_pren as nom_adherent
                      from bult_soin t

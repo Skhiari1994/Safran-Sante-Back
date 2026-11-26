@@ -17,6 +17,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
   @Query(value = """
       select
           p.num_retr,
+          p.cod_retr,
           p.mat_pers,
           p.dat_nais,
           p.num_assur,
