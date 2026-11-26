@@ -76,6 +76,8 @@ public interface BultSoinProjection {
 
     String getNum_retr();
 
+    String getCod_retr();
+
     String getNom_complet_pers();
 
     String getLib_assur();

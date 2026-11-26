@@ -17,6 +17,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
   @Query(value = """
       select
           p.num_retr,
+          p.cod_retr,
           p.mat_pers,
           p.dat_nais,
           p.num_assur,
@@ -33,6 +34,7 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
         and p.etat_act = 'A'
         and f.courant = 'O'
         and coalesce(rf.bult_mut, 'N') = 'O'
+      order by cast(p.mat_pers as numeric)
       """, nativeQuery = true)
   List<PersonnelBultSoinProjection> getPersonnelBultSoin(@Param("soc") String soc);
 

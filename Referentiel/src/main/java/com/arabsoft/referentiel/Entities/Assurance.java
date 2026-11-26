@@ -56,6 +56,9 @@ public class Assurance {
 
     private String cod_retr;
 
+    /** Organisme (table PARAM_ORGANISMES) auquel l'assurance est rattachée. */
+    private Integer cod_org;
+
     private String num_retr;
 
     private BigDecimal taux_mut;

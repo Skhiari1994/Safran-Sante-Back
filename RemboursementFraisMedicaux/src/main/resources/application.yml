@@ -3,3 +3,10 @@ spring:
     name: RemboursementFraisMedicaux
   config:
     import: optional:configserver:http://localhost:8888
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY}
+      expiration: 600000 # 10 minutes
+      refresh-token:
+        expiration: 604800000 # 7 days

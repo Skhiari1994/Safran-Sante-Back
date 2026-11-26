@@ -37,6 +37,7 @@ public class ParamAdherents {
     private final AffectationRepository affectationRepository;
     private final TypeDepartRepository typeDepartRepository;
     private final ActiviteFamilleRepository activiteFamilleRepository;
+    private final CorpsRepository corpsRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @GetMapping("getNationalite")
@@ -304,6 +305,138 @@ public class ParamAdherents {
     @GetMapping("/getActiviteEnf")
     List<ActiviteFamille> getActiviteEnf() {
         return activiteFamilleRepository.findAll();
+    }
+
+    /**
+     * Longueur du code d'un corps. La table CORPS accepte 4 caractères, mais la colonne CORPS de PERSONNEL et de
+     * AFFIL_MUTUELLE n'en accepte qu'un : un code plus long ne pourrait jamais être attribué à un adhérent.
+     */
+    private static final int CORPS_LONGUEUR_CODE = 1;
+    private static final int CORPS_LONGUEUR_LIBELLE = 100;
+
+    @GetMapping("/getCorps")
+    List<Corps> getCorps() {
+        return corpsRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Corps::getCod_corps))
+                .toList();
+    }
+
+    /** Crée un corps. Un code déjà pris est refusé : la création ne remplace jamais un corps existant. */
+    @PostMapping("/corps")
+    public ResponseEntity<?> addCorps(@RequestBody Corps demande) {
+        String code = texte(demande.getCod_corps());
+        String erreur = verifierCodeCorps(code);
+        if (erreur == null) {
+            erreur = verifierLibellesCorps(demande);
+        }
+        if (erreur != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erreur);
+        }
+        code = code.toUpperCase(java.util.Locale.ROOT);
+        if (corpsRepository.existsById(code)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Le code « " + code + " » existe déjà.");
+        }
+        Corps corps = new Corps();
+        corps.setCod_corps(code);
+        corps.setLib_corps(texte(demande.getLib_corps()));
+        corps.setLib_corps_a(texte(demande.getLib_corps_a()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(corpsRepository.save(corps));
+    }
+
+    /** Modifie les libellés d'un corps. Le code ne change jamais : il est référencé par les adhérents. */
+    @PutMapping("/corps/{codCorps}")
+    public ResponseEntity<?> updateCorps(@PathVariable String codCorps, @RequestBody Corps demande) {
+        Corps corps = corpsRepository.findById(codCorps.trim()).orElse(null);
+        if (corps == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ce corps n'existe pas.");
+        }
+        String erreur = verifierLibellesCorps(demande);
+        if (erreur != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erreur);
+        }
+        corps.setLib_corps(texte(demande.getLib_corps()));
+        corps.setLib_corps_a(texte(demande.getLib_corps_a()));
+        return ResponseEntity.ok(corpsRepository.save(corps));
+    }
+
+    /** Supprime un corps uniquement s'il n'est attribué à aucun adhérent (colonne CORPS des autres tables). */
+    @DeleteMapping("/corps/{codCorps}")
+    public ResponseEntity<String> deleteCorps(@PathVariable String codCorps) {
+        String code = codCorps.trim();
+        if (!corpsRepository.existsById(code)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ce corps n'existe pas.");
+        }
+        List<String> tablesLiees = tablesUtilisant("CORPS", "CORPS", code);
+        if (!tablesLiees.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    "Impossible de supprimer le corps « " + code + " » : il est attribué à des adhérents ("
+                            + String.join(", ", tablesLiees) + ").");
+        }
+        try {
+            corpsRepository.deleteById(code);
+            return ResponseEntity.ok().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ce corps est utilisé ailleurs et ne peut pas être supprimé.");
+        }
+    }
+
+    private static String texte(String valeur) {
+        if (valeur == null) {
+            return null;
+        }
+        String propre = valeur.trim();
+        return propre.isEmpty() ? null : propre;
+    }
+
+    private static String verifierCodeCorps(String code) {
+        if (code == null) {
+            return "Le code est obligatoire.";
+        }
+        if (code.length() > CORPS_LONGUEUR_CODE) {
+            return "Le code ne peut contenir que " + CORPS_LONGUEUR_CODE
+                    + " caractère : c'est la longueur du champ Corps d'un adhérent.";
+        }
+        return null;
+    }
+
+    private static String verifierLibellesCorps(Corps corps) {
+        String libelle = texte(corps.getLib_corps());
+        if (libelle == null) {
+            return "Le libellé est obligatoire.";
+        }
+        if (libelle.length() > CORPS_LONGUEUR_LIBELLE) {
+            return "Le libellé ne peut pas dépasser " + CORPS_LONGUEUR_LIBELLE + " caractères.";
+        }
+        String arabe = texte(corps.getLib_corps_a());
+        if (arabe != null && arabe.length() > CORPS_LONGUEUR_LIBELLE) {
+            return "Le libellé arabe ne peut pas dépasser " + CORPS_LONGUEUR_LIBELLE + " caractères.";
+        }
+        return null;
+    }
+
+    /**
+     * Tables (autres que celle indiquée) qui possèdent une colonne de ce nom et contiennent au moins une ligne
+     * pour cette valeur. Les noms viennent du catalogue de la base, jamais de l'utilisateur.
+     */
+    private List<String> tablesUtilisant(String colonne, String tableExclue, String valeur) {
+        List<String[]> colonnes = jdbcTemplate.query(
+                "select c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME "
+                        + "from INFORMATION_SCHEMA.COLUMNS c "
+                        + "join INFORMATION_SCHEMA.TABLES t on t.TABLE_SCHEMA = c.TABLE_SCHEMA "
+                        + "and t.TABLE_NAME = c.TABLE_NAME and t.TABLE_TYPE = 'BASE TABLE' "
+                        + "where upper(c.COLUMN_NAME) = upper(?) and upper(c.TABLE_NAME) <> upper(?) "
+                        + "order by c.TABLE_NAME",
+                (rs, i) -> new String[] { rs.getString(1), rs.getString(2), rs.getString(3) },
+                colonne, tableExclue);
+        return colonnes.stream()
+                .filter(t -> {
+                    String sql = "select top 1 1 from [" + t[0] + "].[" + t[1] + "] where [" + t[2] + "] = ?";
+                    return !jdbcTemplate.queryForList(sql, valeur).isEmpty();
+                })
+                .map(t -> t[1])
+                .toList();
     }
 
 }

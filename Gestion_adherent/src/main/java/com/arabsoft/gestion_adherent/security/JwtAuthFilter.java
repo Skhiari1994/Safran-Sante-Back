@@ -50,7 +50,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtService.extractUsername(jwt);
         } catch (JwtException | IllegalArgumentException e) {
-            // jeton expiré (session inactive), altéré ou illisible : le front se déconnecte sur 401
+            // jeton expiré (session inactive), altéré ou illisible : le front se déconnecte
+            // sur 401
             refuser(response);
             return;
         }

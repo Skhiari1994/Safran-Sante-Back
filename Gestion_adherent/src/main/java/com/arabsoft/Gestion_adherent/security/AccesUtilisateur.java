@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Périmètre de données imposé par le token (et non par le front, qui peut être contourné).
- * Un compte dont le seul rôle est UTILISATEUR ne peut consulter que sa propre fiche ; les autres profils
+ * Périmètre de données imposé par le token (et non par le front, qui peut être
+ * contourné).
+ * Un compte dont le seul rôle est UTILISATEUR ne peut consulter que sa propre
+ * fiche ; les autres profils
  * (CHEF, RH, ADMIN, frais médicaux…) gardent l'accès à plusieurs personnes.
  */
 @Component
@@ -21,7 +23,10 @@ public class AccesUtilisateur {
 
     private final JwtService jwtService;
 
-    /** Société et matricule de l'utilisateur ; renseigné seulement pour un compte limité à ses propres données. */
+    /**
+     * Société et matricule de l'utilisateur ; renseigné seulement pour un compte
+     * limité à ses propres données.
+     */
     public record Portee(String codSoc, String matricule) {
     }
 
@@ -49,4 +54,5 @@ public class AccesUtilisateur {
         String codSoc = claims.get("codSoc", String.class);
         return Optional.of(new Portee(codSoc == null ? "" : codSoc, matricule));
     }
+
 }

@@ -2,9 +2,12 @@ package com.tn.arabsoft.remboursement_frais_medicaux.entities;
 
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.cle.ClePersAffil;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -28,8 +31,19 @@ public class PersAffil {
 
     private String courant;
 
+    @Column(name = "PRF_TYP", nullable = true)
     private String prf_typ;
 
+    @Column(name = "PRF_COD", nullable = true)
     private String prf_cod;
 
+    @PrePersist
+    @PreUpdate
+    private void normalize() {
+        if (prf_typ != null && prf_typ.trim().isEmpty())
+            prf_typ = null;
+        if (prf_cod != null && prf_cod.trim().isEmpty())
+            prf_cod = null;
+
+    }
 }

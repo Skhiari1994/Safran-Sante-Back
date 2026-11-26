@@ -27,6 +27,7 @@ public class CnamFichDataService {
     private final JdbcTemplate jdbcTemplate;
 
     public Map<String, Object> generateCnamFichFile(String codSoc, String codBord) {
+        //// getCallSyntax
         String procedureCall = "{call PK_BORD_ARRIVER.PREP_FICH_CNAM(?, ?, ?, ?)}"; // 2 IN, 2 OUT
         Map<String, Object> response = new HashMap<>();
 
@@ -73,6 +74,44 @@ public class CnamFichDataService {
             response.put("errorDetails", e.getClass().getSimpleName());
             return response;
         }
+
+        /*return jdbcTemplate.execute((Connection connection) -> {
+            String call = getCallSyntax(
+                    connection,
+                    PK_BORD_ARRIVER,
+                    "PREP_FICH_CNAM",
+                    4);
+
+            try (CallableStatement cs = connection.prepareCall(call)) {
+                cs.setString(1, codSoc);
+                cs.setString(2, codBord);
+                cs.setInt(3, numFam);
+                cs.setDate(4, sqlDatSoin);
+                cs.setString(5, regimeRemb);
+                cs.setString(6, parente);
+                cs.setString(7, sexe);
+                cs.registerOutParameter(8, Types.VARCHAR);
+                cs.registerOutParameter(9, Types.VARCHAR);
+                cs.registerOutParameter(10, Types.VARCHAR);
+                cs.registerOutParameter(11, Types.VARCHAR);
+                cs.execute();
+
+                String msg_dat_accouch = cs.getString(8);
+                String msg_malad = cs.getString(9);
+                String msg_prise_charge = cs.getString(10);
+                String message = cs.getString(11);
+                ReponseVetifModRemb reponse = new ReponseVetifModRemb();
+
+                reponse.setMsg_dat_accouch(msg_dat_accouch);
+                reponse.setMsg_malad(msg_malad);
+                reponse.setMsg_prise_charge(msg_prise_charge);
+                reponse.setMessage(message);
+
+                return reponse;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }*/
     }
 
     private void updateEnvoiBord(String codSoc, String codBord) {

@@ -1,5 +1,6 @@
 package com.arabsoft.auth.authController;
 
+import com.arabsoft.auth.dto.DelaisSessionDto;
 import com.arabsoft.auth.model.Token;
 import com.arabsoft.auth.model.User;
 import com.arabsoft.auth.projections.SocieteProjection;
@@ -8,6 +9,8 @@ import com.arabsoft.auth.repository.UserRepository;
 
 import com.arabsoft.auth.reset_password.PasswordResetRequest;
 import com.arabsoft.auth.security.JwtService;
+import com.arabsoft.auth.service.ParamGrhService;
+
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class AuthenticationController {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
     private final JwtService jwtService;
+    private final ParamGrhService paramGrhService;
 
     @PostMapping("/register")
     public void register(@RequestBody @Valid RegistrationRequest request) throws MessagingException {
@@ -77,14 +81,17 @@ public class AuthenticationController {
     }
 
     /**
-     * Mot de passe fort : 8 caractères minimum, au moins une majuscule, un chiffre et un symbole.
-     * La même règle est contrôlée dans l'écran « Gérer mon compte » (le serveur reste la référence).
+     * Mot de passe fort : 8 caractères minimum, au moins une majuscule, un chiffre
+     * et un symbole.
+     * La même règle est contrôlée dans l'écran « Gérer mon compte » (le serveur
+     * reste la référence).
      */
     private static final Pattern MOT_DE_PASSE_FORT = Pattern
             .compile("^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$");
 
     /**
-     * L'utilisateur connecté change son propre mot de passe. Cette route est sous /api/auth (la seule exposée par le
+     * L'utilisateur connecté change son propre mot de passe. Cette route est sous
+     * /api/auth (la seule exposée par le
      * gateway) : elle vérifie donc elle-même le token, puis l'ancien mot de passe.
      */
     @PutMapping("/change-password")
@@ -120,9 +127,12 @@ public class AuthenticationController {
     }
 
     /**
-     * Renouvelle le jeton d'un utilisateur actif. Le jeton est court (voir application.security.jwt.expiration) : le
-     * front l'appelle tant que l'utilisateur travaille, et plus du tout quand il est inactif, ce qui met fin à la
-     * session côté serveur. Un jeton déjà expiré, invalide, ou d'un compte désactivé est refusé (401).
+     * Renouvelle le jeton d'un utilisateur actif. Le jeton est court (voir
+     * application.security.jwt.expiration) : le
+     * front l'appelle tant que l'utilisateur travaille, et plus du tout quand il
+     * est inactif, ce qui met fin à la
+     * session côté serveur. Un jeton déjà expiré, invalide, ou d'un compte
+     * désactivé est refusé (401).
      */
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(
@@ -137,7 +147,10 @@ public class AuthenticationController {
         return ResponseEntity.ok(Map.of("token", nouveau));
     }
 
-    /** Compte correspondant au token (login + société de travail) ; null si le token est absent, invalide ou expiré. */
+    /**
+     * Compte correspondant au token (login + société de travail) ; null si le token
+     * est absent, invalide ou expiré.
+     */
     private User utilisateurDuToken(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             return null;
@@ -146,7 +159,8 @@ public class AuthenticationController {
         try {
             String login = jwtService.extractUsername(token);
             String codSoc = jwtService.extractClaim(token, c -> c.get("codSoc", String.class));
-            // même résolution qu'à la connexion : compte du login dans la société, sinon profil RH/ADMIN
+            // même résolution qu'à la connexion : compte du login dans la société, sinon
+            // profil RH/ADMIN
             User user = userRepository.findByUseloginAndCodSoc(login, codSoc == null ? "" : codSoc)
                     .or(() -> userRepository.findPrivilegedByUselogin(login).stream().findFirst())
                     .orElse(null);
@@ -194,6 +208,11 @@ public class AuthenticationController {
             return userRepository.findSocieteByMatriculeAndCin(matPers, cin);
         }
 
+    }
+
+    @GetMapping("/delais-session")
+    public DelaisSessionDto delaisSession() {
+        return paramGrhService.getDelaisSession();
     }
 
 }
