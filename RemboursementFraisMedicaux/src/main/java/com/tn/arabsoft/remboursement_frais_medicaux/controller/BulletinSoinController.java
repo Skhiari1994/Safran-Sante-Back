@@ -18,9 +18,11 @@ import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Comparator;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,6 +46,73 @@ public class BulletinSoinController {
     private final RefVisitRepository refVisitRepository;
 
     private static final String DATE_FORMAT = "dd/MM/yyyy";
+
+    public static final Comparator<String> MATRICULE_COMPARATOR = Comparator.nullsLast((a, b) -> {
+
+        int i = 0;
+        int j = 0;
+
+        while (i < a.length() && j < b.length()) {
+
+            char ca = a.charAt(i);
+            char cb = b.charAt(j);
+
+            // Both are digits → compare the complete numeric parts
+            if (Character.isDigit(ca) && Character.isDigit(cb)) {
+
+                int startI = i;
+                int startJ = j;
+
+                while (i < a.length() && Character.isDigit(a.charAt(i))) {
+                    i++;
+                }
+
+                while (j < b.length() && Character.isDigit(b.charAt(j))) {
+                    j++;
+                }
+
+                String numA = a.substring(startI, i);
+                String numB = b.substring(startJ, j);
+
+                // Remove leading zeros for comparison
+                String normalizedA = numA.replaceFirst("^0+(?!$)", "");
+                String normalizedB = numB.replaceFirst("^0+(?!$)", "");
+
+                // First compare length
+                int result = Integer.compare(
+                        normalizedA.length(),
+                        normalizedB.length());
+
+                if (result != 0) {
+                    return result;
+                }
+
+                // Same length → compare numerically as strings
+                result = normalizedA.compareTo(normalizedB);
+
+                if (result != 0) {
+                    return result;
+                }
+
+            } else {
+
+                // Compare letters / other characters ignoring case
+                int result = Character.compare(
+                        Character.toLowerCase(ca),
+                        Character.toLowerCase(cb));
+
+                if (result != 0) {
+                    return result;
+                }
+
+                i++;
+                j++;
+            }
+        }
+
+        // Shorter value first
+        return Integer.compare(a.length(), b.length());
+    });
 
     @GetMapping("/getDatNaiss")
     ReponseDatNais getDatNaiss(@RequestParam String soc, @RequestParam String mat, @RequestParam String numFam) {
@@ -509,7 +578,12 @@ public class BulletinSoinController {
 
     @GetMapping("/getBultCnam")
     List<BultSoinProjection> getBultCnam(@RequestParam String soc) {
-        return bultSoinRepository.getBultCnam(soc);
+        List<BultSoinProjection> bultCnamBySoc = bultSoinRepository.getBultCnam(soc);
+        bultCnamBySoc.sort(
+                Comparator.comparing(
+                        BultSoinProjection::getMat_pers,
+                        MATRICULE_COMPARATOR));
+        return bultCnamBySoc;
     }
 
     @GetMapping("/getBultMut")
@@ -661,7 +735,8 @@ public class BulletinSoinController {
         LocalDate date_acte = DateParser.parse(datAct);
         boolean avecBulletin = numLig != null && !numLig.isBlank() && numSoin != null && !numSoin.isBlank();
         if (avecBulletin) {
-            // clé complète : seule la visite de ce bulletin est supprimée (pas celle d'un autre bulletin de même date)
+            // clé complète : seule la visite de ce bulletin est supprimée (pas celle d'un
+            // autre bulletin de même date)
             ligBultVisitRepository.deleteLigBultVisitBulletin(soc, mat, famInt, date_soin, abrv, date_acte, codVisit,
                     Integer.valueOf(numLig.trim()), Long.valueOf(numSoin.trim()));
         } else {

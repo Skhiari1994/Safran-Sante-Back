@@ -26,7 +26,9 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
 import java.util.List;
+import java.util.Comparator;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,6 +59,73 @@ public class PersonnelController {
     private final TrsPersRepository trsPersRepository;
     private final AccesUtilisateur acces;
 
+    public static final Comparator<String> MATRICULE_COMPARATOR = Comparator.nullsLast((a, b) -> {
+
+        int i = 0;
+        int j = 0;
+
+        while (i < a.length() && j < b.length()) {
+
+            char ca = a.charAt(i);
+            char cb = b.charAt(j);
+
+            // Both are digits → compare the complete numeric parts
+            if (Character.isDigit(ca) && Character.isDigit(cb)) {
+
+                int startI = i;
+                int startJ = j;
+
+                while (i < a.length() && Character.isDigit(a.charAt(i))) {
+                    i++;
+                }
+
+                while (j < b.length() && Character.isDigit(b.charAt(j))) {
+                    j++;
+                }
+
+                String numA = a.substring(startI, i);
+                String numB = b.substring(startJ, j);
+
+                // Remove leading zeros for comparison
+                String normalizedA = numA.replaceFirst("^0+(?!$)", "");
+                String normalizedB = numB.replaceFirst("^0+(?!$)", "");
+
+                // First compare length
+                int result = Integer.compare(
+                        normalizedA.length(),
+                        normalizedB.length());
+
+                if (result != 0) {
+                    return result;
+                }
+
+                // Same length → compare numerically as strings
+                result = normalizedA.compareTo(normalizedB);
+
+                if (result != 0) {
+                    return result;
+                }
+
+            } else {
+
+                // Compare letters / other characters ignoring case
+                int result = Character.compare(
+                        Character.toLowerCase(ca),
+                        Character.toLowerCase(cb));
+
+                if (result != 0) {
+                    return result;
+                }
+
+                i++;
+                j++;
+            }
+        }
+
+        // Shorter value first
+        return Integer.compare(a.length(), b.length());
+    });
+
     @PostMapping("/addUser")
     Personnel savePersonnel(@RequestBody Personnel personnel) {
         return personnelRepository.save(personnel);
@@ -85,7 +154,10 @@ public class PersonnelController {
         return adrPersRepository.save(adresse);
     }
 
-    /** Supprime une adresse de l'adhérent (clé : société, matricule, numéro d'adresse). */
+    /**
+     * Supprime une adresse de l'adhérent (clé : société, matricule, numéro
+     * d'adresse).
+     */
     @DeleteMapping("/deleteAdresse")
     public ResponseEntity<String> deleteAdresse(@RequestParam("soc") String soc, @RequestParam("mat") String mat,
             @RequestParam("num") Long num) {
@@ -105,13 +177,17 @@ public class PersonnelController {
     public List<PersonnelPrejection> getPersonnels(@RequestParam(required = false) String codSoc,
             HttpServletRequest request) {
         // société choisie au login ; sans paramètre, toutes les sociétés
-        // un utilisateur simple ne voit que sa propre fiche (périmètre lu dans le token)
+        // un utilisateur simple ne voit que sa propre fiche (périmètre lu dans le
+        // token)
         var limite = acces.porteeLimitee(request);
         return this.personnelRepository.getPersonnels(socEffective(codSoc, limite), matEffectif(limite));
 
     }
 
-    /** Nombre de fiches portant ce matricule dans la société : l'écran refuse un matricule déjà utilisé. */
+    /**
+     * Nombre de fiches portant ce matricule dans la société : l'écran refuse un
+     * matricule déjà utilisé.
+     */
     @GetMapping("/countMat/{soc}/{mat}")
     public Long countMat(@PathVariable("soc") String soc, @PathVariable("mat") String mat) {
         return this.personnelRepository.countCodSocAndMatPers(soc, mat);
@@ -134,18 +210,51 @@ public class PersonnelController {
     @GetMapping("/getPersonnelles")
     public List<Personnel> getAllPersonelles(@RequestParam(required = false) String codSoc,
             HttpServletRequest request) {
-        // société choisie au login : seul son personnel est renvoyé ; sans paramètre, tout le personnel
-        // un utilisateur simple ne voit que sa propre fiche (périmètre lu dans le token)
+        // société choisie au login : seul son personnel est renvoyé ; sans paramètre,
+        // tout le personnel
+        // un utilisateur simple ne voit que sa propre fiche (périmètre lu dans le
+        // token)
+        List<Personnel> personnels;
         var limite = acces.porteeLimitee(request);
         String soc = socEffective(codSoc, limite);
+
         if (soc.isEmpty() && limite.isEmpty()) {
-            return this.personnelRepository.findAll();
+            personnels = this.personnelRepository.findAll();
+        } else {
+            personnels = this.personnelRepository.findBySociete(
+                    soc,
+                    matEffectif(limite));
         }
-        return this.personnelRepository.findBySociete(soc, matEffectif(limite));
+
+        personnels.sort(
+                Comparator.comparing(
+                        Personnel::getMat_pers,
+                        (a, b) -> {
+                            boolean aNumeric = a != null && a.matches("\\d+");
+                            boolean bNumeric = b != null && b.matches("\\d+");
+
+                            if (aNumeric && bNumeric) {
+                                return Integer.compare(
+                                        Integer.parseInt(a),
+                                        Integer.parseInt(b));
+                            }
+
+                            if (aNumeric)
+                                return -1;
+                            if (bNumeric)
+                                return 1;
+
+                            return a.compareToIgnoreCase(b);
+                        }));
+
+        return personnels;
 
     }
 
-    /** Société du token pour un utilisateur limité, sinon celle demandée par le front ('' = toutes). */
+    /**
+     * Société du token pour un utilisateur limité, sinon celle demandée par le
+     * front ('' = toutes).
+     */
     private String socEffective(String codSoc, java.util.Optional<AccesUtilisateur.Portee> limite) {
         if (limite.isPresent() && !limite.get().codSoc().isBlank()) {
             return limite.get().codSoc().trim();
@@ -153,7 +262,9 @@ public class PersonnelController {
         return codSoc == null ? "" : codSoc.trim();
     }
 
-    /** Matricule imposé pour un utilisateur limité, sinon '' (pas de restriction). */
+    /**
+     * Matricule imposé pour un utilisateur limité, sinon '' (pas de restriction).
+     */
     private String matEffectif(java.util.Optional<AccesUtilisateur.Portee> limite) {
         return limite.map(AccesUtilisateur.Portee::matricule).orElse("");
     }

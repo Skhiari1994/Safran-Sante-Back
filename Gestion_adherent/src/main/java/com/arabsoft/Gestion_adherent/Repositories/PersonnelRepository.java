@@ -180,8 +180,15 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
        List<PersonnelPrejection> getPersonnels(@Param("soc") String soc, @Param("mat") String mat);
 
        /** Personnel d'une société (et d'un seul matricule si mat est renseigné). */
-       @Query("select p from Personnel p where p.cod_soc = :soc and (:mat = '' or p.mat_pers = :mat)")
-       List<Personnel> findBySociete(@Param("soc") String soc, @Param("mat") String mat);
+       @Query("""
+                     select p
+                     from Personnel p
+                     where p.cod_soc = :soc
+                       and (:mat = '' or p.mat_pers = :mat)
+                     """)
+       List<Personnel> findBySociete(
+                     @Param("soc") String soc,
+                     @Param("mat") String mat);
 
        @Query(value = "select count(*) from personnel p where p.cod_soc = :soc and p.mat_pers = :mat ", nativeQuery = true)
        Long countCodSocAndMatPers(@Param("soc") String codSoc, @Param("mat") String matPers);
