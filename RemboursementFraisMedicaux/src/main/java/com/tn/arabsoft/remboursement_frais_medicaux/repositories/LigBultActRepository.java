@@ -110,6 +110,32 @@ public interface LigBultActRepository extends JpaRepository<LigBultAct, CleLigBu
       @Param("datAct") LocalDate datAct,
       @Param("codAct") String codAct);
 
+  /** Suppression d'un acte d'un bulletin précis : la clé complète inclut le numéro de soin. */
+  @Modifying
+  @Transactional
+  @Query(value = """
+      delete from lig_bult_act
+      where cod_soc = :soc
+      and mat_pers = :mat
+      and num_fam = :numFam
+      and dat_soin = :datSoin
+      and abrv_act = :abrv
+      and num_lig = :numLig
+      and dat_act = :datAct
+      and cod_act = :codAct
+      and num_soin = :numSoin
+      """, nativeQuery = true)
+  void deleteLigBultActBulletin(
+      @Param("soc") String soc,
+      @Param("mat") String mat,
+      @Param("numFam") Long numFam,
+      @Param("datSoin") LocalDate datSoin,
+      @Param("abrv") String abrv,
+      @Param("numLig") Long numLig,
+      @Param("datAct") LocalDate datAct,
+      @Param("codAct") String codAct,
+      @Param("numSoin") Long numSoin);
+
   @Query(value = """
       select coalesce(max(num_lig), 0) + 1
       from lig_bult_act

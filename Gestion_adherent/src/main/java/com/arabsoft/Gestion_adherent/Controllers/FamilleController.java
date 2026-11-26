@@ -251,6 +251,15 @@ public class FamilleController {
                     f.get(i).setNum_fam(nextNumFam);
                     nextNumFam++;
                 }
+
+                // Certaines lignes ont un COD_SOC stocké avec des espaces de fin (« 01   », reprise Oracle). SQL Server les
+                // ignore dans les comparaisons, Hibernate non : mettre à jour un enfant existant avec « 01 » échouait
+                // (« identifier of an instance of Famille was altered from (01,72,1) to (01   ,72,1) »). On reprend la valeur stockée.
+                String codSocStocke = familleRepository.codSocStocke(f.get(i).getCod_soc(), f.get(i).getMat_pers(),
+                        f.get(i).getNum_fam());
+                if (codSocStocke != null) {
+                    f.get(i).setCod_soc(codSocStocke);
+                }
             }
 
             // Save all enfants in a single operation

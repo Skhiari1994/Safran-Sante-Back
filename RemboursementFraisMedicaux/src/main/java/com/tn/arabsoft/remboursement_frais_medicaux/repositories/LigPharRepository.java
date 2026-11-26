@@ -78,7 +78,7 @@ public interface LigPharRepository extends JpaRepository<LigPhar, CleLigPhar> {
                         from lig_phar t
                         left join ref_med rm
                                on rm.cod_med = t.cod_med
-                        left join etabliss e
+                        left join ref_etablis e
                                on e.prf_typ = t.prf_typ
                               and e.prf_cod = t.prf_cod
                         where t.cod_soc = :soc

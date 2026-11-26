@@ -111,6 +111,32 @@ public interface LigBultMedRepository extends JpaRepository<LigBultMed, CleLigBu
             @Param("numLig") Long numLig,
             @Param("codMed") String codMed);
 
+    /** Suppression d'une ligne d'un bulletin précis : clé complète (date de l'acte, code, numéro de ligne et numéro de soin). */
+    @Modifying
+    @Transactional
+    @Query(value = """
+            delete from lig_bult_med
+             where cod_soc = :soc
+               and mat_pers = :mat
+               and num_fam = :fam
+               and dat_soin = :datSoin
+               and abrv_act = :abrv
+               and dat_act = :datAct
+               and cod_med = :codMed
+               and num_lig = :numLig
+               and num_soin = :numSoin
+            """, nativeQuery = true)
+    void deleteLigBultMedBulletin(
+            @Param("soc") String soc,
+            @Param("mat") String mat,
+            @Param("fam") Integer fam,
+            @Param("datSoin") LocalDate datSoin,
+            @Param("abrv") String abrv,
+            @Param("datAct") LocalDate datAct,
+            @Param("codMed") String codMed,
+            @Param("numLig") Integer numLig,
+            @Param("numSoin") Long numSoin);
+
     @Query(value = """
             select coalesce(max(num_lig), 0) + 1
             from lig_bult_med

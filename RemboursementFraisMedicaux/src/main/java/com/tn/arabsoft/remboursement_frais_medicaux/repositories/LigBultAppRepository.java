@@ -107,6 +107,32 @@ public interface LigBultAppRepository extends JpaRepository<LigBultApp, CleLigBu
             @Param("numLig") Long numLig,
             @Param("codApp") String codApp);
 
+    /** Suppression d'une ligne d'un bulletin précis : clé complète (date de l'acte, code, numéro de ligne et numéro de soin). */
+    @Modifying
+    @Transactional
+    @Query(value = """
+            delete from lig_bult_app
+             where cod_soc = :soc
+               and mat_pers = :mat
+               and num_fam = :fam
+               and dat_soin = :datSoin
+               and abrv_act = :abrv
+               and dat_act = :datAct
+               and cod_app = :codApp
+               and num_lig = :numLig
+               and num_soin = :numSoin
+            """, nativeQuery = true)
+    void deleteLigBultAppBulletin(
+            @Param("soc") String soc,
+            @Param("mat") String mat,
+            @Param("fam") Integer fam,
+            @Param("datSoin") LocalDate datSoin,
+            @Param("abrv") String abrv,
+            @Param("datAct") LocalDate datAct,
+            @Param("codApp") String codApp,
+            @Param("numLig") Integer numLig,
+            @Param("numSoin") Long numSoin);
+
     @Query(value = """
             select coalesce(max(num_lig), 0) + 1
             from lig_bult_app

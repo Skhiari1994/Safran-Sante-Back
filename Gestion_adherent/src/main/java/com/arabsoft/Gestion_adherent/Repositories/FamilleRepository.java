@@ -164,6 +164,10 @@ public interface FamilleRepository extends JpaRepository<Famille, CleFamille> {
       @Query(value = "select max(f.num_fam) from famille f where f.cod_soc = :codSoc and f.mat_pers = :mat and f.parente ='E'", nativeQuery = true)
       public Long getmaxEnfant(@Param("codSoc") String codSoc, @Param("mat") String mat);
 
+      /** COD_SOC exactement tel qu'il est stocké (certaines lignes reprises d'Oracle ont des espaces de fin). */
+      @Query(value = "select top 1 f.cod_soc from famille f where f.cod_soc = :codSoc and f.mat_pers = :mat and f.num_fam = :num", nativeQuery = true)
+      String codSocStocke(@Param("codSoc") String codSoc, @Param("mat") String mat, @Param("num") Long num);
+
       @Modifying
       @Transactional
       @Query(value = "delete from famille f where f.cod_soc = :soc and f.num_fam = :num and f.mat_pers = :mat", nativeQuery = true)

@@ -62,7 +62,7 @@ public interface LigBultRepository extends JpaRepository<LigBult, LigBultCle> {
                         from lig_bult t
                         left join acte a
                                on a.abrv_act = t.abrv_act
-                        left join etabliss e
+                        left join ref_etablis e
                                on e.prf_typ = t.prf_typ
                                and e.prf_cod = t.prf_cod
                         where t.cod_soc = :soc
