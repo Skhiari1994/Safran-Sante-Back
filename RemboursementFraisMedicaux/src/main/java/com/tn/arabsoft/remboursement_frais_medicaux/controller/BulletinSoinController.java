@@ -822,7 +822,9 @@ public class BulletinSoinController {
                 ? natBult.trim().toUpperCase()
                 : null;
 
-        List<BultSoinProjection> list = bultSoinRepository.findBulletinsConsultation(soc, mat, nat, annee);
+        java.time.LocalDate debutAnnee = java.time.LocalDate.of(annee, 1, 1);
+        java.time.LocalDate finAnnee = debutAnnee.plusYears(1);
+        List<BultSoinProjection> list = bultSoinRepository.findBulletinsConsultation(soc, mat, nat, debutAnnee, finAnnee);
         return ResponseEntity.ok(list);
     }
 }

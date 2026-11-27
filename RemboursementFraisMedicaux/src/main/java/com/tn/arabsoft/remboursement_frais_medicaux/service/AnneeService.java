@@ -30,69 +30,12 @@ public class AnneeService {
 
         Set<Integer> annees = new HashSet<>();
 
-        // 1. Extraction BULT_SOIN (dat_soin et ann_plaf_imp)
-        try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT DISTINCT dat_soin, ann_plaf_imp, cod_soc, mat_pers FROM bult_soin"
-            );
-            int countAvant = annees.size();
-            rows.stream()
-                    .filter(r -> correspondCriteres(getValeur(r, "cod_soc"), getValeur(r, "mat_pers"), codSoc, matPers))
-                    .forEach(r -> {
-                        extraireAnneeObjet(getValeur(r, "dat_soin")).ifPresent(annees::add);
-                        extraireAnneeObjet(getValeur(r, "ann_plaf_imp")).ifPresent(annees::add);
-                    });
-            log.info("BULT_SOIN : {} années extraites (total cumulé : {})", annees.size() - countAvant, annees);
-        } catch (Exception e) {
-            log.warn("Erreur lecture BULT_SOIN : {}", e.getMessage());
-        }
+        extraireAnneesTable("bult_soin", List.of("dat_soin", "ann_plaf_imp"), codSoc, matPers, annees);
+        extraireAnneesTable("bult_arriver", List.of("dat_soin", "ann_plaf_imp"), codSoc, matPers, annees);
+        extraireAnneesTable("plafond_assur", List.of("annee_assur"), codSoc, matPers, annees);
+        extraireAnneesTable("plafond_cnam", List.of("annee_cnam"), codSoc, matPers, annees);
 
-        // 2. Extraction BULT_ARRIVER (dat_soin et ann_plaf_imp)
-        try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT DISTINCT dat_soin, ann_plaf_imp, cod_soc, mat_pers FROM bult_arriver"
-            );
-            int countAvant = annees.size();
-            rows.stream()
-                    .filter(r -> correspondCriteres(getValeur(r, "cod_soc"), getValeur(r, "mat_pers"), codSoc, matPers))
-                    .forEach(r -> {
-                        extraireAnneeObjet(getValeur(r, "dat_soin")).ifPresent(annees::add);
-                        extraireAnneeObjet(getValeur(r, "ann_plaf_imp")).ifPresent(annees::add);
-                    });
-            log.info("BULT_ARRIVER : {} années extraites (total cumulé : {})", annees.size() - countAvant, annees);
-        } catch (Exception e) {
-            log.warn("Erreur lecture BULT_ARRIVER : {}", e.getMessage());
-        }
-
-        // 3. Extraction PLAFOND_ASSUR (annee_assur)
-        try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT DISTINCT annee_assur, cod_soc, mat_pers FROM plafond_assur"
-            );
-            int countAvant = annees.size();
-            rows.stream()
-                    .filter(r -> correspondCriteres(getValeur(r, "cod_soc"), getValeur(r, "mat_pers"), codSoc, matPers))
-                    .forEach(r -> extraireAnneeObjet(getValeur(r, "annee_assur")).ifPresent(annees::add));
-            log.info("PLAFOND_ASSUR : {} années extraites (total cumulé : {})", annees.size() - countAvant, annees);
-        } catch (Exception e) {
-            log.warn("Erreur lecture PLAFOND_ASSUR : {}", e.getMessage());
-        }
-
-        // 4. Extraction PLAFOND_CNAM (annee_cnam)
-        try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT DISTINCT annee_cnam, cod_soc, mat_pers FROM plafond_cnam"
-            );
-            int countAvant = annees.size();
-            rows.stream()
-                    .filter(r -> correspondCriteres(getValeur(r, "cod_soc"), getValeur(r, "mat_pers"), codSoc, matPers))
-                    .forEach(r -> extraireAnneeObjet(getValeur(r, "annee_cnam")).ifPresent(annees::add));
-            log.info("PLAFOND_CNAM : {} années extraites (total cumulé : {})", annees.size() - countAvant, annees);
-        } catch (Exception e) {
-            log.warn("Erreur lecture PLAFOND_CNAM : {}", e.getMessage());
-        }
-
-        // 5. Filtrage en Java des années valides et tri décroissant
+        // Filtrage en Java des années valides et tri décroissant
         List<Integer> resultat = annees.stream()
                 .filter(a -> a != null && a >= 1900 && a <= 2100)
                 .sorted(Comparator.reverseOrder())
@@ -115,6 +58,50 @@ public class AnneeService {
     }
 
     /**
+     * Extrait les années distinctes d'une table donnée en filtrant directement en SQL
+     * sur cod_soc et mat_pers lorsqu'ils sont renseignés.
+     */
+    private void extraireAnneesTable(
+            String table,
+            List<String> colonnes,
+            String codSoc,
+            String matPers,
+            Set<Integer> annees
+    ) {
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
+        sql.append(String.join(", ", colonnes));
+        sql.append(" FROM ").append(table);
+
+        List<Object> params = new ArrayList<>();
+        List<String> conditions = new ArrayList<>();
+        if (codSoc != null && !codSoc.isBlank()) {
+            conditions.add("cod_soc = ?");
+            params.add(codSoc.trim());
+        }
+        if (matPers != null && !matPers.isBlank()) {
+            conditions.add("mat_pers = ?");
+            params.add(matPers.trim());
+        }
+        if (!conditions.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
+        }
+
+        try {
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+            int countAvant = annees.size();
+            for (Map<String, Object> row : rows) {
+                for (String colonne : colonnes) {
+                    extraireAnneeObjet(getValeur(row, colonne)).ifPresent(annees::add);
+                }
+            }
+            log.info("{} : {} années extraites (total cumulé : {})",
+                    table.toUpperCase(), annees.size() - countAvant, annees);
+        } catch (Exception e) {
+            log.warn("Erreur lecture {} : {}", table.toUpperCase(), e.getMessage());
+        }
+    }
+
+    /**
      * Recherche insensible à la casse dans les clés de la Map JDBC.
      */
     private Object getValeur(Map<String, Object> map, String cleRecherchee) {
@@ -125,15 +112,6 @@ public class AnneeService {
             }
         }
         return null;
-    }
-
-    private boolean correspondCriteres(Object socObj, Object matObj, String codSocFiltre, String matPersFiltre) {
-        String socEntite = socObj != null ? socObj.toString().trim() : "";
-        String matEntite = matObj != null ? matObj.toString().trim() : "";
-
-        boolean socOk = codSocFiltre == null || codSocFiltre.isBlank() || codSocFiltre.trim().equalsIgnoreCase(socEntite);
-        boolean matOk = matPersFiltre == null || matPersFiltre.isBlank() || matPersFiltre.trim().equalsIgnoreCase(matEntite);
-        return socOk && matOk;
     }
 
     /**

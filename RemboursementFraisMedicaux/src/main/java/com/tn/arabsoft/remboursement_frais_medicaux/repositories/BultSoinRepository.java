@@ -1114,12 +1114,14 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
 
        @Query(value = """
                      SELECT b.*,
+                            a.lib_assur AS lib_assur,
                             rr.lib_remb AS lib_remb,
                             CASE
                                 WHEN b.num_fam = '0' OR b.num_fam IS NULL THEN 'Adhérent'
                                 ELSE COALESCE(f.nom_pren, 'Adhérent')
                             END AS nom_adherent
                      FROM bult_soin b
+                     LEFT JOIN assurance a ON a.cod_assur = b.cod_assur
                      LEFT JOIN regime_remb rr ON rr.reg_remb = b.reg_remb
                      LEFT JOIN famille f ON f.cod_soc = b.cod_soc
                                         AND f.mat_pers = b.mat_pers
@@ -1127,14 +1129,16 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      WHERE b.cod_soc = :codSoc
                        AND b.mat_pers = :matPers
                        AND (:natBult IS NULL OR :natBult = '' OR b.nat_bult = :natBult)
-                       AND YEAR(b.dat_soin) = :annee
+                       AND b.dat_soin >= :debutAnnee
+                       AND b.dat_soin < :finAnnee
                      ORDER BY b.dat_soin DESC
                      """, nativeQuery = true)
        List<BultSoinProjection> findBulletinsConsultation(
                      @Param("codSoc") String codSoc,
                      @Param("matPers") String matPers,
                      @Param("natBult") String natBult,
-                     @Param("annee") int annee);
+                     @Param("debutAnnee") java.time.LocalDate debutAnnee,
+                     @Param("finAnnee") java.time.LocalDate finAnnee);
 
        @Query(value = "select coalesce(max(num_soin), 0) + 1 from bult_soin", nativeQuery = true)
        Long nextNumSoin();
