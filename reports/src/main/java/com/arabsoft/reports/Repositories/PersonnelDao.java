@@ -21,8 +21,8 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
                         FROM   personnel
                         WHERE  cod_soc = :soc
                           AND  etat_act = 'A'
-                          AND  (CAST(:mat_pers AS DECIMAL(18,0)) IS NULL
-                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(:mat_pers AS DECIMAL(18,0)))
+                          AND  (CAST(NULLIF(LTRIM(RTRIM(:mat_pers)), '') AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(NULLIF(LTRIM(RTRIM(:mat_pers)), '') AS DECIMAL(18,0)))
                         ORDER BY CAST(mat_pers AS DECIMAL(18,0))
                                                 """, nativeQuery = true)
         List<PersonnelProjection> getPersonnel(@Param("soc") String soc, @Param("mat_pers") String mat_pers);
@@ -45,8 +45,8 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
                         FROM   personnel
                         WHERE  cod_soc = :soc
                           AND  etat_act = 'A'
-                          AND  (CAST(:mat_fin AS DECIMAL(18,0)) IS NULL
-                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(:mat_fin AS DECIMAL(18,0)))
+                          AND  (CAST(NULLIF(LTRIM(RTRIM(:mat_fin)), '') AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(NULLIF(LTRIM(RTRIM(:mat_fin)), '') AS DECIMAL(18,0)))
                           AND  mat_pers IN (SELECT mat_pers FROM bult_soin
                                             WHERE cod_soc = :soc
                                               AND nat_bult = 'M'
@@ -62,8 +62,8 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
                         FROM   personnel
                         WHERE  cod_soc = :soc
                           AND  etat_act = 'A'
-                          AND  (CAST(:mat_deb AS DECIMAL(18,0)) IS NULL
-                                OR CAST(mat_pers AS DECIMAL(18,0)) >= CAST(:mat_deb AS DECIMAL(18,0)))
+                          AND  (CAST(NULLIF(LTRIM(RTRIM(:mat_deb)), '') AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) >= CAST(NULLIF(LTRIM(RTRIM(:mat_deb)), '') AS DECIMAL(18,0)))
                           AND  mat_pers IN (SELECT mat_pers FROM bult_soin
                                             WHERE cod_soc = :soc
                                               AND nat_bult = 'M'
@@ -79,8 +79,8 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
                         FROM   personnel
                         WHERE  cod_soc = :soc
                           AND  etat_act = 'A'
-                          AND  (CAST(:mat_fin AS DECIMAL(18,0)) IS NULL
-                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(:mat_fin AS DECIMAL(18,0)))
+                          AND  (CAST(NULLIF(LTRIM(RTRIM(:mat_fin)), '') AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) <= CAST(NULLIF(LTRIM(RTRIM(:mat_fin)), '') AS DECIMAL(18,0)))
                           AND  mat_pers IN (SELECT mat_pers FROM bult_soin
                                             WHERE cod_soc = :soc
                                               AND nat_bult = 'C'
@@ -96,8 +96,8 @@ public interface PersonnelDao extends JpaRepository<Personnel, ClePersonnel> {
                         FROM   personnel
                         WHERE  cod_soc = :soc
                           AND  etat_act = 'A'
-                          AND  (CAST(:mat_deb AS DECIMAL(18,0)) IS NULL
-                                OR CAST(mat_pers AS DECIMAL(18,0)) >= CAST(:mat_deb AS DECIMAL(18,0)))
+                          AND  (CAST(NULLIF(LTRIM(RTRIM(:mat_deb)), '') AS DECIMAL(18,0)) IS NULL
+                                OR CAST(mat_pers AS DECIMAL(18,0)) >= CAST(NULLIF(LTRIM(RTRIM(:mat_deb)), '') AS DECIMAL(18,0)))
                           AND  mat_pers IN (SELECT mat_pers FROM bult_soin
                                             WHERE cod_soc = :soc
                                               AND nat_bult = 'C'

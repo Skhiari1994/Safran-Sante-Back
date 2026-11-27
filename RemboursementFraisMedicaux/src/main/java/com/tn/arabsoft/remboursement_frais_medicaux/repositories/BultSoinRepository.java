@@ -627,8 +627,9 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      @Param("cod_soc") String cod_soc,
                      @Param("cod_bord") String cod_bord);
 
+       // libellé vide dans REF_ACT (ligne générique 000000000) : celui de l'acte ; ligne générique en premier, ordre stable
        @Query(value = """
-                     select r.lib_act,
+                     select coalesce(nullif(ltrim(rtrim(r.lib_act)), ''), a.lib_act) as lib_act,
                             r.cod_act,
                             r.let_cod,
                             r.cot_act,
@@ -644,6 +645,9 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                        and coalesce(a.sexe, :sexe) = :sexe
                        and b.cod_fil = :codFil
                        and b.cod_assur = :codAssur
+                     order by r.abrv_act,
+                              case when r.cod_act = '000000000' then 0 else 1 end,
+                              r.cod_act
                      """, nativeQuery = true)
        List<ActProjection> getActes(
                      @Param("parente") String parente,
@@ -653,7 +657,7 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
 
        @Query(value = """
                      select r.cod_act,
-                            r.lib_act,
+                            coalesce(nullif(ltrim(rtrim(r.lib_act)), ''), a.lib_act) as lib_act,
                             r.let_cod,
                             r.cot_act,
                             r.act_prix,
@@ -666,6 +670,9 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                           on b.abrv_act = a.abrv_act
                      where b.cod_fil = :codFil
                        and b.cod_assur = :codAssur
+                     order by r.abrv_act,
+                              case when r.cod_act = '000000000' then 0 else 1 end,
+                              r.cod_act
                      """, nativeQuery = true)
        List<ActProjection> getActesManuel(
                      @Param("codFil") String codFil,
@@ -881,6 +888,269 @@ public interface BultSoinRepository extends JpaRepository<BultSoin, BultSoinCle>
                      order by t.dat_saisie desc, t.dat_soin desc, t.mat_pers, t.num_fam
                      """, nativeQuery = true)
        List<BultSoinListeProjection> getBultMutListe(@Param("soc") String soc);
+
+       /*
+        * Bulletins CNAM envoyés pour la fenêtre de recherche, page par page : même liste que getBulletinCnamListe
+        * (mêmes colonnes, mêmes conditions), filtrée et découpée par la base. Ordre = colonnes de la fenêtre de gauche
+        * à droite (code bordereau, matricule, n° famille, date de soin), puis num_soin : ordre stable, d'une page à
+        * l'autre et pour les boutons fiche précédente / suivante.
+        * mat : égalité exacte ; cod_bord, num_fam, dat_soin (jj/mm/aaaa) : « contient » ; m1..m3 / l1..l3 : mots de la
+        * recherche globale (chacun doit se retrouver dans une des colonnes) ; sexe : 'M' ou 'F'.
+        */
+       @Query(value = """
+                     select q.cod_soc, q.mat_pers, q.num_fam, q.dat_soin, q.cod_bord, q.sexe
+                     from (
+                     select t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            t.cod_bord,
+                            coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe,
+                            t.num_soin
+                     from bult_soin t
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     left join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     where t.nat_bult = 'C'
+                       and coalesce(t.envoi, 'N') = 'O'
+                       and t.cod_soc = :soc
+                     ) q
+                     where (:mat is null or lower(ltrim(rtrim(q.mat_pers))) = :mat)
+                       and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                       and (:num_fam is null or cast(q.num_fam as varchar(10)) like :num_fam escape '!')
+                       and (:dat_soin is null or convert(varchar(10), q.dat_soin, 103) like :dat_soin escape '!')
+                       and (:sexe is null or upper(ltrim(rtrim(q.sexe))) = :sexe)
+                       and (:m1 is null or lower(ltrim(rtrim(q.mat_pers))) = :m1
+                            or lower(q.cod_bord) like :l1 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l1 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l1 escape '!')
+                       and (:m2 is null or lower(ltrim(rtrim(q.mat_pers))) = :m2
+                            or lower(q.cod_bord) like :l2 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l2 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l2 escape '!')
+                       and (:m3 is null or lower(ltrim(rtrim(q.mat_pers))) = :m3
+                            or lower(q.cod_bord) like :l3 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l3 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l3 escape '!')
+                     order by q.cod_bord,
+                              case when q.mat_pers not like '%[^0-9]%' and len(q.mat_pers) between 1 and 18 then cast(q.mat_pers as bigint) end,
+                              q.mat_pers, q.num_fam, q.dat_soin, q.num_soin
+                     offset :debut rows fetch next :taille rows only
+                     """, nativeQuery = true)
+       List<BultSoinListeProjection> pageBultCnam(@Param("soc") String soc, @Param("mat") String mat,
+                     @Param("cod_bord") String cod_bord, @Param("num_fam") String num_fam,
+                     @Param("dat_soin") String dat_soin, @Param("sexe") String sexe,
+                     @Param("m1") String m1, @Param("l1") String l1, @Param("m2") String m2, @Param("l2") String l2,
+                     @Param("m3") String m3, @Param("l3") String l3,
+                     @Param("debut") int debut, @Param("taille") int taille);
+
+       @Query(value = """
+                     select count(*)
+                     from (
+                     select t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            t.cod_bord,
+                            coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe,
+                            t.num_soin
+                     from bult_soin t
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     left join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     where t.nat_bult = 'C'
+                       and coalesce(t.envoi, 'N') = 'O'
+                       and t.cod_soc = :soc
+                     ) q
+                     where (:mat is null or lower(ltrim(rtrim(q.mat_pers))) = :mat)
+                       and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                       and (:num_fam is null or cast(q.num_fam as varchar(10)) like :num_fam escape '!')
+                       and (:dat_soin is null or convert(varchar(10), q.dat_soin, 103) like :dat_soin escape '!')
+                       and (:sexe is null or upper(ltrim(rtrim(q.sexe))) = :sexe)
+                       and (:m1 is null or lower(ltrim(rtrim(q.mat_pers))) = :m1
+                            or lower(q.cod_bord) like :l1 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l1 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l1 escape '!')
+                       and (:m2 is null or lower(ltrim(rtrim(q.mat_pers))) = :m2
+                            or lower(q.cod_bord) like :l2 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l2 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l2 escape '!')
+                       and (:m3 is null or lower(ltrim(rtrim(q.mat_pers))) = :m3
+                            or lower(q.cod_bord) like :l3 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l3 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l3 escape '!')
+                     """, nativeQuery = true)
+       long compterBultCnam(@Param("soc") String soc, @Param("mat") String mat,
+                     @Param("cod_bord") String cod_bord, @Param("num_fam") String num_fam,
+                     @Param("dat_soin") String dat_soin, @Param("sexe") String sexe,
+                     @Param("m1") String m1, @Param("l1") String l1, @Param("m2") String m2, @Param("l2") String l2,
+                     @Param("m3") String m3, @Param("l3") String l3);
+
+       /** Effectifs du filtre Sexe (sur toute la liste, comme avant) : Tous, Masculin, Féminin. */
+       @Query(value = """
+                     select cast(count(*) as bigint) as tous,
+                            cast(coalesce(sum(case when upper(ltrim(rtrim(q.sexe))) = 'M' then 1 else 0 end), 0) as bigint) as m,
+                            cast(coalesce(sum(case when upper(ltrim(rtrim(q.sexe))) = 'F' then 1 else 0 end), 0) as bigint) as f
+                     from (
+                     select t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            t.cod_bord,
+                            coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe,
+                            t.num_soin
+                     from bult_soin t
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     left join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     where t.nat_bult = 'C'
+                       and coalesce(t.envoi, 'N') = 'O'
+                       and t.cod_soc = :soc
+                     ) q
+                     """, nativeQuery = true)
+       ComptesSexeProjection sexesBultCnam(@Param("soc") String soc);
+
+       /*
+        * Bulletins mutuelle pour la fenêtre de recherche, page par page : même liste que getBultMutListe
+        * (mêmes colonnes, mêmes conditions), filtrée et découpée par la base. Ordre = colonnes de la fenêtre de gauche
+        * à droite (code bordereau, matricule, n° famille, date de soin), puis num_soin : ordre stable, d'une page à
+        * l'autre et pour les boutons fiche précédente / suivante.
+        * mat : égalité exacte ; cod_bord, num_fam, dat_soin (jj/mm/aaaa) : « contient » ; m1..m3 / l1..l3 : mots de la
+        * recherche globale (chacun doit se retrouver dans une des colonnes) ; sexe : 'M' ou 'F'.
+        */
+       @Query(value = """
+                     select q.cod_soc, q.mat_pers, q.num_fam, q.dat_soin, q.cod_bord, q.sexe
+                     from (
+                     select t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            coalesce(nullif(trim(t.cod_bord_assur), ''), t.cod_bord) as cod_bord,
+                            coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe,
+                            t.num_soin
+                     from bult_soin t
+                     inner join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     where t.cod_soc = :soc
+                       and t.nat_bult = 'M'
+                     ) q
+                     where (:mat is null or lower(ltrim(rtrim(q.mat_pers))) = :mat)
+                       and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                       and (:num_fam is null or cast(q.num_fam as varchar(10)) like :num_fam escape '!')
+                       and (:dat_soin is null or convert(varchar(10), q.dat_soin, 103) like :dat_soin escape '!')
+                       and (:sexe is null or upper(ltrim(rtrim(q.sexe))) = :sexe)
+                       and (:m1 is null or lower(ltrim(rtrim(q.mat_pers))) = :m1
+                            or lower(q.cod_bord) like :l1 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l1 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l1 escape '!')
+                       and (:m2 is null or lower(ltrim(rtrim(q.mat_pers))) = :m2
+                            or lower(q.cod_bord) like :l2 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l2 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l2 escape '!')
+                       and (:m3 is null or lower(ltrim(rtrim(q.mat_pers))) = :m3
+                            or lower(q.cod_bord) like :l3 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l3 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l3 escape '!')
+                     order by q.cod_bord,
+                              case when q.mat_pers not like '%[^0-9]%' and len(q.mat_pers) between 1 and 18 then cast(q.mat_pers as bigint) end,
+                              q.mat_pers, q.num_fam, q.dat_soin, q.num_soin
+                     offset :debut rows fetch next :taille rows only
+                     """, nativeQuery = true)
+       List<BultSoinListeProjection> pageBultMut(@Param("soc") String soc, @Param("mat") String mat,
+                     @Param("cod_bord") String cod_bord, @Param("num_fam") String num_fam,
+                     @Param("dat_soin") String dat_soin, @Param("sexe") String sexe,
+                     @Param("m1") String m1, @Param("l1") String l1, @Param("m2") String m2, @Param("l2") String l2,
+                     @Param("m3") String m3, @Param("l3") String l3,
+                     @Param("debut") int debut, @Param("taille") int taille);
+
+       @Query(value = """
+                     select count(*)
+                     from (
+                     select t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            coalesce(nullif(trim(t.cod_bord_assur), ''), t.cod_bord) as cod_bord,
+                            coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe,
+                            t.num_soin
+                     from bult_soin t
+                     inner join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     where t.cod_soc = :soc
+                       and t.nat_bult = 'M'
+                     ) q
+                     where (:mat is null or lower(ltrim(rtrim(q.mat_pers))) = :mat)
+                       and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                       and (:num_fam is null or cast(q.num_fam as varchar(10)) like :num_fam escape '!')
+                       and (:dat_soin is null or convert(varchar(10), q.dat_soin, 103) like :dat_soin escape '!')
+                       and (:sexe is null or upper(ltrim(rtrim(q.sexe))) = :sexe)
+                       and (:m1 is null or lower(ltrim(rtrim(q.mat_pers))) = :m1
+                            or lower(q.cod_bord) like :l1 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l1 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l1 escape '!')
+                       and (:m2 is null or lower(ltrim(rtrim(q.mat_pers))) = :m2
+                            or lower(q.cod_bord) like :l2 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l2 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l2 escape '!')
+                       and (:m3 is null or lower(ltrim(rtrim(q.mat_pers))) = :m3
+                            or lower(q.cod_bord) like :l3 escape '!'
+                            or cast(q.num_fam as varchar(10)) like :l3 escape '!'
+                            or convert(varchar(10), q.dat_soin, 103) like :l3 escape '!')
+                     """, nativeQuery = true)
+       long compterBultMut(@Param("soc") String soc, @Param("mat") String mat,
+                     @Param("cod_bord") String cod_bord, @Param("num_fam") String num_fam,
+                     @Param("dat_soin") String dat_soin, @Param("sexe") String sexe,
+                     @Param("m1") String m1, @Param("l1") String l1, @Param("m2") String m2, @Param("l2") String l2,
+                     @Param("m3") String m3, @Param("l3") String l3);
+
+       /** Effectifs du filtre Sexe (sur toute la liste, comme avant) : Tous, Masculin, Féminin. */
+       @Query(value = """
+                     select cast(count(*) as bigint) as tous,
+                            cast(coalesce(sum(case when upper(ltrim(rtrim(q.sexe))) = 'M' then 1 else 0 end), 0) as bigint) as m,
+                            cast(coalesce(sum(case when upper(ltrim(rtrim(q.sexe))) = 'F' then 1 else 0 end), 0) as bigint) as f
+                     from (
+                     select t.cod_soc,
+                            t.mat_pers,
+                            t.num_fam,
+                            t.dat_soin,
+                            coalesce(nullif(trim(t.cod_bord_assur), ''), t.cod_bord) as cod_bord,
+                            coalesce(nullif(trim(f.sexe), ''), p.sexe) as sexe,
+                            t.num_soin
+                     from bult_soin t
+                     inner join personnel p
+                            on p.cod_soc = t.cod_soc
+                           and p.mat_pers = t.mat_pers
+                     left join famille f
+                            on f.cod_soc = t.cod_soc
+                           and f.mat_pers = t.mat_pers
+                           and f.num_fam = t.num_fam
+                     where t.cod_soc = :soc
+                       and t.nat_bult = 'M'
+                     ) q
+                     """, nativeQuery = true)
+       ComptesSexeProjection sexesBultMut(@Param("soc") String soc);
 
        @Query(value = """
                      select *

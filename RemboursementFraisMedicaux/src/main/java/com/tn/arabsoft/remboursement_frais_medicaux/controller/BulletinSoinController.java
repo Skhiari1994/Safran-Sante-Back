@@ -1,6 +1,7 @@
 
 package com.tn.arabsoft.remboursement_frais_medicaux.controller;
 
+import com.tn.arabsoft.remboursement_frais_medicaux.util.LovRecherche;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -200,6 +201,61 @@ public class BulletinSoinController {
      * Liste légère pour la fenêtre de recherche : la fiche complète se charge via
      * /getBultCnamCons à la sélection.
      */
+    /**
+     * Fenêtre de recherche des bulletins CNAM, page par page (au lieu des ~43 000 lignes de getBultCnamListe).
+     * Filtres par colonne (mat_pers exact, cod_bord / num_fam / dat_soin « contient »), recherche globale q (3 mots
+     * au plus, chacun dans une des colonnes), sexe 'M' / 'F'. avecSexes=true : effectifs du filtre Sexe en plus.
+     */
+    @GetMapping("/lovBultCnam")
+    public Map<String, Object> lovBultCnam(@RequestParam String soc,
+            @RequestParam(required = false) String mat_pers, @RequestParam(required = false) String cod_bord,
+            @RequestParam(required = false) String num_fam, @RequestParam(required = false) String dat_soin,
+            @RequestParam(required = false) String q, @RequestParam(required = false) String sexe,
+            @RequestParam(defaultValue = "false") boolean avecSexes,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int taille) {
+        return lovBulletins(true, soc, mat_pers, cod_bord, num_fam, dat_soin, q, sexe, avecSexes, page, taille);
+    }
+
+    /** Fenêtre de recherche des bulletins mutuelle, page par page (mêmes règles que lovBultCnam). */
+    @GetMapping("/lovBultMut")
+    public Map<String, Object> lovBultMut(@RequestParam String soc,
+            @RequestParam(required = false) String mat_pers, @RequestParam(required = false) String cod_bord,
+            @RequestParam(required = false) String num_fam, @RequestParam(required = false) String dat_soin,
+            @RequestParam(required = false) String q, @RequestParam(required = false) String sexe,
+            @RequestParam(defaultValue = "false") boolean avecSexes,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int taille) {
+        return lovBulletins(false, soc, mat_pers, cod_bord, num_fam, dat_soin, q, sexe, avecSexes, page, taille);
+    }
+
+    @SuppressWarnings("java:S107")
+    private Map<String, Object> lovBulletins(boolean cnam, String soc, String matPers, String codBord, String numFam,
+            String datSoin, String q, String sexe, boolean avecSexes, int page, int taille) {
+        int t = LovRecherche.taille(taille);
+        int p = LovRecherche.page(page);
+        String mat = LovRecherche.exact(matPers);
+        String bord = LovRecherche.motifContient(codBord);
+        String fam = LovRecherche.motifContient(numFam);
+        String dat = LovRecherche.motifContient(datSoin);
+        String sx = LovRecherche.vide(sexe) == null ? null : sexe.trim().toUpperCase();
+        String[] m = LovRecherche.mots(q);
+        String m1 = LovRecherche.exact(m[0]), l1 = LovRecherche.motifContient(m[0]);
+        String m2 = LovRecherche.exact(m[1]), l2 = LovRecherche.motifContient(m[1]);
+        String m3 = LovRecherche.exact(m[2]), l3 = LovRecherche.motifContient(m[2]);
+        long total = cnam
+                ? bultSoinRepository.compterBultCnam(soc, mat, bord, fam, dat, sx, m1, l1, m2, l2, m3, l3)
+                : bultSoinRepository.compterBultMut(soc, mat, bord, fam, dat, sx, m1, l1, m2, l2, m3, l3);
+        List<BultSoinListeProjection> lignes = total == 0 ? List.of()
+                : cnam
+                        ? bultSoinRepository.pageBultCnam(soc, mat, bord, fam, dat, sx, m1, l1, m2, l2, m3, l3, p * t, t)
+                        : bultSoinRepository.pageBultMut(soc, mat, bord, fam, dat, sx, m1, l1, m2, l2, m3, l3, p * t, t);
+        Map<String, Object> reponse = LovRecherche.reponse(lignes, total, p, t);
+        if (avecSexes) {
+            ComptesSexeProjection c = cnam ? bultSoinRepository.sexesBultCnam(soc) : bultSoinRepository.sexesBultMut(soc);
+            reponse.put("sexes", Map.of("tous", c.getTous(), "M", c.getM(), "F", c.getF()));
+        }
+        return reponse;
+    }
+
     @GetMapping("/getBultCnamListe")
     public List<BultSoinListeProjection> getBultCnamListe(@RequestParam String soc) {
         return bultSoinRepository.getBulletinCnamListe(soc);

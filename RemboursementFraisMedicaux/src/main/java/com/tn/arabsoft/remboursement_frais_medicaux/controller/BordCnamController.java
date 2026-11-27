@@ -1,5 +1,6 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.controller;
 
+import com.tn.arabsoft.remboursement_frais_medicaux.util.LovRecherche;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +49,70 @@ public class BordCnamController {
 
     private static final String KEY_MESSAGE = "message";
     private static final String KEY_ERROR = "error";
+
+    /**
+     * Fenêtre de recherche des bordereaux CNAM non envoyés, page par page (même liste que
+     * /Remboursement/BordEnvoiEntete/{soc}). cols : colonnes affichées par l'écran (recherche unique q).
+     */
+    @GetMapping("/lovBordEnvoiEntete")
+    public Map<String, Object> lovBordEnvoiEntete(@RequestParam String soc,
+            @RequestParam(required = false) String code, @RequestParam(required = false) String cod_bord,
+            @RequestParam(required = false) String dat_bord, @RequestParam(required = false) String q,
+            @RequestParam(required = false) String cols,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int taille) {
+        int t = LovRecherche.taille(taille);
+        int p = LovRecherche.page(page);
+        String exact = LovRecherche.vide(code);
+        String bord = LovRecherche.motifContient(cod_bord);
+        String dat = LovRecherche.motifContient(dat_bord);
+        java.util.Set<String> visibles = LovRecherche.colonnes(cols, "cod_bord", "dat_bord");
+        int vB = visibles.contains("cod_bord") ? 1 : 0;
+        int vD = visibles.contains("dat_bord") ? 1 : 0;
+        String[] m = LovRecherche.mots(q);
+        String l1 = LovRecherche.motifContient(m[0]), l2 = LovRecherche.motifContient(m[1]), l3 = LovRecherche.motifContient(m[2]);
+        long total = bordEnvoiRepository.compterBordEnvoiEntete(soc, exact, bord, dat, vB, vD, l1, l2, l3);
+        List<BordEnvoiProjection> lignes = total == 0 ? List.of()
+                : bordEnvoiRepository.pageBordEnvoiEntete(soc, exact, bord, dat, vB, vD, l1, l2, l3, p * t, t);
+        return LovRecherche.reponse(lignes, total, p, t);
+    }
+
+    /**
+     * Fenêtre de recherche des bordereaux CNAM envoyés, page par page : même liste que /getAllBordEnvoi et /getCodBord
+     * (nonVide=false) ou que /BultSoin/getBordtCnam (nonVide=true). cols : colonnes affichées par l'écran.
+     */
+    @GetMapping("/lovBordEnvoiCnam")
+    @SuppressWarnings("java:S107")
+    public Map<String, Object> lovBordEnvoiCnam(@RequestParam String soc,
+            @RequestParam(defaultValue = "false") boolean nonVide,
+            @RequestParam(required = false) String code, @RequestParam(required = false) String cod_bord,
+            @RequestParam(required = false) String dat_bord, @RequestParam(required = false) String cod_assur,
+            @RequestParam(required = false) String nbr_bult, @RequestParam(required = false) String tot_remb,
+            @RequestParam(required = false) String q, @RequestParam(required = false) String cols,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int taille) {
+        int t = LovRecherche.taille(taille);
+        int p = LovRecherche.page(page);
+        String exact = LovRecherche.vide(code);
+        String bord = LovRecherche.motifContient(cod_bord);
+        String dat = LovRecherche.motifContient(dat_bord);
+        String assur = LovRecherche.motifContient(cod_assur);
+        String nbr = LovRecherche.motifContient(nbr_bult);
+        String tot = LovRecherche.motifContient(tot_remb);
+        java.util.Set<String> v = LovRecherche.colonnes(cols, "cod_bord", "dat_bord");
+        int vB = v.contains("cod_bord") ? 1 : 0;
+        int vD = v.contains("dat_bord") ? 1 : 0;
+        int vA = v.contains("cod_assur") ? 1 : 0;
+        int vN = v.contains("nbr_bult") ? 1 : 0;
+        int vT = v.contains("tot_remb") ? 1 : 0;
+        String[] m = LovRecherche.mots(q);
+        String l1 = LovRecherche.motifContient(m[0]), l2 = LovRecherche.motifContient(m[1]), l3 = LovRecherche.motifContient(m[2]);
+        int nv = nonVide ? 1 : 0;
+        long total = bordEnvoiRepository.compterBordEnvoiCnam(soc, exact, bord, dat, assur, nbr, tot,
+                vB, vD, vA, vN, vT, l1, l2, l3, nv);
+        List<BordEnvoiPrejection> lignes = total == 0 ? List.of()
+                : bordEnvoiRepository.pageBordEnvoiCnam(soc, exact, bord, dat, assur, nbr, tot,
+                        vB, vD, vA, vN, vT, l1, l2, l3, nv, p * t, t);
+        return LovRecherche.reponse(lignes, total, p, t);
+    }
 
     @GetMapping("/getCodBord")
     List<BordEnvoiPrejection> getCodBord(@RequestParam String soc) {

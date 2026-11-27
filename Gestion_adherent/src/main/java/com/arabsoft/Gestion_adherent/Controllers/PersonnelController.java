@@ -1,5 +1,6 @@
 package com.arabsoft.gestion_adherent.controllers;
 
+import com.arabsoft.gestion_adherent.utils.LovRecherche;
 import com.arabsoft.gestion_adherent.services.AffilPersService;
 import com.arabsoft.gestion_adherent.services.ChargFichierService;
 import com.arabsoft.gestion_adherent.services.FamilleServiceImpl;
@@ -559,6 +560,86 @@ public class PersonnelController {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+
+    // ---------- fenêtres de recherche « personnel », page par page (au lieu de ~2 500 lignes d'un coup) ----------
+    // Paramètres communs : code (matricule exact saisi dans le champ), un filtre par colonne (matricule exact,
+    // dat_nais jj/mm/aaaa, autres « contient »), q (recherche unique, 3 mots), cols (colonnes affichées), page, taille ;
+    // sexe ('M'/'F') et avecSexes=true (effectifs) pour les listes qui ont le filtre Sexe.
+
+    /** Fenêtre de recherche, page par page : même liste que /getPersonnelles (findAll / findBySociete, fiche complète), avec les mêmes règles d'accès. */
+    @GetMapping("/lovPersonnelles")
+    public java.util.Map<String, Object> lovPersonnelles(@RequestParam(required = false) String codSoc,
+            @RequestParam java.util.Map<String, String> params, HttpServletRequest request) {
+        var limite = acces.porteeLimitee(request);
+        String soc = socEffective(codSoc, limite);
+        String mat = matEffectif(limite);
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "dat_nais", "nom_pers", "pren_pers", "num_retr", "cin", "cod_lieu_geog");
+        String code = LovRecherche.exact(params.get("code"));
+        String sexe = LovRecherche.vide(params.get("sexe")) == null ? null : params.get("sexe").trim().toUpperCase();
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = personnelRepository.compterPersonnelles(soc, mat, code, f.get("mat_pers"), f.get("dat_nais"), f.get("nom_pers"), f.get("pren_pers"), f.get("num_retr"), f.get("cin"), f.get("cod_lieu_geog"), sexe, f.visible("mat_pers"), f.visible("dat_nais"), f.visible("nom_pers"), f.visible("pren_pers"), f.visible("num_retr"), f.visible("cin"), f.visible("cod_lieu_geog"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<Personnel> lignes = total == 0 ? List.of()
+                : personnelRepository.pagePersonnelles(soc, mat, code, f.get("mat_pers"), f.get("dat_nais"), f.get("nom_pers"), f.get("pren_pers"), f.get("num_retr"), f.get("cin"), f.get("cod_lieu_geog"), sexe, f.visible("mat_pers"), f.visible("dat_nais"), f.visible("nom_pers"), f.visible("pren_pers"), f.visible("num_retr"), f.visible("cin"), f.visible("cod_lieu_geog"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        java.util.Map<String, Object> reponse = LovRecherche.reponse(lignes, total, f.page(), f.taille());
+        if ("true".equalsIgnoreCase(params.get("avecSexes"))) {
+            ComptesSexeProjection c = personnelRepository.sexesPersonnelles(soc, mat);
+            reponse.put("sexes", java.util.Map.of("tous", c.getTous(), "M", c.getM(), "F", c.getF()));
+        }
+        return reponse;
+    }
+
+    /** Fenêtre de recherche, page par page : même liste que /getPersonnels, avec les mêmes règles d'accès. */
+    @GetMapping("/lovPersonnels")
+    public java.util.Map<String, Object> lovPersonnels(@RequestParam(required = false) String codSoc,
+            @RequestParam java.util.Map<String, String> params, HttpServletRequest request) {
+        var limite = acces.porteeLimitee(request);
+        String soc = socEffective(codSoc, limite);
+        String mat = matEffectif(limite);
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "dat_nais", "full_name", "nom_pers", "pren_pers", "num_retr", "cin", "cod_lieu_geog");
+        String code = LovRecherche.exact(params.get("code"));
+        String sexe = LovRecherche.vide(params.get("sexe")) == null ? null : params.get("sexe").trim().toUpperCase();
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = personnelRepository.compterPersonnels(soc, mat, code, f.get("mat_pers"), f.get("dat_nais"), f.get("full_name"), f.get("nom_pers"), f.get("pren_pers"), f.get("num_retr"), f.get("cin"), f.get("cod_lieu_geog"), sexe, f.visible("mat_pers"), f.visible("dat_nais"), f.visible("full_name"), f.visible("nom_pers"), f.visible("pren_pers"), f.visible("num_retr"), f.visible("cin"), f.visible("cod_lieu_geog"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<PersonnelPrejection> lignes = total == 0 ? List.of()
+                : personnelRepository.pagePersonnels(soc, mat, code, f.get("mat_pers"), f.get("dat_nais"), f.get("full_name"), f.get("nom_pers"), f.get("pren_pers"), f.get("num_retr"), f.get("cin"), f.get("cod_lieu_geog"), sexe, f.visible("mat_pers"), f.visible("dat_nais"), f.visible("full_name"), f.visible("nom_pers"), f.visible("pren_pers"), f.visible("num_retr"), f.visible("cin"), f.visible("cod_lieu_geog"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        java.util.Map<String, Object> reponse = LovRecherche.reponse(lignes, total, f.page(), f.taille());
+        if ("true".equalsIgnoreCase(params.get("avecSexes"))) {
+            ComptesSexeProjection c = personnelRepository.sexesPersonnels(soc, mat);
+            reponse.put("sexes", java.util.Map.of("tous", c.getTous(), "M", c.getM(), "F", c.getF()));
+        }
+        return reponse;
+    }
+
+    /** Fenêtre de recherche, page par page : même liste que /getAffilPers/{soc}. */
+    @GetMapping("/lovAffilPers")
+    public java.util.Map<String, Object> lovAffilPers(@RequestParam String soc, @RequestParam java.util.Map<String, String> params) {
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "nom_pers", "pren_pers", "etat_act");
+        String code = LovRecherche.exact(params.get("code"));
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = affilMutuelleRepository.compterAffilPers(soc, code, f.get("mat_pers"), f.get("nom_pers"), f.get("pren_pers"), f.get("etat_act"), f.visible("mat_pers"), f.visible("nom_pers"), f.visible("pren_pers"), f.visible("etat_act"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<AffilPersProjection> lignes = total == 0 ? List.of()
+                : affilMutuelleRepository.pageAffilPers(soc, code, f.get("mat_pers"), f.get("nom_pers"), f.get("pren_pers"), f.get("etat_act"), f.visible("mat_pers"), f.visible("nom_pers"), f.visible("pren_pers"), f.visible("etat_act"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        java.util.Map<String, Object> reponse = LovRecherche.reponse(lignes, total, f.page(), f.taille());
+        return reponse;
+    }
+
+    /** Fenêtre de recherche, page par page : même liste que /listPersonnelDepart/{soc}. */
+    @GetMapping("/lovPersonnelDepart")
+    public java.util.Map<String, Object> lovPersonnelDepart(@RequestParam String soc, @RequestParam java.util.Map<String, String> params) {
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "nomPren", "cod_lieu_geog", "cod_affect", "corps");
+        String code = LovRecherche.exact(params.get("code"));
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = departPersRepository.compterPersonnelDepart(soc, code, f.get("mat_pers"), f.get("nomPren"), f.get("cod_lieu_geog"), f.get("cod_affect"), f.get("corps"), f.visible("mat_pers"), f.visible("nomPren"), f.visible("cod_lieu_geog"), f.visible("cod_affect"), f.visible("corps"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<ListPersonnelDepartProjection> lignes = total == 0 ? List.of()
+                : departPersRepository.pagePersonnelDepart(soc, code, f.get("mat_pers"), f.get("nomPren"), f.get("cod_lieu_geog"), f.get("cod_affect"), f.get("corps"), f.visible("mat_pers"), f.visible("nomPren"), f.visible("cod_lieu_geog"), f.visible("cod_affect"), f.visible("corps"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        java.util.Map<String, Object> reponse = LovRecherche.reponse(lignes, total, f.page(), f.taille());
+        return reponse;
     }
 
 }

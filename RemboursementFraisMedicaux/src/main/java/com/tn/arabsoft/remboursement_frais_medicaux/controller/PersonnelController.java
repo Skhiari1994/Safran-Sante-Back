@@ -1,5 +1,7 @@
 package com.tn.arabsoft.remboursement_frais_medicaux.controller;
 
+import java.util.Map;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.LovRecherche;
 import org.springframework.web.bind.annotation.*;
 
 import com.tn.arabsoft.remboursement_frais_medicaux.entities.*;
@@ -238,4 +240,60 @@ public class PersonnelController {
         return this.personnelRepository.getListAdherentFamille(soc, mat, famInt);
     }
 
+
+    // ---------- fenêtres de recherche « personnel », page par page (au lieu de ~2 300 lignes d'un coup) ----------
+    // Paramètres communs : code (matricule exact saisi dans le champ), un filtre par colonne (mat_pers exact,
+    // dat_nais jj/mm/aaaa, autres « contient »), q (recherche unique, 3 mots), cols (colonnes affichées), page, taille.
+
+    /** Fenêtre de recherche du personnel, page par page : même liste que /getPersActif (personnel actif + libellé assurance). */
+    @GetMapping("/lovPersActif")
+    public Map<String, Object> lovPersActif(@RequestParam String soc, @RequestParam Map<String, String> params) {
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "dat_nais", "num_retr", "nom_pers", "pren_pers");
+        String code = LovRecherche.exact(params.get("code"));
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = personnelRepository.compterPersActif(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("num_retr"), f.get("nom_pers"), f.get("pren_pers"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("num_retr"), f.visible("nom_pers"), f.visible("pren_pers"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<PersonnelProjection> lignes = total == 0 ? List.of()
+                : personnelRepository.pagePersActif(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("num_retr"), f.get("nom_pers"), f.get("pren_pers"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("num_retr"), f.visible("nom_pers"), f.visible("pren_pers"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        return LovRecherche.reponse(lignes, total, f.page(), f.taille());
+    }
+
+    /** Fenêtre de recherche du personnel, page par page : même liste que /GetAllPers (fiche personnel complète). */
+    @GetMapping("/lovPersActifEntite")
+    public Map<String, Object> lovPersActifEntite(@RequestParam String soc, @RequestParam Map<String, String> params) {
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "dat_nais", "num_retr", "nom_pers", "pren_pers");
+        String code = LovRecherche.exact(params.get("code"));
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = personnelRepository.compterPersActifEntite(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("num_retr"), f.get("nom_pers"), f.get("pren_pers"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("num_retr"), f.visible("nom_pers"), f.visible("pren_pers"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<Personnel> lignes = total == 0 ? List.of()
+                : personnelRepository.pagePersActifEntite(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("num_retr"), f.get("nom_pers"), f.get("pren_pers"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("num_retr"), f.visible("nom_pers"), f.visible("pren_pers"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        return LovRecherche.reponse(lignes, total, f.page(), f.taille());
+    }
+
+    /** Fenêtre de recherche du personnel, page par page : même liste que /getPersBultCnamDeb et /getPersBultCnamFin. */
+    @GetMapping("/lovPersBultCnam")
+    public Map<String, Object> lovPersBultCnam(@RequestParam String soc, @RequestParam Map<String, String> params) {
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "dat_nais", "nom", "num_retr");
+        String code = LovRecherche.exact(params.get("code"));
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = personnelRepository.compterPersBultCnam(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("nom"), f.get("num_retr"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("nom"), f.visible("num_retr"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<PersonnelProjection> lignes = total == 0 ? List.of()
+                : personnelRepository.pagePersBultCnam(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("nom"), f.get("num_retr"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("nom"), f.visible("num_retr"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        return LovRecherche.reponse(lignes, total, f.page(), f.taille());
+    }
+
+    /** Fenêtre de recherche du personnel, page par page : même liste que /getPersonnelBultSoin. */
+    @GetMapping("/lovPersonnelBultSoin")
+    public Map<String, Object> lovPersonnelBultSoin(@RequestParam String soc, @RequestParam Map<String, String> params) {
+        LovRecherche.Filtres f = new LovRecherche.Filtres(params, "mat_pers", "dat_nais", "nom", "num_retr", "lib_fill");
+        String code = LovRecherche.exact(params.get("code"));
+        String[] m = f.motsExacts();
+        String[] l = f.motsContient();
+        long total = personnelRepository.compterPersonnelBultSoin(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("nom"), f.get("num_retr"), f.get("lib_fill"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("nom"), f.visible("num_retr"), f.visible("lib_fill"), m[0], l[0], m[1], l[1], m[2], l[2]);
+        List<PersonnelBultSoinProjection> lignes = total == 0 ? List.of()
+                : personnelRepository.pagePersonnelBultSoin(soc, code, f.get("mat_pers"), f.get("dat_nais"), f.get("nom"), f.get("num_retr"), f.get("lib_fill"), f.visible("mat_pers"), f.visible("dat_nais"), f.visible("nom"), f.visible("num_retr"), f.visible("lib_fill"), m[0], l[0], m[1], l[1], m[2], l[2], f.debut(), f.taille());
+        return LovRecherche.reponse(lignes, total, f.page(), f.taille());
+    }
 }

@@ -257,4 +257,483 @@ public interface PersonnelRepository extends JpaRepository<Personnel, ClePersonn
       """, nativeQuery = true)
   List<Personnel> getPersActifBySoc(@Param("soc") String soc);
 
+
+       /*
+        * Fenêtre de recherche « personnel », page par page : même liste que getPersActif (mêmes colonnes, mêmes
+        * conditions), filtrée et découpée par la base. code : matricule exact (champ) ; matricule : égalité exacte ;
+        * date de naissance : jj/mm/aaaa ; autres colonnes : « contient » ; m1..m3 / l1..l3 : mots de la recherche
+        * unique, cherchés dans les colonnes affichées par l'écran (v_xxx = 1). Ordre : matricule (numérique).
+        */
+       @Query(value = """
+                     select q.*
+                     from (
+                     select p.*, a.lib_assur
+                     from personnel p
+                     left join assurance a on a.cod_assur = p.cod_assur
+                     where p.cod_soc = :soc and p.etat_act = 'A'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:nom_pers is null or lower(q.nom_pers) like :nom_pers escape '!')
+                       and (:pren_pers is null or lower(q.pren_pers) like :pren_pers escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l1 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l2 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l3 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l3 escape '!'))
+                     order by case when q.mat_pers not like '%[^0-9]%' and len(q.mat_pers) between 1 and 18 then cast(q.mat_pers as bigint) end,
+                              q.mat_pers
+                     offset :debut rows fetch next :taille rows only
+                     """, nativeQuery = true)
+       List<PersonnelProjection> pagePersActif(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("num_retr") String num_retr,
+                     @Param("nom_pers") String nom_pers,
+                     @Param("pren_pers") String pren_pers,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("v_nom_pers") int v_nom_pers,
+                     @Param("v_pren_pers") int v_pren_pers,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3,
+                     @Param("debut") int debut, @Param("taille") int taille);
+
+       @Query(value = """
+                     select count(*)
+                     from (
+                     select p.*, a.lib_assur
+                     from personnel p
+                     left join assurance a on a.cod_assur = p.cod_assur
+                     where p.cod_soc = :soc and p.etat_act = 'A'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:nom_pers is null or lower(q.nom_pers) like :nom_pers escape '!')
+                       and (:pren_pers is null or lower(q.pren_pers) like :pren_pers escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l1 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l2 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l3 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l3 escape '!'))
+                     """, nativeQuery = true)
+       long compterPersActif(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("num_retr") String num_retr,
+                     @Param("nom_pers") String nom_pers,
+                     @Param("pren_pers") String pren_pers,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("v_nom_pers") int v_nom_pers,
+                     @Param("v_pren_pers") int v_pren_pers,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3);
+
+       /*
+        * Fenêtre de recherche « personnel », page par page : même liste que getPersActifBySoc (GetAllPers) (mêmes colonnes, mêmes
+        * conditions), filtrée et découpée par la base. code : matricule exact (champ) ; matricule : égalité exacte ;
+        * date de naissance : jj/mm/aaaa ; autres colonnes : « contient » ; m1..m3 / l1..l3 : mots de la recherche
+        * unique, cherchés dans les colonnes affichées par l'écran (v_xxx = 1). Ordre : matricule (numérique).
+        */
+       @Query(value = """
+                     select q.*
+                     from (
+                     select p.*
+                     from personnel p
+                     where p.cod_soc = :soc
+                       and p.etat_act = 'A'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:nom_pers is null or lower(q.nom_pers) like :nom_pers escape '!')
+                       and (:pren_pers is null or lower(q.pren_pers) like :pren_pers escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l1 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l2 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l3 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l3 escape '!'))
+                     order by case when q.mat_pers not like '%[^0-9]%' and len(q.mat_pers) between 1 and 18 then cast(q.mat_pers as bigint) end,
+                              q.mat_pers
+                     offset :debut rows fetch next :taille rows only
+                     """, nativeQuery = true)
+       List<Personnel> pagePersActifEntite(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("num_retr") String num_retr,
+                     @Param("nom_pers") String nom_pers,
+                     @Param("pren_pers") String pren_pers,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("v_nom_pers") int v_nom_pers,
+                     @Param("v_pren_pers") int v_pren_pers,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3,
+                     @Param("debut") int debut, @Param("taille") int taille);
+
+       @Query(value = """
+                     select count(*)
+                     from (
+                     select p.*
+                     from personnel p
+                     where p.cod_soc = :soc
+                       and p.etat_act = 'A'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:nom_pers is null or lower(q.nom_pers) like :nom_pers escape '!')
+                       and (:pren_pers is null or lower(q.pren_pers) like :pren_pers escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l1 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l2 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!')
+                            or (:v_nom_pers = 1 and lower(q.nom_pers) like :l3 escape '!')
+                            or (:v_pren_pers = 1 and lower(q.pren_pers) like :l3 escape '!'))
+                     """, nativeQuery = true)
+       long compterPersActifEntite(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("num_retr") String num_retr,
+                     @Param("nom_pers") String nom_pers,
+                     @Param("pren_pers") String pren_pers,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("v_nom_pers") int v_nom_pers,
+                     @Param("v_pren_pers") int v_pren_pers,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3);
+
+       /*
+        * Fenêtre de recherche « personnel », page par page : même liste que getPersBultCnamDeb / getPersBultCnamFin (mêmes colonnes, mêmes
+        * conditions), filtrée et découpée par la base. code : matricule exact (champ) ; matricule : égalité exacte ;
+        * date de naissance : jj/mm/aaaa ; autres colonnes : « contient » ; m1..m3 / l1..l3 : mots de la recherche
+        * unique, cherchés dans les colonnes affichées par l'écran (v_xxx = 1). Ordre : matricule (numérique).
+        */
+       @Query(value = """
+                     select q.*
+                     from (
+                     select mat_pers,
+                            dat_nais,
+                            num_retr,
+                            concat(nom_pers, concat(' ', pren_pers)) as nom
+                     from personnel
+                     where cod_soc = :soc
+                       and etat_act = 'A'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:nom is null or lower(q.nom) like :nom escape '!')
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l1 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l2 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l3 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!'))
+                     order by case when q.mat_pers not like '%[^0-9]%' and len(q.mat_pers) between 1 and 18 then cast(q.mat_pers as bigint) end,
+                              q.mat_pers
+                     offset :debut rows fetch next :taille rows only
+                     """, nativeQuery = true)
+       List<PersonnelProjection> pagePersBultCnam(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("nom") String nom,
+                     @Param("num_retr") String num_retr,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_nom") int v_nom,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3,
+                     @Param("debut") int debut, @Param("taille") int taille);
+
+       @Query(value = """
+                     select count(*)
+                     from (
+                     select mat_pers,
+                            dat_nais,
+                            num_retr,
+                            concat(nom_pers, concat(' ', pren_pers)) as nom
+                     from personnel
+                     where cod_soc = :soc
+                       and etat_act = 'A'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:nom is null or lower(q.nom) like :nom escape '!')
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l1 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l2 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l3 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!'))
+                     """, nativeQuery = true)
+       long compterPersBultCnam(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("nom") String nom,
+                     @Param("num_retr") String num_retr,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_nom") int v_nom,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3);
+
+       /*
+        * Fenêtre de recherche « personnel », page par page : même liste que getPersonnelBultSoin (mêmes colonnes, mêmes
+        * conditions), filtrée et découpée par la base. code : matricule exact (champ) ; matricule : égalité exacte ;
+        * date de naissance : jj/mm/aaaa ; autres colonnes : « contient » ; m1..m3 / l1..l3 : mots de la recherche
+        * unique, cherchés dans les colonnes affichées par l'écran (v_xxx = 1). Ordre : matricule (numérique).
+        */
+       @Query(value = """
+                     select q.*
+                     from (
+                     select p.num_retr,
+                            p.cod_retr,
+                            p.mat_pers,
+                            p.dat_nais,
+                            p.num_assur,
+                            concat(p.nom_pers, concat(' ', p.pren_pers)) AS nom,
+                            p.cod_assur,
+                            a.lib_assur,
+                            f.cod_fil,
+                            rf.lib_fill
+                     from personnel p
+                     inner join assurance a on p.cod_assur = a.cod_assur
+                     inner join pers_affil f on p.mat_pers = f.mat_pers and p.cod_soc = f.cod_soc
+                     inner join ref_filliere rf on f.cod_fil = rf.cod_fil
+                     where p.cod_soc = :soc
+                       and p.etat_act = 'A'
+                       and f.courant = 'O'
+                       and coalesce(rf.bult_mut, 'N') = 'O'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:nom is null or lower(q.nom) like :nom escape '!')
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:lib_fill is null or lower(q.lib_fill) like :lib_fill escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l1 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!')
+                            or (:v_lib_fill = 1 and lower(q.lib_fill) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l2 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!')
+                            or (:v_lib_fill = 1 and lower(q.lib_fill) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l3 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!')
+                            or (:v_lib_fill = 1 and lower(q.lib_fill) like :l3 escape '!'))
+                     order by case when q.mat_pers not like '%[^0-9]%' and len(q.mat_pers) between 1 and 18 then cast(q.mat_pers as bigint) end,
+                              q.mat_pers, q.cod_fil
+                     offset :debut rows fetch next :taille rows only
+                     """, nativeQuery = true)
+       List<PersonnelBultSoinProjection> pagePersonnelBultSoin(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("nom") String nom,
+                     @Param("num_retr") String num_retr,
+                     @Param("lib_fill") String lib_fill,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_nom") int v_nom,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("v_lib_fill") int v_lib_fill,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3,
+                     @Param("debut") int debut, @Param("taille") int taille);
+
+       @Query(value = """
+                     select count(*)
+                     from (
+                     select p.num_retr,
+                            p.cod_retr,
+                            p.mat_pers,
+                            p.dat_nais,
+                            p.num_assur,
+                            concat(p.nom_pers, concat(' ', p.pren_pers)) AS nom,
+                            p.cod_assur,
+                            a.lib_assur,
+                            f.cod_fil,
+                            rf.lib_fill
+                     from personnel p
+                     inner join assurance a on p.cod_assur = a.cod_assur
+                     inner join pers_affil f on p.mat_pers = f.mat_pers and p.cod_soc = f.cod_soc
+                     inner join ref_filliere rf on f.cod_fil = rf.cod_fil
+                     where p.cod_soc = :soc
+                       and p.etat_act = 'A'
+                       and f.courant = 'O'
+                       and coalesce(rf.bult_mut, 'N') = 'O'
+                     ) q
+                     where (:code is null or lower(ltrim(rtrim(q.mat_pers))) = :code)
+                       and (:mat_pers is null or lower(ltrim(rtrim(q.mat_pers))) = :mat_pers)
+                       and (:dat_nais is null or (convert(varchar(10), q.dat_nais, 103) like :dat_nais escape '!' or convert(varchar(10), q.dat_nais, 120) like :dat_nais escape '!'))
+                       and (:nom is null or lower(q.nom) like :nom escape '!')
+                       and (:num_retr is null or lower(q.num_retr) like :num_retr escape '!')
+                       and (:lib_fill is null or lower(q.lib_fill) like :lib_fill escape '!')
+                       and (:l1 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m1)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l1 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l1 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l1 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l1 escape '!')
+                            or (:v_lib_fill = 1 and lower(q.lib_fill) like :l1 escape '!'))
+                       and (:l2 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m2)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l2 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l2 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l2 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l2 escape '!')
+                            or (:v_lib_fill = 1 and lower(q.lib_fill) like :l2 escape '!'))
+                       and (:l3 is null
+                            or (:v_mat_pers = 1 and lower(ltrim(rtrim(q.mat_pers))) = :m3)
+                            or (:v_dat_nais = 1 and (convert(varchar(10), q.dat_nais, 103) like :l3 escape '!' or convert(varchar(10), q.dat_nais, 120) like :l3 escape '!'))
+                            or (:v_nom = 1 and lower(q.nom) like :l3 escape '!')
+                            or (:v_num_retr = 1 and lower(q.num_retr) like :l3 escape '!')
+                            or (:v_lib_fill = 1 and lower(q.lib_fill) like :l3 escape '!'))
+                     """, nativeQuery = true)
+       long compterPersonnelBultSoin(@Param("soc") String soc,
+                     @Param("code") String code,
+                     @Param("mat_pers") String mat_pers,
+                     @Param("dat_nais") String dat_nais,
+                     @Param("nom") String nom,
+                     @Param("num_retr") String num_retr,
+                     @Param("lib_fill") String lib_fill,
+                     @Param("v_mat_pers") int v_mat_pers,
+                     @Param("v_dat_nais") int v_dat_nais,
+                     @Param("v_nom") int v_nom,
+                     @Param("v_num_retr") int v_num_retr,
+                     @Param("v_lib_fill") int v_lib_fill,
+                     @Param("m1") String m1,
+                     @Param("l1") String l1,
+                     @Param("m2") String m2,
+                     @Param("l2") String l2,
+                     @Param("m3") String m3,
+                     @Param("l3") String l3);
+
 }

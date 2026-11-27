@@ -73,6 +73,164 @@ public interface BordEnvoiRepository extends JpaRepository<BordEnvoi, BordEnvoiC
                         """, nativeQuery = true)
         List<BordEnvoiPrejection> getListBordEnvoiCNAM(@Param("codSoc") String codSoc);
 
+        /*
+         * Bordereaux CNAM non envoyés, page par page : même liste que enteteBordEnvoi (BordEnvoiEntete/{soc}).
+         * code : égalité exacte (code saisi dans le champ) ; autres colonnes : « contient » (dates en jj/mm/aaaa) ;
+         * l1..l3 : mots de la recherche unique, cherchés dans les colonnes affichées par l'écran (v_xxx = 1).
+         * Ordre : date du bordereau décroissante, puis code (ordre stable d'une page à l'autre).
+         */
+        @Query(value = """
+                        select q.cod_bord, q.dat_bord, q.nbr_bult, q.lib_assurance, q.dat_deb, q.dat_fin, q.tot_net, q.tot_honor
+                        from (
+                        select b.cod_bord,
+                               b.dat_bord,
+                               b.nbr_bult,
+                               a.lib_assur as lib_assurance,
+                               b.dat_deb,
+                               b.dat_fin,
+                               b.tot_net,
+                               b.tot_honor
+                        from bord_envoi b
+                        left join assurance a
+                               on a.cod_assur = b.cod_assur
+                        where b.cod_soc = :soc
+                          and b.typ_bord = 'C'
+                          and coalesce(b.envoi_bord, 'N') = 'N'
+                        ) q
+                        where (:code is null or q.cod_bord = :code)
+                          and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                          and (:dat_bord is null or convert(varchar(10), q.dat_bord, 103) like :dat_bord escape '!')
+                          and (:l1 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l1 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l1 escape '!'))
+                          and (:l2 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l2 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l2 escape '!'))
+                          and (:l3 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l3 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l3 escape '!'))
+                        order by q.dat_bord desc, q.cod_bord desc
+                        offset :debut rows fetch next :taille rows only
+                        """, nativeQuery = true)
+        List<BordEnvoiProjection> pageBordEnvoiEntete(@Param("soc") String soc, @Param("code") String code, @Param("cod_bord") String cod_bord, @Param("dat_bord") String dat_bord, @Param("v_cod_bord") int v_cod_bord, @Param("v_dat_bord") int v_dat_bord, @Param("l1") String l1, @Param("l2") String l2, @Param("l3") String l3,
+                        @Param("debut") int debut, @Param("taille") int taille);
+
+        @Query(value = """
+                        select count(*)
+                        from (
+                        select b.cod_bord,
+                               b.dat_bord,
+                               b.nbr_bult,
+                               a.lib_assur as lib_assurance,
+                               b.dat_deb,
+                               b.dat_fin,
+                               b.tot_net,
+                               b.tot_honor
+                        from bord_envoi b
+                        left join assurance a
+                               on a.cod_assur = b.cod_assur
+                        where b.cod_soc = :soc
+                          and b.typ_bord = 'C'
+                          and coalesce(b.envoi_bord, 'N') = 'N'
+                        ) q
+                        where (:code is null or q.cod_bord = :code)
+                          and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                          and (:dat_bord is null or convert(varchar(10), q.dat_bord, 103) like :dat_bord escape '!')
+                          and (:l1 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l1 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l1 escape '!'))
+                          and (:l2 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l2 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l2 escape '!'))
+                          and (:l3 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l3 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l3 escape '!'))
+                        """, nativeQuery = true)
+        long compterBordEnvoiEntete(@Param("soc") String soc, @Param("code") String code, @Param("cod_bord") String cod_bord, @Param("dat_bord") String dat_bord, @Param("v_cod_bord") int v_cod_bord, @Param("v_dat_bord") int v_dat_bord, @Param("l1") String l1, @Param("l2") String l2, @Param("l3") String l3);
+
+        /*
+         * Bordereaux CNAM envoyés, page par page : même liste que getListBordEnvoiCNAM (non_vide = 0) ou getBordtCnam (non_vide = 1, sans code vide).
+         * code : égalité exacte (code saisi dans le champ) ; autres colonnes : « contient » (dates en jj/mm/aaaa) ;
+         * l1..l3 : mots de la recherche unique, cherchés dans les colonnes affichées par l'écran (v_xxx = 1).
+         * Ordre : date du bordereau décroissante, puis code (ordre stable d'une page à l'autre).
+         */
+        @Query(value = """
+                        select q.*
+                        from (
+                        select b.*
+                        from bord_envoi b
+                        where b.cod_soc = :soc
+                          and b.typ_bord = 'C'
+                          and coalesce(b.envoi_bord, 'O') = 'O'
+                          and (:non_vide = 0 or b.cod_bord is not null)
+                        ) q
+                        where (:code is null or q.cod_bord = :code)
+                          and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                          and (:dat_bord is null or convert(varchar(10), q.dat_bord, 103) like :dat_bord escape '!')
+                          and (:cod_assur is null or lower(q.cod_assur) like :cod_assur escape '!')
+                          and (:nbr_bult is null or cast(q.nbr_bult as varchar(30)) like :nbr_bult escape '!')
+                          and (:tot_remb is null or cast(q.tot_remb as varchar(40)) like :tot_remb escape '!')
+                          and (:l1 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l1 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l1 escape '!')
+                               or (:v_cod_assur = 1 and lower(q.cod_assur) like :l1 escape '!')
+                               or (:v_nbr_bult = 1 and cast(q.nbr_bult as varchar(30)) like :l1 escape '!')
+                               or (:v_tot_remb = 1 and cast(q.tot_remb as varchar(40)) like :l1 escape '!'))
+                          and (:l2 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l2 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l2 escape '!')
+                               or (:v_cod_assur = 1 and lower(q.cod_assur) like :l2 escape '!')
+                               or (:v_nbr_bult = 1 and cast(q.nbr_bult as varchar(30)) like :l2 escape '!')
+                               or (:v_tot_remb = 1 and cast(q.tot_remb as varchar(40)) like :l2 escape '!'))
+                          and (:l3 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l3 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l3 escape '!')
+                               or (:v_cod_assur = 1 and lower(q.cod_assur) like :l3 escape '!')
+                               or (:v_nbr_bult = 1 and cast(q.nbr_bult as varchar(30)) like :l3 escape '!')
+                               or (:v_tot_remb = 1 and cast(q.tot_remb as varchar(40)) like :l3 escape '!'))
+                        order by q.dat_bord desc, q.cod_bord desc
+                        offset :debut rows fetch next :taille rows only
+                        """, nativeQuery = true)
+        List<BordEnvoiPrejection> pageBordEnvoiCnam(@Param("soc") String soc, @Param("code") String code, @Param("cod_bord") String cod_bord, @Param("dat_bord") String dat_bord, @Param("cod_assur") String cod_assur, @Param("nbr_bult") String nbr_bult, @Param("tot_remb") String tot_remb, @Param("v_cod_bord") int v_cod_bord, @Param("v_dat_bord") int v_dat_bord, @Param("v_cod_assur") int v_cod_assur, @Param("v_nbr_bult") int v_nbr_bult, @Param("v_tot_remb") int v_tot_remb, @Param("l1") String l1, @Param("l2") String l2, @Param("l3") String l3, @Param("non_vide") int non_vide,
+                        @Param("debut") int debut, @Param("taille") int taille);
+
+        @Query(value = """
+                        select count(*)
+                        from (
+                        select b.*
+                        from bord_envoi b
+                        where b.cod_soc = :soc
+                          and b.typ_bord = 'C'
+                          and coalesce(b.envoi_bord, 'O') = 'O'
+                          and (:non_vide = 0 or b.cod_bord is not null)
+                        ) q
+                        where (:code is null or q.cod_bord = :code)
+                          and (:cod_bord is null or lower(q.cod_bord) like :cod_bord escape '!')
+                          and (:dat_bord is null or convert(varchar(10), q.dat_bord, 103) like :dat_bord escape '!')
+                          and (:cod_assur is null or lower(q.cod_assur) like :cod_assur escape '!')
+                          and (:nbr_bult is null or cast(q.nbr_bult as varchar(30)) like :nbr_bult escape '!')
+                          and (:tot_remb is null or cast(q.tot_remb as varchar(40)) like :tot_remb escape '!')
+                          and (:l1 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l1 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l1 escape '!')
+                               or (:v_cod_assur = 1 and lower(q.cod_assur) like :l1 escape '!')
+                               or (:v_nbr_bult = 1 and cast(q.nbr_bult as varchar(30)) like :l1 escape '!')
+                               or (:v_tot_remb = 1 and cast(q.tot_remb as varchar(40)) like :l1 escape '!'))
+                          and (:l2 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l2 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l2 escape '!')
+                               or (:v_cod_assur = 1 and lower(q.cod_assur) like :l2 escape '!')
+                               or (:v_nbr_bult = 1 and cast(q.nbr_bult as varchar(30)) like :l2 escape '!')
+                               or (:v_tot_remb = 1 and cast(q.tot_remb as varchar(40)) like :l2 escape '!'))
+                          and (:l3 is null
+                               or (:v_cod_bord = 1 and lower(q.cod_bord) like :l3 escape '!')
+                               or (:v_dat_bord = 1 and convert(varchar(10), q.dat_bord, 103) like :l3 escape '!')
+                               or (:v_cod_assur = 1 and lower(q.cod_assur) like :l3 escape '!')
+                               or (:v_nbr_bult = 1 and cast(q.nbr_bult as varchar(30)) like :l3 escape '!')
+                               or (:v_tot_remb = 1 and cast(q.tot_remb as varchar(40)) like :l3 escape '!'))
+                        """, nativeQuery = true)
+        long compterBordEnvoiCnam(@Param("soc") String soc, @Param("code") String code, @Param("cod_bord") String cod_bord, @Param("dat_bord") String dat_bord, @Param("cod_assur") String cod_assur, @Param("nbr_bult") String nbr_bult, @Param("tot_remb") String tot_remb, @Param("v_cod_bord") int v_cod_bord, @Param("v_dat_bord") int v_dat_bord, @Param("v_cod_assur") int v_cod_assur, @Param("v_nbr_bult") int v_nbr_bult, @Param("v_tot_remb") int v_tot_remb, @Param("l1") String l1, @Param("l2") String l2, @Param("l3") String l3, @Param("non_vide") int non_vide);
+
         @Query(value = """
                         select b.cod_bord,
                                b.dat_bord,

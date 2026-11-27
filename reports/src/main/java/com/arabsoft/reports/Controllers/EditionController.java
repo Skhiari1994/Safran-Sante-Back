@@ -57,6 +57,15 @@ public class EditionController {
         return this.printService.exporterExcel(fileName);
     }
 
+    /**
+     * Personnel ayant des bulletins imputés sur l'année (fenêtre de l'édition « Récap remboursement adhérent »).
+     * La requête existait (PersonnelDao.getPersRecap) mais n'était exposée nulle part : l'écran recevait une 404.
+     */
+    @GetMapping("/getPersRecap")
+    List<PersonnelProjection> getPersRecap(@RequestParam String soc, @RequestParam String annee) {
+        return this.personnelDao.getPersRecap(soc, annee);
+    }
+
     @GetMapping("/getPersCArteSoinDeb")
     List<PersonnelProjection> getPersCArteSoinDeb(@RequestParam String soc,
             @RequestParam(required = false) String mat_fin) {

@@ -13,6 +13,7 @@ import com.tn.arabsoft.remboursement_frais_medicaux.repositories.*;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.LigService;
 import com.tn.arabsoft.remboursement_frais_medicaux.service.RemboursementService;
 import com.tn.arabsoft.remboursement_frais_medicaux.util.DateParser;
+import com.tn.arabsoft.remboursement_frais_medicaux.util.LovRecherche;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -64,6 +65,40 @@ public class RemboursementController {
     @GetMapping("/GetAllBordArriver")
     public List<BordArriverProjection> getAllBordArriver(@RequestParam String cod_soc) {
         return bordArriverRepository.getAllBordArriver(cod_soc);
+    }
+
+    /**
+     * Fenêtre de recherche des bordereaux arrivés, page par page (au lieu de renvoyer toute la table).
+     * Les critères absents sont ignorés : chaque écran passe ceux de la liste qu'il utilisait jusqu'ici.
+     * cod_bord / dat_bord : « contient » (comme la recherche de la fenêtre) ; code : code exact saisi dans le champ.
+     * Réponse : { content: lignes de la page, total: nombre de lignes correspondant aux filtres, page, taille }.
+     */
+    @GetMapping("/lovBordArriver")
+    public Map<String, Object> lovBordArriver(
+            @RequestParam(required = false) String cod_soc,
+            @RequestParam(required = false) String valid,
+            @RequestParam(required = false) String valid_bord,
+            @RequestParam(required = false) String clot_bord,
+            @RequestParam(required = false) String typ_bord,
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String cod_bord,
+            @RequestParam(required = false) String dat_bord,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int taille) {
+        int t = LovRecherche.taille(taille);
+        int p = LovRecherche.page(page);
+        String soc = LovRecherche.vide(cod_soc);
+        String val = LovRecherche.vide(valid);
+        String valBord = LovRecherche.vide(valid_bord);
+        String clot = LovRecherche.vide(clot_bord);
+        String typ = LovRecherche.vide(typ_bord);
+        String exact = LovRecherche.vide(code);
+        String motifCode = LovRecherche.motifContient(cod_bord);
+        String motifDate = LovRecherche.motifContient(dat_bord);
+        long total = bordArriverRepository.compterBordArriver(soc, val, valBord, clot, typ, exact, motifCode, motifDate);
+        List<BordArriverProjection> lignes = total == 0 ? List.of()
+                : bordArriverRepository.pageBordArriver(soc, val, valBord, clot, typ, exact, motifCode, motifDate, p * t, t);
+        return LovRecherche.reponse(lignes, total, p, t);
     }
 
     @GetMapping("/BordArriver/{id}")
